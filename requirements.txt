@@ -1,5 +1,0 @@
-numpy>=1.26
-pandas>=2.0
-matplotlib>=3.7
-ipywidgets>=8.0
-jupyterlab>=4.0
