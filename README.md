@@ -23,7 +23,7 @@ IEEE Senior Member, ACM Professional Member
 [utkukose@sdu.edu.tr](mailto:utkukose@sdu.edu.tr) | [utku.kose@und.edu](mailto:utku.kose@und.edu) | [ukose@up.edu.mx](mailto:ukose@up.edu.mx) | [utkukose@gmail.com](mailto:utkukose@gmail.com)
 
 </div>
-
+ 
 ## About the course
 
 Reinforcement learning studies how an agent learns to act from rewards [1], and the alignment of language models applies it to the most visible systems of current artificial intelligence [2, 3]. Courses usually treat the two as separate subjects and change environments at the point where the connection matters most. This course uses one environment for the whole week: TokenWorld, in which an agent generates a sequence of tokens and receives a reward when the sequence ends. A policy over TokenWorld is a language model. In its tiny form the environment can be solved exactly, so every algorithm of Days 1 to 3 is scored against a known optimum. Day 4 scales the same formalism to a neural language model of sentences and aligns it with a learned reward model, and Day 5 derives direct preference optimisation [4] and shows how optimising a proxy reward can destroy the quality it was meant to measure [5].
