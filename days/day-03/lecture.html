@@ -1,0 +1,627 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy Gradient Methods | Reinforcement Learning and Language Model Alignment</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><style>:root{
+  --ink:#1B2A38; --paper:#F3F5F0; --panel:#FFFFFF; --steel:#56656F; --line:#D2DAD0; --grid:#E4EAE2;
+  --accent:#0E7A78; --ok:#2E8B57; --bad:#B53F2E; --band:rgba(14,122,120,.09);
+  --c1:#1F5F8B; --c2:#C98510; --c3:#2E8B57; --c4:#8B3F82; --c5:#B53F2E;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --head:'Barlow Semi Condensed','Arial Narrow','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E3EAEE; --paper:#0F171D; --panel:#16222A; --steel:#9DB0B9; --line:#2A3B45; --grid:#1B2A33;
+  --accent:#4FC2BE; --ok:#63C08E; --bad:#E58372; --band:rgba(79,194,190,.12);
+  --c1:#6FB0DA; --c2:#E6A83F; --c3:#63C08E; --c4:#CC8CC3; --c5:#E58372;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--c1);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding:26px 20px 64px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+header.top .course{margin:0;color:var(--steel);font-size:.93rem}
+header.top h1{font-family:var(--head);font-weight:600;font-size:clamp(1.8rem,4.2vw,2.7rem);line-height:1.08;margin:.3rem 0 .45rem;letter-spacing:.005em}
+header.top .who{margin:0;font-size:.9rem;color:var(--steel)}
+header.top nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px}
+header.top nav a{font-size:.95rem}
+h2{font-family:var(--head);font-weight:600;font-size:1.7rem;line-height:1.15;margin:2rem 0 .55rem}
+h3{font-family:var(--head);font-weight:600;font-size:1.28rem;margin:1.4rem 0 .4rem}
+p,li{max-width:72ch}
+.small{font-size:.87rem;color:var(--steel)}
+code,pre{font-family:var(--mono);font-size:.86em}
+code{background:var(--band);padding:.08em .3em;border-radius:3px}
+p,li{overflow-wrap:break-word}
+p code,li code,td code,p.small a{overflow-wrap:anywhere}
+pre{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c1);padding:12px 14px;overflow-x:auto;border-radius:4px;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1.1rem 0;padding:.6rem 1rem;border-left:4px solid var(--c2);background:var(--panel);border-radius:0 4px 4px 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem;background:var(--panel)}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--band)}
+.tablewrap{overflow-x:auto}
+img{max-width:100%;height:auto}
+figure{margin:1.3rem 0}
+figure img{border:1px solid var(--line);border-radius:4px;background:#fff}
+figcaption{font-size:.87rem;color:var(--steel);margin-top:.35rem}
+button,select,input{font:inherit}
+select{padding:.3rem .45rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);max-width:100%}
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:.42rem .9rem;cursor:pointer}
+.btn:hover{background:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.ctl{display:flex;flex-direction:column;gap:2px;min-width:170px;flex:1}
+.ctl label{font-size:.86rem;color:var(--steel)}
+.ctl output{font-family:var(--mono);font-size:.85rem;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.paper{background-color:var(--panel);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:12px 12px;border:1px solid var(--line);border-radius:4px;display:block;width:100%;touch-action:none}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 9px;font-size:.86rem}
+.readout b{display:block;font-family:var(--mono);font-size:1.05rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem;color:var(--steel)}
+.legend i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);flex-wrap:wrap;margin-top:8px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:.5rem .85rem;cursor:pointer;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.tabpanel[hidden]{display:none}
+.kc{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 14px;margin:1.2rem 0}
+.kc .q{font-weight:700;margin:0 0 6px}
+.kc label{display:block;padding:3px 0;cursor:pointer}
+.kc .fb{margin-top:6px;font-size:.93rem}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.conf{display:flex;gap:10px;flex-wrap:wrap;font-size:.86rem;color:var(--steel);margin-top:4px}
+.anim{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin:1.3rem 0}
+.anim h4{font-family:var(--head);font-size:1.12rem;margin:0 0 6px}
+.lec-tools{position:sticky;top:0;z-index:5;background:var(--paper);padding:6px 0;border-bottom:1px solid var(--line)}
+.lec-prog{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--steel)}
+.lec-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.lec-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.cite{cursor:pointer;color:var(--c1);border-bottom:1px dotted var(--c1)}
+.pop{position:absolute;z-index:20;max-width:420px;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.18);padding:10px 12px;border-radius:6px;font-size:.86rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{min-height:110px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;cursor:pointer;font-size:.93rem}
+.card .b{display:none;color:var(--steel)} .card.flip .f{display:none} .card.flip .b{display:block}
+.pycorner{background:var(--panel);border:1px dashed var(--c1);border-radius:6px;padding:4px 16px 8px;margin:1.3rem 0}
+.disc td:first-child{white-space:nowrap;font-weight:700}
+footer.sig{margin-top:48px;border-top:2px solid var(--ink);padding-top:14px;font-size:.84rem;color:var(--steel)}
+footer.sig p{max-width:none}
+.weeks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:14px 0}
+.wk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c1);border-radius:4px;padding:10px 12px}
+.wk h3{margin:.1rem 0 .3rem;font-size:1.12rem}
+.wk .n{font-family:var(--head);color:var(--steel);font-size:.9rem}
+.wk .links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.88rem;margin-top:6px}
+.wk .done{font-size:.8rem;color:var(--ok)}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:center}
+.hero canvas{width:100%;height:auto}
+@media (max-width:720px){.hero{grid-template-columns:1fr}.ctl{min-width:140px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.lec-tools,.tabs,nav,.btn{display:none}}
+
+.callout{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin:14px 0;border-radius:4px}
+.callout b.t{display:block;margin-bottom:4px;color:var(--accent)}
+.eq{overflow-x:auto;margin:10px 0;text-align:center}
+.anim{margin:16px 0}
+details.ans{margin:4px 0 14px}
+/* Colab call-to-action boxes inside the lecture */
+.colabbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line,#d9dccf);border-left:5px solid #f9ab00;background:var(--panel,#fff);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn img{display:block;height:22px}
+.colabpart{margin:.8rem 0 0;font-size:.95rem}
+/* Step-by-step calculators of the lab */
+.labpart{scroll-margin-top:10px}
+h3[id]{scroll-margin-top:10px}
+.stepcalc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:12px 0;outline:none}
+.stepcalc .bench{margin:0 0 10px}
+.sc-presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}
+.sc-presets .btn{font-size:.86rem;padding:.22rem .6rem}
+ol.sc-steps{list-style:none;margin:8px 0 0;padding:0}
+ol.sc-steps li{max-width:none;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0;background:var(--paper)}
+ol.sc-steps li.cur{border-left-color:var(--accent);background:var(--panel);box-shadow:0 1px 8px rgba(0,0,0,.07)}
+ol.sc-steps li.new{animation:scin .35s ease}
+ol.sc-steps li.chg .sc-m{animation:scflash .9s ease}
+.sc-st{font-weight:700;font-size:.97rem}
+.sc-st .sc-n{display:inline-block;min-width:4.2em;color:var(--accent);font-family:var(--head);font-weight:600}
+.sc-x{font-size:.93rem;color:var(--steel);margin:3px 0;max-width:none}
+.sc-x p{margin:.2rem 0;max-width:none}
+.sc-m{overflow-x:auto;overflow-y:hidden;margin:4px 0;padding:2px 0;border-radius:4px;font-size:1.04em}
+.sc-m mjx-container[display="true"]{margin:.35em 0!important}
+.sc-q{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;font-size:.93rem}
+.sc-q label{font-weight:600}
+.sc-q input{width:7.5rem;padding:.25rem .4rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}
+.sc-ok{font-size:.86rem;color:var(--ok);font-weight:600}
+.sc-nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.sc-nav .sc-count{margin-left:auto;font-size:.88rem;color:var(--steel)}
+.sc-dots{display:flex;gap:4px;width:100%}
+.sc-dots i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.sc-dots i.on{background:var(--accent)}
+.sc-score{margin:.2rem 0 0}
+code.tex{font-size:.8rem;white-space:pre-wrap;word-break:break-word}
+@keyframes scin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes scflash{from{background:var(--band)}to{background:transparent}}
+/* Boxes in the lecture that open a part of the interactive lab */
+.labbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--panel);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.labbox p{margin:0}
+.labbox a.btn{white-space:nowrap;text-decoration:none;font-size:.9rem}
+@media (max-width:560px){.labbox,.colabbox{flex-direction:column;align-items:flex-start}}
+/* Interactive scenes of the lecture pages: a small drawing, buttons and a line that tells what happened */
+.scene{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c2);border-radius:10px;padding:12px 14px;margin:1.4rem 0}
+.scene>p.small{margin:0 0 4px}
+.scene .sn-svg{display:block;width:100%;max-width:560px;height:auto;margin:6px auto 2px}
+.scene svg text{font-family:var(--sans);fill:var(--ink)}
+.scene svg .sn-t{transition:transform .28s ease}
+.sn-btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;align-items:center}
+.sn-btns .btn{font-size:.9rem;padding:.34rem .75rem;min-height:2.15rem;line-height:1.25}
+.sn-btns .btn[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--ink)}
+.sn-btns .btn.ghost[aria-pressed=true]{background:var(--band);border-color:var(--accent);color:var(--ink)}
+.sn-lab{font-size:.84rem;color:var(--steel);margin-right:2px}
+.sn-say{min-height:3.3em;margin:6px 0 4px;padding:7px 11px;border-radius:8px;background:var(--band);font-size:.95rem;max-width:none}
+.sn-ro{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.86rem;color:var(--steel);margin:4px 0 0}
+.sn-ro b{font-family:var(--mono);color:var(--ink);font-weight:600;font-size:.84rem}
+.sn-pad{display:inline-grid;grid-template-columns:repeat(3,2.7rem);gap:4px;margin-right:10px}
+.sn-pad .btn{padding:.3rem 0;min-width:0}
+.sn-loop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:.86rem;margin:6px 0 2px;color:var(--steel)}
+.sn-node{border:1px solid var(--line);border-radius:999px;padding:.08rem .6rem;background:var(--paper);color:var(--ink);transition:background .2s,border-color .2s}
+.sn-loop .on{border-color:var(--accent);background:var(--band)}
+.sn-loop b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.scene .sn-pop{animation:snpop 1.1s ease forwards}
+@keyframes snpop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+.sn-box:focus{outline:none}
+.sn-box:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.sn-note{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:6px 10px;margin:6px 0;font-family:var(--mono);font-size:.84rem}
+.sn-note-h{font-family:var(--sans);font-size:.84rem;color:var(--steel);margin-bottom:2px}
+.sn-note-l{overflow-wrap:anywhere}
+.sn-cards{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.sn-card{flex:1 1 180px;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--paper);transition:border-color .2s,box-shadow .2s}
+.sn-card .sn-pos{display:block;font-size:.8rem;color:var(--steel)}
+.sn-card .sn-txt{font-family:var(--mono);font-size:.88rem;overflow-wrap:anywhere}
+.sn-card.win{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.sn-card.tie{border-color:var(--c2)}
+.sn-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:6px 0;background:var(--panel)}
+.sn-table th,.sn-table td{border:1px solid var(--line);padding:3px 6px;text-align:right}
+.sn-table th{background:var(--band);font-weight:600}
+.sn-table td.mv{background:var(--band);transition:background .3s}
+.sn-table td.ok{color:var(--ok);font-weight:700;text-align:center}
+.sn-table td.bad{color:var(--bad);font-weight:700;text-align:center}
+.sn-table td:first-child,.sn-table th:first-child{text-align:left}
+/* Theme layer of the Vel Tech courses, applied on top of style.css. */
+:root{
+  --ink:#1C2333; --paper:#F4F6FB; --panel:#FFFFFF; --steel:#5A6478; --line:#D5DAE7; --grid:#E7EAF3;
+  --ok:#23946B; --bad:#C9473B;
+  --c1:#2A5BD7; --c2:#D4870B; --c3:#23946B; --c4:#8E4BA8; --c5:#C9473B;
+  --sans:'Source Sans 3','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --head:'Lexend','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E4E8F2; --paper:#11151F; --panel:#1A2030; --steel:#A3ACC2; --line:#2C3448; --grid:#1F2638;
+  --ok:#5CC796; --bad:#EE8A7E;
+  --c1:#7FA2F5; --c2:#F0B34A; --c3:#5CC796; --c4:#C79BDA; --c5:#EE8A7E;
+}}
+body{font-size:17.5px;line-height:1.6}
+header.top{border:1px solid var(--line);border-top:6px solid var(--accent);border-radius:12px;background:var(--panel);
+  padding:16px 20px 14px;margin-bottom:26px;box-shadow:0 1px 2px rgba(20,30,60,.05)}
+header.top h1{font-weight:600;letter-spacing:-.01em}
+header.top nav a{background:var(--band);padding:.12rem .55rem;border-radius:999px;text-decoration:none;color:var(--accent);font-weight:600;font-size:.9rem}
+header.top nav a:hover{background:var(--accent);color:var(--panel)}
+h2{font-weight:600;letter-spacing:-.005em}
+h2::after{content:"";display:block;width:46px;height:3px;border-radius:2px;background:var(--accent);margin-top:7px}
+h3{font-weight:600}
+a{color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border-radius:8px}
+.btn:hover{background:var(--ink)}
+.btn.ghost{border-radius:8px}
+.bench,.kc,.card,pre,table,.readout div{border-radius:10px}
+.kc{border-radius:0 10px 10px 0}
+.readout div{background:var(--band)}
+.tabs button[aria-selected=true]{color:var(--accent)}
+th{background:var(--band)}
+blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
+/* Colab call-to-action boxes and links */
+.colabbox{display:flex;gap:.9rem;align-items:center;border:1px solid var(--line);border-left:5px solid #F9AB00;
+  background:var(--panel);border-radius:10px;padding:.7rem 1rem;margin:1.2rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn{flex:0 0 auto;line-height:0}
+.colabbox .colabbtn img,.colabpart img{height:20px;width:auto;max-width:none;display:inline-block;vertical-align:middle}
+.colabpart{margin:.9rem 0 0;font-size:.95rem}
+.colabpart a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;font-weight:600}
+/* Readable buttons: the accent of the dark scheme is light, so buttons on it carry dark text, and a ghost button
+   under the pointer gets a light tint instead of the ink colour */
+.btn.ghost:hover{background:var(--band)}
+@media (prefers-color-scheme:dark){.btn,.btn:hover{color:#111827}}
+:root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"global"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><div class="wrap">
+<header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 3 of 5</p><h1>Policy Gradient Methods</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-03">Day overview</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb">Colab notebook</a><a href="lab.html">Interactive lab</a><a href="Day03_Lecture_Notes.pdf">PDF notes</a></nav></header>
+<div class="lec-tools"><div class="lec-prog"><span class="lec-bar"><i></i></span><span class="lec-txt" aria-live="polite"></span></div></div>
+<article class="lecture"><h2 id="overview">Overview</h2>
+<p>Value-based methods learn values and derive a policy from them. Policy gradient methods change the policy directly, in the direction that increases the expected return <span class="cite" tabindex="0" data-refs="1,2">[1, 2]</span>. This is the family used to train language models with human feedback on Day 4. This day derives REINFORCE, the basic algorithm of the family, measures how noisy its estimates are and reduces the noise with a baseline. It introduces actor-critic methods with generalised advantage estimation <span class="cite" tabindex="0" data-refs="3,4">[3, 4]</span>, and limits the size of each update with the clipped objective of proximal policy optimisation, abbreviated PPO <span class="cite" tabindex="0" data-refs="5">[5]</span>. It ends with entropy, the measure of how much a policy still explores, and a metric that hides its collapse.</p><h2 id="day-at-a-glance">Day at a glance</h2>
+<pre class="mermaid">flowchart LR
+  A[&quot;Why optimise the policy?&quot;] --&gt; B[&quot;REINFORCE&quot;]
+  B --&gt; C[&quot;Variance and baselines&quot;]
+  C --&gt; D[&quot;Actor-critic&quot;]
+  D --&gt; E[&quot;PPO&quot;]
+  E --&gt; F[&quot;Entropy&quot;]
+  F --&gt; S[&quot;TokenWorld, stage 3&quot;]
+  S --&gt; G[&quot;Your field&quot;]</pre><div class="callout"><b class="t">Python code of this day</b><p>Every method on this page is also written as Python code in the <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb" target="_blank" rel="noopener">Colab notebook of the day</a>. A Colab notebook is a document of text and Python code that runs in the web browser, with nothing to install. Its code is divided into numbered sections. Each orange box on this page names the section whose code carries out what the text above the box explains. The box says what to run and what to look at in that section, and its button opens the notebook at that place. The practice parts and the self-assessment of the day are in the <a href="lab.html">interactive lab</a>.</p></div><h2 id="why-optimise-the-policy-directly">Why optimise the policy directly?</h2><div class="callout"><b class="t">TokenWorld so far</b><p>Day 1 described TokenWorld, the project of the course, and solved it exactly: The best sentence, <code>the cat sat &lt;eos&gt;</code>, earns 2.75. Day 2 took the rules away and learned from experience. Monte Carlo and temporal difference learning estimated the values of a fixed policy, SARSA (state, action, reward, state, action) and Q-learning learned a table of 160 action values and wrote the best sentence in some of their runs, and a deep Q-network replaced the table by a neural network.</p><p>This day keeps TokenWorld as it is and changes what is learned. Instead of values from which a policy is derived, the agent learns the probabilities of its tokens directly, as a language model does. The methods of the day, from REINFORCE to proximal policy optimisation, are those that align the language model of Day 4, and on TokenWorld each of them is measured against the optimum of Day 1.</p></div><p>A policy can be written as a function with parameters that gives a probability to every action, for example a softmax over scores. Changing the parameters changes the behaviour smoothly, which suits continuous actions and stochastic policies, and it is the natural form of a language model, which already outputs a probability for every next word. The question is in which direction to change the parameters to collect more reward.</p><p>A <em>stochastic</em> policy draws its action at random with the probabilities that it assigns, while a deterministic policy always takes the same action in a state. The greedy policy of the value-based methods of Day 2 is deterministic, and its exploration is added from outside. The randomness of a policy with parameters is its exploration. A <em>continuous</em> action is a number from a range, such as a steering angle, so there are infinitely many actions. A value-based agent would have to find the best of them before every step. A policy with parameters describes a distribution over the actions and draws one from it, which also suits very large sets of actions, such as the vocabulary of a language model. <em>Smoothly</em> means that a small change of the parameters changes every probability a little, whereas a small change of one action value can make a greedy policy jump to another action.</p><p>The project uses the simplest policy of this kind on TokenWorld, a table with a softmax. The parameters are written with the Greek letter theta, \(\theta\). The policy that they define is written \(\pi_\theta(a \mid s)\), as on Day 1, with the parameters as its index. The table holds one parameter \(\theta_{s,a}\) for every pair of a state \(s\) and an action \(a\), called a preference, or a logit in the vocabulary of neural networks. The softmax function turns the preferences of a state into probabilities:</p><div class="eq">\[\pi_\theta(a \mid s) = \frac{e^{\theta_{s,a}}}{\sum_{b} e^{\theta_{s,b}}}\]</div><p>Here \(e \approx 2.718\) is the base of the natural logarithm, and the sum runs over all actions \(b\) of the state. The exponential makes every term positive, and the division makes the probabilities of a state add up to 1. Adding the same number to all preferences of a state changes nothing. In TokenWorld the agent chooses a token in 40 of the 161 states, the unfinished sentences, so the table holds \(40 \times 4 = 160\) parameters. All start at zero, which gives every token the probability \(1/4\): the random policy of Day 1.</p><div class="callout"><b class="t">In everyday life: reinforcing what worked</b><p>A beginner at darts does not know which movement of the arm hits the centre. After a throw that scores well, the beginner repeats that movement a little more often, and after a poor throw a little less often. REINFORCE does exactly this with the probabilities of its actions: Actions that were followed by a high return become more likely, in proportion to the return.</p></div><div class="callout"><b class="t">Worked example: from preferences to probabilities</b><p>A state has the preferences 2, 1, 0 and 0 for its four actions. The exponentials are \(e^2 = 7.39\), \(e^1 = 2.72\), \(e^0 = 1\) and \(e^0 = 1\), and their sum is \(7.39 + 2.72 + 1 + 1\)​\({} = 12.11\). The probabilities are \(7.39 / 12.11 = 0.61\), \(2.72 / 12.11 = 0.22\), and \(1 / 12.11 = 0.08\) for each of the last two actions.</p><p>Raising the first preference from 2 to 2.1 changes its exponential to \(e^{2.1} = 8.17\) and the sum to \(8.17 + 2.72 + 1 + 1\)​\({} = 12.89\). The probabilities become \(8.17 / 12.89 = 0.63\), \(2.72 / 12.89 = 0.21\), and \(1 / 12.89 = 0.08\) for each of the last two: A small change of one parameter moves every probability a little.</p></div><p>The quality of a policy is one number, the return that it collects on average over an episode, called the objective \(J(\theta)\). Gradient ascent improves it step by step:</p><div class="eq">\[\begin{aligned} J(\theta) &amp;= \mathbb{E}_{\pi_\theta}\left[\, G_0 \,\right] \\[4pt] \theta &amp;\leftarrow \theta + \alpha\, \nabla_\theta J(\theta) \end{aligned}\]</div><p>In the first line, \(G_0\) is the return of an episode from its first step, and \(\mathbb{E}\) is the expectation: the average over all episodes that the policy can produce, each weighted by its probability. The random policy of TokenWorld has \(J = -0.49\), and no policy exceeds the exact optimum of Day 1, 2.75. In the second line, the gradient \(\nabla_\theta J(\theta)\), written with the symbol nabla, is the vector of the slopes of \(J\) with respect to all parameters, the direction in which \(J\) grows fastest. The arrow reads <em>is replaced by</em>, and the learning rate \(\alpha\) sets the size of the step. The open question is how to obtain the gradient: The agent knows only the episodes that it has played.</p><h2 id="reinforce">REINFORCE</h2><p>The policy gradient theorem answers it <span class="cite" tabindex="0" data-refs="2">[2]</span>. Its core is one step of calculus, shown here for a single decision, as in the bandit of Day 1, where action \(a\) earns on average the reward \(\mu_a\). The objective is the average reward of each action, weighted by the probability \(\pi_\theta(a)\) of the action:</p><div class="eq">\[J(\theta) = \sum_a \pi_\theta(a)\, \mu_a\]</div><p>The gradient of \(J\) is the sum of the terms \(\nabla_\theta \pi_\theta(a)\, \mu_a\). This sum needs the average reward of every action, also of those that the policy almost never takes, so it cannot be estimated by letting the policy act. A rule of calculus helps: The slope of \(\log f\) is the slope of \(f\) divided by \(f\). Here \(\log\) is the natural logarithm, the \(\ln\) of Day 1. Therefore \(\nabla_\theta \pi_\theta(a) = \pi_\theta(a)\, \nabla_\theta \log \pi_\theta(a)\), and the sum becomes an average over the actions that the policy itself chooses:</p><div class="eq">\[\begin{aligned} \nabla_\theta J(\theta) &amp;= \sum_a \nabla_\theta \pi_\theta(a)\, \mu_a \\[4pt] &amp;= \sum_a \pi_\theta(a)\, \nabla_\theta \log \pi_\theta(a)\, \mu_a \\[4pt] &amp;= \mathbb{E}_{a \sim \pi_\theta}\left[\, \nabla_\theta \log \pi_\theta(a)\, r \,\right] \end{aligned}\]</div><p>The index \(a \sim \pi_\theta\) reads: The action is drawn from the policy, and \(r\) is the reward that it then receives. Such an average can be estimated from samples: Act, observe the reward, and multiply it by the gradient of the logarithm of the probability of the action taken. The logarithm of a probability is called a log-probability, and its gradient is the score function. The rewriting is the score-function identity, also called the log-derivative trick.</p><p>For a whole episode, the same step is applied to the probability of the episode, a product of the probabilities of its actions and its transitions. The logarithm turns the product into a sum, and the transitions do not depend on \(\theta\), so only the log-probabilities of the actions remain. An action cannot change the rewards that came before it, and their contribution is zero on average. Each log-probability is therefore multiplied by \(G_t\), the return that followed its action:</p><div class="eq">\[\nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\, G_t \right]\]</div><p>The sum runs over the steps \(t\) of an episode, and the expectation over the episodes of the current policy. REINFORCE turns the answer into an algorithm <span class="cite" tabindex="0" data-refs="1">[1]</span>: Play an episode, and for every action taken, push its log-probability up in proportion to the return that followed. Actions followed by high returns become more likely, actions followed by low returns less likely. The name is an acronym of the form of the update: REward Increment = Nonnegative Factor times Offset Reinforcement times Characteristic Eligibility. In the words of this day, the three factors are the learning rate, the return minus a baseline, and the gradient of the log-probability. The baseline belongs to the next section and is zero for now. In practice the expectation is replaced by the average over a batch of \(B\) episodes. This gives the estimate of the gradient, written \(\hat{g}\) with a hat, and the update:</p><div class="eq">\[\begin{aligned} \hat{g} &amp;= \frac{1}{B} \sum_{i=1}^{B} \sum_t G_t^{(i)}\, \nabla_\theta \log \pi_\theta\left( a_t^{(i)} \mid s_t^{(i)} \right) \\[4pt] \theta &amp;\leftarrow \theta + \alpha\, \hat{g} \end{aligned}\]</div><p>The index \((i)\) numbers the episodes of the batch, and one round of playing a batch and updating is called an iteration. On TokenWorld, REINFORCE starts with all parameters at zero and runs 400 iterations with \(B = 32\) and \(\alpha = 0.35\). TokenWorld is not discounted, so the discount factor \(\gamma\) is 1. It pays its only reward at the end, so \(G_t\) is the reward of the finished sentence at every step. For the softmax policy, the gradient of a log-probability involves only the preferences of the visited state \(s\). Its slope with respect to the preference of an action \(b\) is</p><div class="eq">\[\frac{\partial \log \pi_\theta(a \mid s)}{\partial \theta_{s,b}} = \begin{cases} 1 - \pi_\theta(a \mid s) &amp; \text{if } b = a \\ -\pi_\theta(b \mid s) &amp; \text{if } b \neq a \end{cases}\]</div><p>The symbol \(\partial\) marks a slope with respect to one parameter while the others are held fixed. Put together, the gradient is a vector with a 1 at the position of the action taken and 0 elsewhere, called a one-hot vector, minus the vector of the probabilities. A positive return therefore raises the preference of the action taken and lowers the others, and a negative return does the opposite.</p><div class="callout"><b class="t">Worked example: one REINFORCE update</b><p>A state has three actions with the preferences 0.916, 0.405 and 0. The agent takes the second action, the return that follows is \(G_t = 2\), and the learning rate is \(\alpha = 0.1\). The table follows the update from the old preferences to the new probabilities. Every value is rounded to three decimals, and each row continues with the rounded values of the rows above it.</p><p>The first three rows are the softmax of the old preferences. The exponentials add up to \(2.499 + 1.499 + 1.000\)​\({} = 4.998\), and each probability is its exponential divided by 4.998, for example \(1.499 / 4.998 = 0.300\). The gradient of the log-probability is the one-hot vector \((0, 1, 0)\) minus the probabilities. The size of the step is \(\alpha G_t = 0.1 \times 2 = 0.2\), so the change of each preference is 0.2 times its gradient, for example \(0.2 \times 0.700 = 0.140\). The new preferences are the old ones plus the change, and the softmax of the new preferences gives the new probabilities, with the sum \(2.261 + 1.725 + 0.961\)​\({} = 4.947\).</p></div><div class="tablewrap"><table><thead><tr><th>Quantity</th><th>How it is computed</th><th>Action 1</th><th>Action 2, taken</th><th>Action 3</th></tr></thead><tbody><tr><td>Preference \(\theta\)</td><td>given</td><td>0.916</td><td>0.405</td><td>0.000</td></tr><tr><td>Exponential \(e^{\theta}\)</td><td>\(e\) to the power \(\theta\)</td><td>2.499</td><td>1.499</td><td>1.000</td></tr><tr><td>Probability \(\pi\)</td><td>exponential divided by 4.998</td><td>0.500</td><td>0.300</td><td>0.200</td></tr><tr><td>One-hot vector</td><td>1 for the action taken</td><td>0</td><td>1</td><td>0</td></tr><tr><td>Gradient of \(\log \pi\)</td><td>one-hot minus probability</td><td>\(-0.500\)</td><td>0.700</td><td>\(-0.200\)</td></tr><tr><td>Change \(\Delta\theta\)</td><td>\(0.2\) times the gradient</td><td>\(-0.100\)</td><td>0.140</td><td>\(-0.040\)</td></tr><tr><td>New preference \(\theta&#x27;\)</td><td>\(\theta + \Delta\theta\)</td><td>0.816</td><td>0.545</td><td>\(-0.040\)</td></tr><tr><td>New exponential</td><td>\(e\) to the power \(\theta&#x27;\)</td><td>2.261</td><td>1.725</td><td>0.961</td></tr><tr><td>New probability \(\pi&#x27;\)</td><td>new exponential divided by 4.947</td><td>0.457</td><td>0.349</td><td>0.194</td></tr></tbody></table></div><p>The action taken has become more likely, 0.349 instead of 0.300, and the other two have lost. With a return of \(-2\) the step has the opposite sign: The change is \(-0.2\) times the gradient, \((0.100, -0.140, 0.040)\), the new preferences are \((1.016, 0.265, 0.040)\) with the exponentials 2.762, 1.303 and 1.041 and the sum 5.106, and the probability of the action taken falls to \(1.303 / 5.106 = 0.255\).</p><div class="labbox"><a class="btn" href="lab.html#pd" target="_blank" rel="noopener">Open lab Part D</a><p><b>Interactive lab, Part D.</b> The same update with sliders for the three preferences, the action taken, the return and the learning rate. Each row of the table becomes one step, three steps ask for the value first, and a figure compares the probabilities before and after the update.</p></div><p>The estimate is unbiased, but it is noisy, because one episode's return reflects many random choices, as the animation shows. Unbiased means that the average of many such estimates is the true gradient, and noisy that a single one can lie far from it. The animation applies the update to a bandit with three arms that pay a reward of 1 with the probabilities 0.2, 0.8 and 0.5, where every pull is an episode of one step. With the settings shown at the start, a learning rate of 0.1 and a baseline, the probability of the best arm climbs steadily to 0.96 after 600 pulls. With a learning rate of 1 and without the baseline, a few early rewards first drive the probability of the arm with 0.5 up to 0.97. The policy then needs about 100 pulls to turn to the best arm.</p><div class="anim" id="a1"><p class="small"><strong>Animation.</strong> REINFORCE on a bandit with three arms that pay with the probabilities 0.2, 0.8 and 0.5. The thick line is the probability of the best arm. Switch the baseline off and raise the learning rate to see the noise of the updates. The entropy in the readout is explained in the section on entropy.</p><div class="row" id="r-sl"></div><canvas class="paper" id="r-cv" aria-label="REINFORCE on a three-armed bandit"></canvas><div class="legend" id="r-leg"></div><div id="r-ro"></div></div><div class="kc" data-answer="1" data-why="Each log-probability is pushed in proportion to the return that followed."><p class="q">Check your understanding. In REINFORCE, which actions become more likely?</p><label><input type="radio" name="KC0" value="0"> All actions equally</label><label><input type="radio" name="KC0" value="1"> Actions followed by high returns</label><label><input type="radio" name="KC0" value="2"> The actions with the highest Q-values</label><label><input type="radio" name="KC0" value="3"> Random actions</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><div class="kc" data-answer="1" data-why="The slope of the log-probability with respect to the preference of the action taken is \(1 - 0.3 = 0.7\). The change is the learning rate times the return times this slope: \(0.1 \times 4 \times 0.7 = 0.28\). The other two preferences change by \(0.1 \times 4 \times (-0.6)\)​\({} = -0.24\) and \(0.1 \times 4 \times (-0.1)\)​\({} = -0.04\)."><p class="q">Check your understanding. A softmax policy gives the three actions of a state the probabilities 0.6, 0.3 and 0.1. The second action is taken and is followed by a return of 4. With a learning rate of 0.1 and no baseline, how does REINFORCE change the preference of the second action?</p><label><input type="radio" name="KC1" value="0"> It adds 0.12</label><label><input type="radio" name="KC1" value="1"> It adds 0.28</label><label><input type="radio" name="KC1" value="2"> It adds 0.40</label><label><input type="radio" name="KC1" value="3"> It subtracts 0.12</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="variance-and-baselines">Variance and baselines</h2><p>The noise of an estimate is measured by its variance, the average squared distance of the estimate from its own mean. For a random number \(X\) it is</p><div class="eq">\[\mathrm{Var}(X) = \mathbb{E}\left[ \left( X - \mathbb{E}[X] \right)^2 \right]\]</div><p>A variance of zero means that every repetition gives the same number, and the square root of the variance is the standard deviation. The mean of \(B\) independent estimates has the variance of one estimate divided by \(B\), so a larger batch is one remedy, paid for with more episodes. The two tricks of this section cost no additional episodes.</p><p>Subtracting a baseline from the return, for example the average return from that state, does not change the expected gradient but can reduce its variance considerably. The baseline is written \(b(s)\), and the policy gradient with a baseline is</p><div class="eq">\[\nabla_\theta J(\theta) = \mathbb{E}\left[ \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\, \left( G_t - b(s_t) \right) \right]\]</div><p>The baseline may be any number that depends on the state but not on the action taken in it. It leaves the expectation unchanged, because in every state the gradients of the log-probabilities, weighted by the probabilities of their actions, add up to zero:</p><div class="eq">\[\begin{aligned} \sum_a \pi_\theta(a \mid s)\, \nabla_\theta \log \pi_\theta(a \mid s) &amp;= \sum_a \nabla_\theta \pi_\theta(a \mid s) \\[4pt] &amp;= \nabla_\theta \sum_a \pi_\theta(a \mid s) = \nabla_\theta 1 = 0 \end{aligned}\]</div><p>The first step is the score-function identity read backwards. The second uses that the probabilities of a state add up to 1 for every value of the parameters, and a constant has a slope of zero. A baseline multiplies this sum by \(b(s)\) and so adds nothing on average, but it changes the size of the single terms.</p><div class="callout"><b class="t">Worked example: the same mean with less noise</b><p>A state has two actions with a probability of 0.5 each. The first is always followed by a return of 9 and the second by a return of 11. The slope of the log-probability with respect to the preference of the first action is \(1 - 0.5 = 0.5\) when the first action is taken and \(-0.5\) when the second is taken.</p><p>Without a baseline, the estimate of the slope of \(J\) is \(9 \times 0.5 = 4.5\) in half of the cases and \(11 \times (-0.5) = -5.5\) in the other half. Its mean is \((4.5 - 5.5) / 2 = -0.5\). Both values lie 5 away from the mean, because \(4.5 - (-0.5) = 5\) and \(-5.5 - (-0.5) = -5\), so the variance is \((5^2 + 5^2) / 2 = 25\). With a baseline of 10, the average return of the state, the estimate is \((9 - 10) \times 0.5 = -0.5\) or \((11 - 10) \times (-0.5)\)​\({} = -0.5\): the same mean, and a variance of zero.</p></div><div class="callout"><b class="t">In everyday life: a baseline</b><p>A mark of 70 in an examination means little on its own. In a hard examination where most students score 50 it is good news, and in an easy one where most score 90 it is bad news. Judging the mark against the usual mark is what a baseline does with a return: It turns the return into the news of how much better or worse the episode went than usual.</p></div><p>The usual baseline is an estimate of the value of the state, \(b(s) = \hat{V}(s)\), so that \(G_t - \hat{V}(s_t)\) tells how much better the episode went than is usual from that state. Here the baseline is learned as a running average: After an episode, every visited state moves its baseline a fraction \(\alpha_b\) of the way towards the return that followed. The fraction is 0.05 in the variance measurement and 0.15 during training.</p><div class="scene" id="scene"><p class="small"><strong>Scene: Three ways to throw.</strong> A robot throws at a hoop with one of three styles, which hit with the probabilities 0.2, 0.8 and 0.5, the bandit of the animation above. Its policy is a softmax over three preferences, and every throw is one episode of REINFORCE with the learning rate 0.4. With the baseline on, the reward is compared with the running average of the rewards, so a miss lowers the probability of its style. With the baseline off, a miss changes nothing, and every hit raises its style, good or not.</p></div><div class="eq">\[b(s_t) \leftarrow b(s_t) + \alpha_b \left( G_t - b(s_t) \right)\]</div><p>The second trick concerns the return itself. The policy gradient above multiplies each log-probability by \(G_t\), the rewards that come after the action, which is called the reward-to-go. A simpler estimator multiplies every step of an episode by the total return \(G_0\). The variance of these estimators can be measured directly. At the parameters of the random policy of TokenWorld, \(\hat{g}\) is computed sixty times from fresh episodes, the variance of each of the 160 components is taken over the sixty repetitions, and the 160 variances are averaged. The table shows this variance for three batch sizes.</p><div class="tablewrap"><table><thead><tr><th>Estimator</th><th>\(B = 1\)</th><th>\(B = 8\)</th><th>\(B = 64\)</th></tr></thead><tbody><tr><td>Total return, no baseline</td><td>0.0217</td><td>0.00278</td><td>0.000425</td></tr><tr><td>Reward-to-go, no baseline</td><td>0.0217</td><td>0.00278</td><td>0.000425</td></tr><tr><td>Reward-to-go with baseline</td><td>0.0169</td><td>0.00217</td><td>0.000351</td></tr></tbody></table></div><p>A baseline reduces it on TokenWorld, while another popular trick, using only the rewards that come after each action, changes nothing there, because the whole reward of TokenWorld arrives at the end. With a single reward at the end, \(G_t = G_0\) at every step, and the first two rows are the same estimator. The baseline lowers the variance by a factor of 1.2 to 1.3, and the batch lowers it roughly in proportion to \(1/B\): Dividing 0.0217 by 8 and by 64 gives 0.0027 and 0.00034. The last section of this lecture, Going further, pays rewards along the way, and there the reward-to-go does help. A trick is only as good as its fit to the problem.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 2.</b> Open Section 2 of the Colab notebook and run it. The function <code>reinforce_grad</code> computes the estimate \(\hat{g}\) from one batch: Its option <code>baseline</code> subtracts a baseline, and <code>use_rtg</code> switches between the reward-to-go and the total return. The cell repeats the estimate sixty times for each batch size and prints the variances of the table above.</p></div><div class="kc" data-answer="1" data-why="A baseline that does not depend on the action leaves the expectation unchanged."><p class="q">Check your understanding. What does subtracting a baseline change in the policy gradient?</p><label><input type="radio" name="KC2" value="0"> Its expected value</label><label><input type="radio" name="KC2" value="1"> Its variance, without changing its expected value</label><label><input type="radio" name="KC2" value="2"> The policy</label><label><input type="radio" name="KC2" value="3"> The reward</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="actor-critic">Actor-critic</h2><p>An actor-critic method learns a value function, the critic, alongside the policy, the actor, and uses the critic to judge each action: The advantage tells how much better an action was than expected <span class="cite" tabindex="0" data-refs="4">[4]</span>. In the symbols of Days 1 and 2, the advantage of action \(a\) in state \(s\) under the policy \(\pi\) is</p><div class="eq">\[A^{\pi}(s, a) = Q^{\pi}(s, a) - V^{\pi}(s)\]</div><p>The action value \(Q^{\pi}(s, a)\) is the return expected after taking \(a\) in \(s\) and following the policy afterwards, and the state value \(V^{\pi}(s)\) is the return expected when the policy also chooses the first action. An estimate of the advantage of the action of step \(t\) is written \(\hat{A}_t\). The return minus the baseline, \(G_t - \hat{V}(s_t)\), is one such estimate, with the noise of the whole rest of the episode. The critic offers a second one that looks a single step ahead, the temporal difference (TD) error of Day 2:</p><div class="eq">\[\delta_t = r_{t+1} + \gamma\, \hat{V}(s_{t+1}) - \hat{V}(s_t)\]</div><p>The first two terms estimate the value of the action taken: the reward received plus the discounted value that the critic gives to the next state, which is zero after the end of the episode. This estimate contains the randomness of a single step, so its variance is low. While the values of the critic are wrong, however, it is wrong in the same direction every time, and such a systematic error is called a bias. The simplest actor-critic uses \(\delta_t\) after every step for both learners:</p><div class="eq">\[\begin{aligned} \hat{V}(s_t) &amp;\leftarrow \hat{V}(s_t) + \alpha_V\, \delta_t \\[4pt] \theta &amp;\leftarrow \theta + \alpha\, \delta_t\, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \end{aligned}\]</div><p>The first line is the TD learning of Day 2 with the step size \(\alpha_V\) of the critic, and the second is the REINFORCE update with \(\delta_t\) in place of the return. The gridworlds of the section Your field use this one-step actor-critic.</p><p>Generalised advantage estimation blends advantages over one step and over many steps with a parameter lambda <span class="cite" tabindex="0" data-refs="3">[3]</span>; small lambda trusts the critic more, large lambda trusts the observed returns more. The method is abbreviated GAE, and its parameter \(\lambda\), the Greek letter lambda, is a number between 0 and 1. The estimate adds up the TD errors of the following steps, and a TD error that lies \(k\) steps ahead is weighted by \((\gamma\lambda)^k\):</p><div class="eq">\[\hat{A}_t = \sum_{k=0}^{T-t-1} (\gamma\lambda)^k\, \delta_{t+k} = \delta_t + \gamma\lambda\, \delta_{t+1} + (\gamma\lambda)^2\, \delta_{t+2} + \cdots\]</div><p>Here \(T\) is the number of steps of the episode. The sum is computed backwards with the recursion \(\hat{A}_t = \delta_t + \gamma\lambda\, \hat{A}_{t+1}\), which starts with zero after the last step. With \(\lambda = 0\) only the first term remains, \(\hat{A}_t = \delta_t\): low variance and the bias of the critic. With \(\lambda = 1\) the values of the states in between cancel in the sum, and what remains is \(\hat{A}_t = G_t - \hat{V}(s_t)\): REINFORCE with the critic as its baseline, without bias and with the full noise of the return. Values in between trade one error against the other, which makes \(\lambda\) a bias-variance dial.</p><div class="callout"><b class="t">Worked example: advantages for one episode</b><p>The agent writes <code>the cat sat &lt;eos&gt;</code>. The rewards of the four steps are 0, 0, 0 and 2.75, and \(\gamma = 1\). The critic gives the four states, from the empty sentence to <code>the cat sat</code>, the values 0.5, 1.0, 2.0 and 2.5. The TD errors are \(0 + 1.0 - 0.5 = 0.5\), then \(0 + 2.0 - 1.0 = 1.0\), then \(0 + 2.5 - 2.0 = 0.5\), and for the last step \(2.75 + 0 - 2.5 = 0.25\).</p><p>With \(\lambda = 0\) the advantages are these four numbers. With \(\lambda = 0.5\) the recursion runs backwards: 0.25 for the last step, then \(0.5 + 0.5 \times 0.25\)​\({} = 0.5 + 0.125\)​\({} = 0.625\), then \(1.0 + 0.5 \times 0.625\)​\({} = 1.0 + 0.3125\)​\({} = 1.3125\), and for the first step \(0.5 + 0.5 \times 1.3125\)​\({} = 0.5 + 0.65625\)​\({} = 1.15625\), about 1.16. With \(\lambda = 1\) the advantage of the first step is the sum of the four TD errors, \(0.5 + 1.0 + 0.5 + 0.25\)​\({} = 2.25\), which is the return minus the value of the empty sentence, \(2.75 - 0.5 = 2.25\).</p></div><div class="labbox"><a class="btn" href="lab.html#pe" target="_blank" rel="noopener">Open lab Part E</a><p><b>Interactive lab, Part E.</b> The same advantages with sliders for the final reward, the four values of the critic and \(\lambda\). The TD errors and the backward recursion appear one step at a time, next to a figure of both.</p></div><p>On TokenWorld, this actor-critic trains with batches of 32 episodes. The critic is a table of one value per state and is updated after every episode with \(\alpha_V = 0.25\). The actor is updated once per batch with \(\alpha = 0.35\) and \(\hat{A}_t\) in place of \(G_t\). The figure shows the reference for this experiment: REINFORCE with the three estimators of the previous section, each run eight times with different seeds of the random number generator.</p><figure><img src="figures/d03_fig1.png" alt="REINFORCE on TokenWorld with three estimators over eight seeds. Left: mean return, with the band between the 10th and the 90th percentile of the seeds, against the exact optimum of 2.75. Right: entropy of the policy over the states it visits." style="max-width:100%"><figcaption>REINFORCE on TokenWorld with three estimators over eight seeds. Left: mean return, with the band between the 10th and the 90th percentile of the seeds, against the exact optimum of 2.75. Right: entropy of the policy over the states it visits.</figcaption></figure><p>All three curves rise from about \(-0.44\), the return of the random policy in the first batches, to 2.71 after 400 iterations, which is 98.4 to 98.5 percent of the optimum. The curves of the total return and of the reward-to-go coincide exactly, as the variance table predicts. The baseline changes little: Its curve passes 90 percent of the optimum at iteration 90 instead of 110. The right panel explains the missing 1.5 percent. The entropy, the measure of the remaining randomness of a policy that a later section defines, falls from 1.39 to 0.06 but not to zero. In every seed the most likely sentence is the best one, <code>the cat sat &lt;eos&gt;</code>, and now and then the policy still draws another token.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 3.</b> Open Section 3 of the Colab notebook and run it. The function <code>train_reinforce</code> contains the whole algorithm, and its line <code>theta += lr * g</code> is the update. The cell trains the three estimators over eight seeds, prints their final returns and draws the figure shown here.</p></div><p>The actor-critic is trained with four values of \(\lambda\) over six seeds. The table gives the mean return at the last recorded iteration, its standard deviation (SD) over the seeds, and the first recorded iteration at which the mean return exceeds 90 percent of the optimum.</p><div class="tablewrap"><table><thead><tr><th>\(\lambda\)</th><th>Final return</th><th>SD over the seeds</th><th>Iterations to 90 percent</th></tr></thead><tbody><tr><td>0</td><td>2.700</td><td>0.046</td><td>100</td></tr><tr><td>0.5</td><td>2.734</td><td>0.029</td><td>90</td></tr><tr><td>0.95</td><td>2.709</td><td>0.047</td><td>100</td></tr><tr><td>1</td><td>2.670</td><td>0.051</td><td>100</td></tr></tbody></table></div><p>On TokenWorld a middle value works best. With \(\lambda = 0.5\) the return ends at 2.73, which is 99.4 percent of the optimum, and passes 90 percent first. The margin is small, however: The four final returns differ by less than 0.07, the size of their standard deviations. The dial shows more clearly early in training. Both tables start at zero, and a critic that knows nothing yet is of little use: After 50 iterations the mean return is 1.68 for \(\lambda = 0\) and 1.96 for \(\lambda = 1\).</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-4" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 4.</b> Open Section 4 of the Colab notebook and run it. In the function <code>train_actor_critic</code>, the list <code>deltas</code> holds the TD errors, and the loop with the line <code>run = deltas[t] + lam * run</code> is the recursion of GAE. The cell trains the four values of \(\lambda\) over six seeds and prints the table above.</p></div><div class="kc" data-answer="1" data-why="The weights of the three TD errors are \(1\), \(0.5\) and \(0.5^2 = 0.25\). The advantage is \(0.4\)​\({} + 0.5 \times (-0.2)\)​\({} + 0.25 \times 1.0\)​\({} = 0.4 - 0.1 + 0.25\)​\({} = 0.55\). The value 0.40 belongs to lambda equal to 0 and 1.20 to lambda equal to 1."><p class="q">Check your understanding. An episode has three steps with the TD errors 0.4, \(-0.2\) and 1.0, and \(\gamma = 1\). What is the advantage of the first step with generalised advantage estimation and \(\lambda = 0.5\)?</p><label><input type="radio" name="KC3" value="0"> 0.40</label><label><input type="radio" name="KC3" value="1"> 0.55</label><label><input type="radio" name="KC3" value="2"> 0.80</label><label><input type="radio" name="KC3" value="3"> 1.20</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="trust-regions-and-ppo">Trust regions and PPO</h2><p>A policy gradient step that is too large can destroy a good policy in one update, and reusing the same data for several updates makes this worse. The estimate \(\hat{g}\) is computed from episodes of the current policy and is valid only close to that policy. After an update the policy is a different one, and strictly its batch would have to be thrown away. Episodes are expensive, however, so practical methods take several gradient steps on the same batch, each called a pass or an epoch. From the second pass on, the data come from a policy that no longer exists.</p><p>The region around the old policy in which its data can still be trusted is called a trust region. The idea goes back to the natural policy gradient, which measures a step by the change of the policy and not of the parameters. Trust region policy optimisation, abbreviated TRPO, allows only updates that keep the new policy within a fixed distance of the old one <span class="cite" tabindex="0" data-refs="8">[8]</span>. The distance between two probability distributions \(p\) and \(q\) over the same actions is measured by the Kullback-Leibler divergence, named after its authors and abbreviated KL divergence:</p><div class="eq">\[D_{\mathrm{KL}}(p \,\|\, q) = \sum_a p(a) \log \frac{p(a)}{q(a)}\]</div><p>It is zero when the two distributions are equal and grows as they move apart. As an example, the policy of a state moves from the uniform \(q\)​\({} = (0.25,\)​\(0.25,\)​\(0.25,\)​\(0.25)\) to \(p = (0.7, 0.1, 0.1, 0.1)\). The ratio \(p(a) / q(a)\) is \(0.7 / 0.25 = 2.8\) for the first action and \(0.1 / 0.25 = 0.4\) for each of the other three. With \(\log 2.8 = 1.030\) and \(\log 0.4 = -0.916\), the divergence is \(D_{\mathrm{KL}}\)​\({} = 0.7 \times 1.030\)​\({} + 3 \times 0.1 \times (-0.916)\)​\({} = 0.721 - 0.275\)​\({} = 0.446\), about 0.45. The experiments of this section report this divergence between the policy after and the policy before every update, averaged over the 40 states of the table.</p><div class="callout"><b class="t">In everyday life: small steps near what is known</b><p>A doctor who changes the dose of a medicine changes it in small steps. Experience with the old dose says something about doses close to it, and little about a dose twice as large. A trust region applies the same caution to a policy: The data of the old policy can be trusted only for policies close to it.</p></div><p>Proximal policy optimisation limits each change <span class="cite" tabindex="0" data-refs="5">[5]</span>. It compares the new and the old probability of each action as a ratio and clips the ratio to a small range around one, so that the objective stops rewarding changes beyond it. Proximal means near: The new policy stays near the old one. The ratio is written \(\rho\), as the importance ratio of Day 2:</p><div class="eq">\[\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\mathrm{old}}(a_t \mid s_t)}\]</div><p>The policy \(\pi_{\mathrm{old}}\) is the one that played the batch, and it stays fixed during the passes. Before the first pass the ratio is 1 for every step, and a ratio of 1.3 means that the action has become 30 percent more likely than it was when it was played. PPO maximises the clipped objective</p><div class="eq">\[L^{\mathrm{CLIP}}(\theta) = \mathbb{E}_t\left[ \min\left( \rho_t \hat{A}_t,\; \mathrm{clip}(\rho_t,\, 1 - \varepsilon,\, 1 + \varepsilon)\, \hat{A}_t \right) \right]\]</div><p>The symbol \(\mathbb{E}_t\) is the average over all steps of the batch, and \(\hat{A}_t\) is the advantage of the action of step \(t\). The function \(\mathrm{clip}(x, \mathrm{low}, \mathrm{high})\) returns \(x\) when it lies between the two bounds and the nearer bound otherwise. The clip range \(\varepsilon\) is 0.2 here, which gives the range from 0.8 to 1.2. The same letter stood for the exploration rate on Days 1 and 2 and has another meaning here.</p><p>The first term in the minimum, \(\rho_t \hat{A}_t\), is the objective without a clip, which rewards a change of the ratio without limit. By the score-function identity its gradient is \(\rho_t \hat{A}_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\): the term of the policy gradient, with the advantage in place of the return, times the ratio. The minimum takes the more cautious of the two terms. For a positive advantage the objective stops growing once the ratio exceeds \(1 + \varepsilon\), and for a negative advantage once the ratio has fallen below \(1 - \varepsilon\). Such a step then contributes no gradient at all. A step whose ratio has moved in the wrong direction is never clipped, so a mistake can always be corrected.</p><div class="callout"><b class="t">Worked example: the clipped objective</b><p>The clip range is \(\varepsilon = 0.2\). An action with the advantage \(+3\) has reached the ratio 1.5. The first term is \(1.5 \times 3 = 4.5\). The ratio lies above 1.2, so the clip returns 1.2, and the clipped term is \(1.2 \times 3 = 3.6\), and the objective is the smaller one, 3.6. It no longer depends on the ratio, so this step pushes no further.</p><p>The same action at the ratio 0.5 has moved in the wrong direction. The first term is \(0.5 \times 3 = 1.5\). The ratio lies below 0.8, so the clip returns 0.8, and the clipped term is \(0.8 \times 3 = 2.4\), and the objective is the first term, 1.5. The step keeps its full gradient and pulls the ratio back up.</p><p>An action with the advantage \(-2\) at the ratio 0.9 lies inside the range, and both terms are \(0.9 \times (-2) = -1.8\). At the ratio 0.6 the first term is \(0.6 \times (-2) = -1.2\), and the clipped term is \(0.8 \times (-2) = -1.6\). The objective is \(-1.6\), and the step pushes no further down.</p></div><div class="labbox"><a class="btn" href="lab.html#pc" target="_blank" rel="noopener">Open lab Part C</a><p><b>Interactive lab, Part C.</b> The clipped objective by hand for three steps with other ratios and advantages. The lab checks each value.</p></div><div class="anim" id="a2"><p class="small"><strong>Animation.</strong> The clipped objective against the probability ratio \(\rho\) for a positive and a negative advantage, with the objective without a clip as dashed lines. Move the ratio past the clip range and watch the gradient become zero.</p><div class="row" id="p-sl"></div><canvas class="paper" id="p-cv" aria-label="The clipped surrogate objective of PPO"></canvas><div class="legend" id="p-leg"></div><div id="p-ro"></div></div><p>An experiment on TokenWorld isolates the effect of the clip. Both learners use the same advantages, from GAE with \(\lambda = 0.95\) and a critic with \(\alpha_V = 0.25\). The advantages of a batch are first shifted and scaled to a mean of zero and a standard deviation of one, which is called advantage normalisation:</p><div class="eq">\[\hat{A}_t \leftarrow \frac{\hat{A}_t - \mathrm{mean}(\hat{A})}{\mathrm{SD}(\hat{A})}\]</div><p>In every pass the plain policy gradient adds \(\hat{A}_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\) for every step of the batch, and PPO adds the gradient of the clipped objective. The sum is divided by the number of steps in the batch, about 100, so a learning rate of 1 here is comparable to the 0.35 of the earlier sections. Three settings are trained for 300 iterations over six seeds. The first takes one pass with \(\alpha = 1\), where a clip would change nothing, because every ratio is still 1. The other two take eight passes with \(\alpha = 20\), without and with the clip.</p><div class="tablewrap"><table><thead><tr><th>Setting</th><th>Final return</th><th>Percent of the optimum</th><th>Worst seed</th><th>Mean KL divergence per update</th></tr></thead><tbody><tr><td>One pass, no clip, \(\alpha = 1\)</td><td>2.73</td><td>99.4</td><td>2.66</td><td>below 0.0001</td></tr><tr><td>Eight passes, no clip, \(\alpha = 20\)</td><td>2.42</td><td>87.9</td><td>1.75</td><td>0.0077</td></tr><tr><td>Eight passes, clip, \(\alpha = 20\)</td><td>2.71</td><td>98.5</td><td>2.50</td><td>0.0009</td></tr></tbody></table></div><p>On TokenWorld with eight passes over each batch, PPO keeps learning where the plain gradient overshoots. Without the clip, three of the six seeds end on a worse sentence: <code>the the cat sat</code> with a reward of 2.5, <code>the cat &lt;eos&gt;</code> with 2.0 and <code>the sat cat &lt;eos&gt;</code> with 1.75, the worst seed of the table. With the clip, five seeds find the best sentence and one ends on <code>the cat the sat</code> with 2.5.</p><figure><img src="figures/d03_fig2.png" alt="Return, KL divergence between consecutive policies on a logarithmic scale, and entropy over the visited states, for one pass without the clip and for eight passes without and with it. In the legends, lr is the learning rate." style="max-width:100%"><figcaption>Return, KL divergence between consecutive policies on a logarithmic scale, and entropy over the visited states, for one pass without the clip and for eight passes without and with it. In the legends, lr is the learning rate.</figcaption></figure><p>The panels show how this happens. In the middle panel, the first update of the plain gradient with eight passes moves the policy by a KL divergence of 0.23, about ten times as far as PPO with 0.02. The single pass moves it by less than 0.0001. In the right panel, this one update takes the entropy of the plain learner from 1.39 to 0.71. After ten iterations it is 0.005, against 0.10 for PPO: The policy has stopped exploring before it has seen enough. In the left panel, both fast learners gain most of their return within ten iterations, where the single pass needs about a hundred. The plain one then stays at 2.08 for thirty iterations and ends at 2.42.</p><p>The clip is no cure-all: With a very large learning rate, PPO also fails. The first pass over a batch starts at a ratio of 1 for every step, where nothing is clipped, so the first step is as large as the learning rate makes it. The last section of this lecture, Going further, measures this limit.</p><div class="labbox"><a class="btn" href="lab.html#pa" target="_blank" rel="noopener">Open lab Part A</a><p><b>Interactive lab, Part A.</b> The trust-region bench: a policy trained in the browser with and without the clip of PPO, with sliders for the learning rate and the number of passes and a figure of its return and entropy.</p></div><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 5.</b> Open Section 5 of the Colab notebook and run it. The function <code>train_pg</code> contains both learners: With <code>clip=None</code> it follows the plain policy gradient, with <code>clip=0.2</code> the clipped objective, and <code>epochs</code> is the number of passes. The cell prints the table above and draws the three panels of the figure.</p></div><div class="kc" data-answer="1" data-why="The clip removes the incentive to move the probability further in one update."><p class="q">Check your understanding. What happens to the PPO objective when the probability ratio of an action with positive advantage exceeds 1 plus epsilon?</p><label><input type="radio" name="KC4" value="0"> It grows faster</label><label><input type="radio" name="KC4" value="1"> It stops growing, so the gradient pushes no further</label><label><input type="radio" name="KC4" value="2"> It becomes negative</label><label><input type="radio" name="KC4" value="3"> Nothing</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="entropy">Entropy</h2><p>The entropy of a policy measures how spread out its choices are. In one state \(s\) it is</p><div class="eq">\[H(s) = -\sum_a \pi_\theta(a \mid s) \log \pi_\theta(a \mid s)\]</div><p>With the natural logarithm, the unit of entropy is the nat. The entropy is zero when one action has a probability of 1. It is largest when all \(K\) actions are equally likely, where it equals \(\log K\). For the four tokens of TokenWorld this is \(\log 4 = 1.386\) nats. A policy that has stopped exploring has almost zero entropy. When a policy loses its randomness in this way during training, it is said to collapse.</p><div class="callout"><b class="t">Worked example: three policies and their entropy</b><p>The uniform policy over four actions has \(H\)​\({} = -4 \times 0.25 \times \log 0.25\)​\({} = -1 \times (-1.386)\)​\({} = 1.386\) nats. The policy \((0.7, 0.1, 0.1, 0.1)\) has \(H\)​\({} = -0.7 \log 0.7\)​\({} - 3 \times 0.1 \log 0.1\). With \(\log 0.7 = -0.357\) and \(\log 0.1 = -2.303\), this is \(0.250 + 0.691 = 0.940\) nats. The policy \((0.97, 0.01, 0.01, 0.01)\) has, with \(\log 0.97 = -0.030\) and \(\log 0.01 = -4.605\), \(H\)​\({} = 0.97 \times 0.030\)​\({} + 0.03 \times 4.605\)​\({} = 0.030 + 0.138\)​\({} = 0.168\) nats: It takes its favourite action 97 times out of 100 and has almost stopped exploring.</p></div><div class="callout"><b class="t">In everyday life: entropy</b><p>Someone who orders the same dish in every visit to a restaurant has a policy with zero entropy. Someone who picks among four dishes at random has the largest possible entropy, \(\log 4 = 1.386\) nats. A small entropy bonus is a reminder to try another dish now and then, because the menu may have changed.</p></div><p>An entropy bonus in the objective keeps exploration alive, at the cost of some return. The entropy of the states is added to the objective with a weight \(\beta\), called the entropy coefficient:</p><div class="eq">\[L_\beta(\theta) = L(\theta) + \beta \sum_s H(s)\]</div><p>Here \(L(\theta)\) stands for the objective without the bonus, in this section the clipped objective as a sum over the steps of the batch. The second sum runs over the 40 states of the table. Every update then also pushes the preferences of a state towards each other, each along the slope of the entropy:</p><div class="eq">\[\frac{\partial H(s)}{\partial \theta_{s,a}} = -\pi_\theta(a \mid s) \left( \log \pi_\theta(a \mid s) + H(s) \right)\]</div><p>For the policy \((0.97, 0.01, 0.01, 0.01)\) of the worked example, with \(H(s) = 0.168\), the slope of the favourite is \(-0.97 \times (\log 0.97 + 0.168)\)​\({} = -0.97 \times (-0.030 + 0.168)\)​\({} = -0.97 \times 0.138\)​\({} = -0.13\). The slope of each of the other three actions is \(-0.01 \times (\log 0.01 + 0.168)\)​\({} = -0.01 \times (-4.605 + 0.168)\)​\({} = -0.01 \times (-4.437)\)​\({} = 0.04\): The favourite loses, and the neglected actions gain. The bench of Part A of the interactive lab uses this slope. The experiment of this section uses a simpler push with the constant 1 in place of \(H(s)\), which also raises the entropy of a state with a clear favourite.</p><p>The entropy of a whole policy is an average over its states, and the weights of this average decide what the number says. Two averages are compared:</p><div class="eq">\[\begin{aligned} \bar{H}_{\mathrm{visited}} &amp;= \sum_s d(s)\, H(s) \\[4pt] \bar{H}_{\mathrm{all}} &amp;= \frac{1}{40} \sum_s H(s) \end{aligned}\]</div><p>The weight \(d(s)\) is the share of all decisions of the policy that are taken in state \(s\), computed exactly from the probabilities of the policy. The second average gives every state the same weight, whether the policy ever reaches it or not. The comparison also shows a metric that hides a collapse: The entropy averaged over all states looks healthy, while over the states the policy actually visits it is almost zero.</p><p>After training with PPO and without a bonus, the average over the visited states is 0.007 nats. The average over all states, 1.17 nats in the first seed, lies close to the maximum of 1.39. In that seed, four states receive 99.9 percent of the visits: the empty sentence, <code>the</code>, <code>the cat</code> and <code>the cat sat</code>. In each of them the entropy is below 0.01 nats, while 30 of the 40 states still have more than 1.3 nats. The states off this path are hardly ever visited, their preferences hardly move, and their almost untouched entropy masks the collapse. The table and the figure show the sweep over five coefficients, each trained with PPO over six seeds.</p><div class="tablewrap"><table><thead><tr><th>\(\beta\)</th><th>Return, percent of the optimum</th><th>\(\bar{H}_{\mathrm{visited}}\) in nats</th><th>\(\bar{H}_{\mathrm{all}}\) in nats, first seed</th></tr></thead><tbody><tr><td>0</td><td>99.20</td><td>0.0070</td><td>1.1702</td></tr><tr><td>0.005</td><td>99.81</td><td>0.0074</td><td>1.1720</td></tr><tr><td>0.02</td><td>99.86</td><td>0.0081</td><td>1.1755</td></tr><tr><td>0.05</td><td>99.48</td><td>0.0106</td><td>1.1802</td></tr><tr><td>0.15</td><td>99.24</td><td>0.0174</td><td>1.2105</td></tr></tbody></table></div><figure><img src="figures/d03_fig3.png" alt="Return as a percentage of the optimum, left axis, and entropy over the visited states, right axis, against the entropy coefficient $\beta$, as means over six seeds." style="max-width:100%"><figcaption>Return as a percentage of the optimum, left axis, and entropy over the visited states, right axis, against the entropy coefficient \(\beta\), as means over six seeds.</figcaption></figure><p>The entropy over the visited states rises steadily with the bonus, from 0.007 to 0.017 nats, although the policy stays nearly deterministic at these sizes. The return shows no clear trend: All five values lie between 99.2 and 99.9 percent of the optimum, and in each a single seed with a few weaker sentences accounts for most of the gap. The cost of the bonus, which the title of the figure names, appears with larger coefficients. Trained in the same way, a coefficient of 2 ends at 95 percent of the optimum with 0.19 nats, and a coefficient of 10 at 65 percent with 0.75 nats. A policy that is kept random cannot always write the best sentence.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 6.</b> Open Section 6 of the Colab notebook and run it. The function <code>policy_entropy</code> of Section 1 computes both averages: over the visited states and, with <code>weighted=False</code>, over all states. The cell trains PPO with the five entropy coefficients over six seeds, prints the table above and draws the figure.</p></div><div class="kc" data-answer="1" data-why="Unvisited states keep their initial uncertainty and mask the collapse."><p class="q">Check your understanding. The entropy over all states is 1.2 nats, over the visited states almost 0. What has happened?</p><label><input type="radio" name="KC5" value="0"> The policy explores well</label><label><input type="radio" name="KC5" value="1"> The policy has become nearly deterministic where it actually acts</label><label><input type="radio" name="KC5" value="2"> The metric is wrong</label><label><input type="radio" name="KC5" value="3"> Nothing</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><div class="labbox"><a class="btn" href="lab.html#pb" target="_blank" rel="noopener">Open lab Part B</a><p><b>Interactive lab, Part B.</b> Six ingredients of the policy gradient methods of this day, from the baseline to the learning rate, each to be matched with its effect.</p></div><h2 id="tokenworld-stage-3-a-policy-that-writes-the-best-sentence">TokenWorld, stage 3: a policy that writes the best sentence</h2><p>The methods of this day now come together on the project. TokenWorld keeps its rules hidden, as on Day 2, but the agent no longer learns values from which a policy follows. It learns the probabilities of the tokens themselves, a table of 160 preferences with a softmax, which is the form of a language model. The first figure shows the stage of the project, and the second the loop that REINFORCE, the actor-critic and PPO share.</p><figure><img src="figures/d03_tw_stage.png" alt="The stage of the project reached today: learning the policy directly." style="max-width:100%"><figcaption>The stage of the project reached today: learning the policy directly.</figcaption></figure><figure><img src="figures/d03_tw_pipeline.png" alt="The learning loop of Day 3 on TokenWorld. The methods differ in step 3, how the tokens of a sentence are judged, and in step 4, how far one batch may move the policy." style="max-width:100%"><figcaption>The learning loop of Day 3 on TokenWorld. The methods differ in step 3, how the tokens of a sentence are judged, and in step 4, how far one batch may move the policy.</figcaption></figure><div class="tablewrap"><table><thead><tr><th>Method</th><th>How the tokens are judged</th><th>Setting</th><th>Result on TokenWorld</th></tr></thead><tbody><tr><td>REINFORCE</td><td>Return of the sentence, with or without a baseline</td><td>400 iterations of 32 sentences, 8 seeds</td><td>Mean return 2.71, 98.4 to 98.5 percent of the optimum</td></tr><tr><td>Actor-critic with GAE, \(\lambda = 0.5\)</td><td>Advantage from a critic table</td><td>400 iterations, 6 seeds</td><td>2.73, 99.4 percent</td></tr><tr><td>Plain policy gradient, eight passes</td><td>Normalised GAE advantage</td><td>\(\alpha = 20\), 300 iterations, 6 seeds</td><td>2.42, 87.9 percent, worst seed 1.75</td></tr><tr><td>PPO with the clip, eight passes</td><td>Normalised GAE advantage</td><td>\(\alpha = 20\), 300 iterations, 6 seeds</td><td>2.71, 98.5 percent, worst seed 2.50</td></tr></tbody></table></div><p>The policy of this stage writes the best sentence most of the time, and its remaining entropy keeps it from writing it every time. Two of its tools, the clip and the entropy bonus, protect the policy from moving too far or collapsing too early. The next stage keeps the algorithm and changes the world around it.</p><p>All tools of the day return on Day 4, which applies the REINFORCE update to a language model, a use that is called reinforcement learning from human feedback, abbreviated RLHF. The table is the bridge between the two days.</p><div class="tablewrap"><table><thead><tr><th>Today</th><th>On Day 4</th></tr></thead><tbody><tr><td>A table of 160 preferences with a softmax over four tokens</td><td>A small neural language model with a softmax over a vocabulary of 38 tokens</td></tr><tr><td>The reward of TokenWorld, written by hand and exact</td><td>A reward model that is learned from comparisons of sentences and is therefore imperfect</td></tr><tr><td>The clip, which keeps each update near the previous policy</td><td>A penalty on the KL divergence from a fixed reference policy, the model before the reinforcement learning</td></tr><tr><td>The entropy bonus against the collapse of the policy</td><td>The same KL penalty: Without it the policy ends up writing a single sentence</td></tr><tr><td>An exact optimum of 2.75 to measure against</td><td>A true reward that only the simulation knows, called the gold reward, and in practice no yardstick at all, which is why Day 5 treats evaluation</td></tr></tbody></table></div><p>The algorithm changes very little. What changes is that the reward becomes a learned and imperfect function, and this single substitution is where the subject becomes difficult.</p><h2 id="your-field">Your field</h2><p>The application of the day loads the gridworld of Day 2 for one of three fields and trains three policy gradient learners in it: REINFORCE without and with a baseline, and an actor-critic. Each world is a grid with walls, hazards, a start and a goal. The agent moves up, down, left or right, and a move into a wall or off the grid leaves it in place. Every step has a reward of \(-1\), except the step onto the goal, which has a reward of 0 and ends the episode. A step onto a hazard has the penalty of the table as its reward and puts the agent back at the start. With the slip probability, the chosen action is replaced by a random one of the four. An episode is cut off after 150 steps.</p><div class="tablewrap"><table><thead><tr><th>Field</th><th>Grid</th><th>Hazards</th><th>Slip probability</th><th>Penalty</th></tr></thead><tbody><tr><td>Warehouse</td><td>6 rows, 8 columns</td><td>A forklift lane</td><td>0.05</td><td>\(-20\)</td></tr><tr><td>Drone</td><td>5 rows, 8 columns</td><td>A no-fly zone near the ground</td><td>0.20</td><td>\(-50\)</td></tr><tr><td>Evacuation</td><td>6 rows, 6 columns</td><td>Fire and smoke</td><td>0.10</td><td>\(-100\)</td></tr></tbody></table></div><p>All three learners keep four preferences for every cell, divide the rewards by 10 and discount with \(\gamma = 0.98\). REINFORCE updates at the end of every episode with the discounted return \(G_t = r_{t+1} + \gamma\, G_{t+1}\) and \(\alpha = 0.1\), in its second version with a baseline. The actor-critic is the one-step version of the section above with \(\alpha = 0.3\) and \(\alpha_V = 0.2\). Each learner plays 1000 episodes with two seeds and is judged by the plain sum of the rewards of an episode, averaged over the last 300 episodes.</p><p>In the warehouse the baseline already helps; on the windy drone route and in the burning building, only the actor-critic learns within the budget, because returns from whole episodes are too noisy when hazards and slips are common. In the warehouse the mean return is \(-104\) for REINFORCE without a baseline and \(-13\) with it, level with the actor-critic at \(-12\). The shortest route there has 12 steps and a return of \(-11\). On the drone route and in the building, REINFORCE stays below \(-120\) with or without the baseline, while the actor-critic reaches \(-13.5\) and \(-17.6\). One slip into a hazard changes the return of an episode by 50 or 100. REINFORCE sees only this total at the end of the episode, and the actor-critic corrects its values and its policy after every step.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 7.</b> Open Section 7 of the Colab notebook. Its first line is a switch, <code>DOMAIN = &quot;warehouse&quot;</code>. Replace the word by <code>drone</code> or <code>evacuation</code> and run the section. The functions <code>reinforce_domain</code> and <code>actor_critic_domain</code> train the three learners, and the cell prints the mean return of each over the last 300 episodes.</p></div><h2 id="going-further-optional">Going further (optional)</h2><p>The variance measurement is repeated on a variant of TokenWorld with rewards along the way, where using only the later rewards does help. A sweep of the learning rate then shows how much aggressiveness the clip of PPO can absorb before it fails. In the variant, every token is paid at once for the change that it makes to the score of the sentence. With \(R(s)\) for the score of the sentence written so far, and \(R = 0\) for the empty sentence, the reward of a step is</p><div class="eq">\[r_{t+1} = R(s_{t+1}) - R(s_t)\]</div><p>The rewards of an episode still add up to the score of the finished sentence: <code>the cat sat &lt;eos&gt;</code> earns 0.25, 1.75, 0.75 and 0, in total 2.75. Rewards that are paid along the way are called dense, and a reward that comes only at the end is called sparse. With dense rewards, \(G_t\) and \(G_0\) differ. At a batch of 64 episodes the reward-to-go lowers the variance from 0.000359 to 0.000296, a factor of 1.22. The baseline of the section on variance and baselines, which was fitted to the returns of the original TokenWorld, adds nothing further here: The variance with it is 0.000300.</p><div class="tablewrap"><table><thead><tr><th>Learning rate \(\alpha\)</th><th>No clip</th><th>Clip with \(\varepsilon = 0.2\)</th></tr></thead><tbody><tr><td>1</td><td>100.0</td><td>100.0</td></tr><tr><td>5</td><td>97.0</td><td>100.0</td></tr><tr><td>20</td><td>87.9</td><td>100.0</td></tr><tr><td>60</td><td>81.8</td><td>97.0</td></tr><tr><td>150</td><td>81.8</td><td>72.7</td></tr></tbody></table></div><p>The table shows the sweep of the learning rate as a percentage of the optimum, for eight passes, 200 iterations and three seeds. The plain gradient begins to lose return at a learning rate of 5. With the clip the optimum is held up to 20, and 97 percent is still reached at 60: The clip absorbs about ten times as much aggressiveness. At 150 the clipped objective ends lower than the plain one, 73 against 82 percent, though three seeds leave this comparison uncertain. The KL divergence of the first update shows where the clip gives out. With the clip it grows from 0.02 at a learning rate of 20 to 0.10 at 60 and 0.26 at 150, because the first pass is never clipped. Such details decide results in practice. A study of PPO found that choices in the implementation, such as the scaling of the rewards and the schedule of the learning rate, account for most of its gain over TRPO <span class="cite" tabindex="0" data-refs="9">[9]</span>.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-8" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 8.</b> Open Section 8 of the Colab notebook, which is optional, and run it. The function <code>dense_step</code> pays the reward of each token at once, and <code>dense_grad</code> measures the variance on these rewards. The second part of the cell calls <code>train_pg</code> for five learning rates, without and with the clip, and prints the table above.</p></div><h2 id="python-step">Python step 3: Vectors, the softmax and learning curves</h2><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=python-step" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, right after Section 0 (setup).</b> Open the notebook and run this step cell by cell: It consists of short pieces of Python code with their explanations, a quick check and three exercises. Topics: Preferences and the softmax · The gradient of a log-probability · REINFORCE on a bandit, with and without a baseline · A learning curve.</p></div><p>The <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb">notebook</a> continues with the hands-on sections, and the <a href="lab.html">interactive lab</a> holds three practice parts and the self-assessment. The study path, the daily task and the research assignment are on the <a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-03">day overview</a>.</p><h2 id="review-cards">Review cards</h2><p class="small">Select a card to turn it over.</p><div class="cards"><div class="card" tabindex="0" role="button"><div class="f">Policy gradient</div><div class="b">The direction in parameter space that increases the expected return <span class="cite" tabindex="0" data-refs="2">[2]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Softmax policy</div><div class="b">Probabilities from preferences: the exponential of each preference, divided by the sum of the exponentials of the state.</div></div><div class="card" tabindex="0" role="button"><div class="f">Score function</div><div class="b">The gradient of the log-probability of an action. It turns the gradient of an expected return into an average that can be estimated from sampled episodes.</div></div><div class="card" tabindex="0" role="button"><div class="f">REINFORCE</div><div class="b">Pushes each log-probability in proportion to the return that followed <span class="cite" tabindex="0" data-refs="1">[1]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Reward-to-go</div><div class="b">The return counted from an action on, without the rewards that came before it.</div></div><div class="card" tabindex="0" role="button"><div class="f">Baseline</div><div class="b">A value subtracted from the return; lowers variance without changing the expected gradient.</div></div><div class="card" tabindex="0" role="button"><div class="f">Advantage</div><div class="b">How much better an action was than expected in its state.</div></div><div class="card" tabindex="0" role="button"><div class="f">Actor-critic</div><div class="b">A policy (actor) judged by a learned value function (critic) <span class="cite" tabindex="0" data-refs="4">[4]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Temporal difference (TD) error</div><div class="b">The reward plus the discounted value of the next state minus the value of the current state: an estimate of the advantage from a single step.</div></div><div class="card" tabindex="0" role="button"><div class="f">GAE lambda</div><div class="b">The parameter of generalised advantage estimation (GAE). Blends one-step and many-step advantages; trades bias against variance <span class="cite" tabindex="0" data-refs="3">[3]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Kullback-Leibler (KL) divergence</div><div class="b">A measure of how far one probability distribution lies from another, zero when the two are equal.</div></div><div class="card" tabindex="0" role="button"><div class="f">Trust region</div><div class="b">The neighbourhood of the old policy in which the data collected with it can still be trusted <span class="cite" tabindex="0" data-refs="8">[8]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Probability ratio</div><div class="b">The probability of an action under the new policy divided by its probability under the policy that played the batch.</div></div><div class="card" tabindex="0" role="button"><div class="f">PPO clip</div><div class="b">Proximal policy optimisation (PPO) limits the probability ratio of each update to a small range around one <span class="cite" tabindex="0" data-refs="5">[5]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Entropy</div><div class="b">How spread out the choices of a policy are; near zero means no more exploration.</div></div><div class="card" tabindex="0" role="button"><div class="f">Entropy bonus</div><div class="b">A term of the objective that rewards entropy and so keeps the policy exploring.</div></div><div class="card" tabindex="0" role="button"><div class="f">Visitation-weighted entropy</div><div class="b">The entropy of a policy, averaged over its states in proportion to how often the policy visits them.</div></div></div><h2 id="references">References</h2><p class="small" id="ref-1">[1] Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement learning. Machine Learning, 8(3-4), 229-256.</p><p class="small" id="ref-2">[2] Sutton, R. S., McAllester, D., Singh, S., &amp; Mansour, Y. (2000). Policy gradient methods for reinforcement learning with function approximation. In Advances in Neural Information Processing Systems 12 (NIPS 1999) (pp. 1057-1063).</p><p class="small" id="ref-3">[3] Schulman, J., Moritz, P., Levine, S., Jordan, M., &amp; Abbeel, P. (2016). High-dimensional continuous control using generalized advantage estimation. In 4th International Conference on Learning Representations (ICLR 2016). arXiv:1506.02438.</p><p class="small" id="ref-4">[4] Mnih, V., Badia, A. P., Mirza, M., Graves, A., Lillicrap, T., Harley, T., Silver, D., &amp; Kavukcuoglu, K. (2016). Asynchronous methods for deep reinforcement learning. In Proceedings of the 33rd International Conference on Machine Learning (ICML 2016), PMLR 48, 1928-1937. <a href="https://proceedings.mlr.press/v48/mniha16.html">https://proceedings.mlr.press/v48/mniha16.html</a></p><p class="small" id="ref-5">[5] Schulman, J., Wolski, F., Dhariwal, P., Radford, A., &amp; Klimov, O. (2017). Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347. <a href="https://arxiv.org/abs/1707.06347">https://arxiv.org/abs/1707.06347</a></p><p class="small" id="ref-6">[6] Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <a href="https://doi.org/10.1038/s41586-020-2649-2">https://doi.org/10.1038/s41586-020-2649-2</a></p><p class="small" id="ref-7">[7] Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. Computing in Science &amp; Engineering, 9(3), 90-95.</p><p class="small" id="ref-8">[8] Schulman, J., Levine, S., Abbeel, P., Jordan, M., &amp; Moritz, P. (2015). Trust region policy optimization. In Proceedings of the 32nd International Conference on Machine Learning (ICML 2015), PMLR 37, 1889-1897.</p><p class="small" id="ref-9">[9] Engstrom, L., Ilyas, A., Santurkar, S., Tsipras, D., Janoos, F., Rudolph, L., &amp; Madry, A. (2020). Implementation matters in deep RL: A case study on PPO and TRPO. In 8th International Conference on Learning Representations (ICLR 2020).</p></article>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<script type="application/json" id="refdata">{"1": "Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement learning. Machine Learning, 8(3-4), 229-256.", "2": "Sutton, R. S., McAllester, D., Singh, S., &amp; Mansour, Y. (2000). Policy gradient methods for reinforcement learning with function approximation. In Advances in Neural Information Processing Systems 12 (NIPS 1999) (pp. 1057-1063).", "3": "Schulman, J., Moritz, P., Levine, S., Jordan, M., &amp; Abbeel, P. (2016). High-dimensional continuous control using generalized advantage estimation. In 4th International Conference on Learning Representations (ICLR 2016). arXiv:1506.02438.", "4": "Mnih, V., Badia, A. P., Mirza, M., Graves, A., Lillicrap, T., Harley, T., Silver, D., &amp; Kavukcuoglu, K. (2016). Asynchronous methods for deep reinforcement learning. In Proceedings of the 33rd International Conference on Machine Learning (ICML 2016), PMLR 48, 1928-1937. <a href=\"https://proceedings.mlr.press/v48/mniha16.html\">https://proceedings.mlr.press/v48/mniha16.html</a>", "5": "Schulman, J., Wolski, F., Dhariwal, P., Radford, A., &amp; Klimov, O. (2017). Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347. <a href=\"https://arxiv.org/abs/1707.06347\">https://arxiv.org/abs/1707.06347</a>", "6": "Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <a href=\"https://doi.org/10.1038/s41586-020-2649-2\">https://doi.org/10.1038/s41586-020-2649-2</a>", "7": "Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. Computing in Science &amp; Engineering, 9(3), 90-95.", "8": "Schulman, J., Levine, S., Abbeel, P., Jordan, M., &amp; Moritz, P. (2015). Trust region policy optimization. In Proceedings of the 32nd International Conference on Machine Learning (ICML 2015), PMLR 37, 1889-1897.", "9": "Engstrom, L., Ilyas, A., Santurkar, S., Tsipras, D., Janoos, F., Rudolph, L., &amp; Madry, A. (2020). Implementation matters in deep RL: A case study on PPO and TRPO. In 8th International Conference on Learning Representations (ICLR 2020)."}</script>
+<script>window.COURSE_PREFIX="vtrl";</script>
+<script>"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "html") e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COL = () => ({ink: cssv("--ink"), steel: cssv("--steel"), line: cssv("--line"), grid: cssv("--grid"),
+  panel: cssv("--panel"), accent: cssv("--accent"), ok: cssv("--ok"), bad: cssv("--bad"),
+  c: [cssv("--c1"), cssv("--c2"), cssv("--c3"), cssv("--c4"), cssv("--c5")]});
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+function RNG(seed) {
+  let s = seed >>> 0;
+  const r = () => { s += 0x6D2B79F5; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  r.normal = () => { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  r.int = n => Math.floor(r() * n);
+  r.uniform = (a, b) => a + (b - a) * r();
+  return r;
+}
+const store = {
+  key: k => (window.COURSE_PREFIX || "vt") + ":" + k,
+  get(k, d) { try { const v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} }
+};
+/* Canvas with device-pixel scaling. draw(ctx, w, h) is called on setup and on resize. */
+function stage(cv, aspect, draw) {
+  const ctx = cv.getContext("2d");
+  const fit = () => {
+    const w = cv.clientWidth || 600, hgt = Math.round(w * aspect), d = window.devicePixelRatio || 1;
+    cv.style.height = hgt + "px"; cv.width = Math.round(w * d); cv.height = Math.round(hgt * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0); cv._w = w; cv._h = hgt; draw && draw(ctx, w, hgt);
+  };
+  new ResizeObserver(() => fit()).observe(cv);
+  fit();
+  return {ctx, redraw: () => draw && draw(ctx, cv._w, cv._h), size: () => [cv._w, cv._h]};
+}
+/* Axes frame: returns mapping helpers. */
+function frame(ctx, w, hgt, o) {
+  const C = COL(), p = Object.assign({l: 48, r: 12, t: 12, b: 34}, o.pad || {});
+  const X = x => p.l + (x - o.x0) / (o.x1 - o.x0) * (w - p.l - p.r);
+  const Y = y => hgt - p.b - (y - o.y0) / (o.y1 - o.y0) * (hgt - p.t - p.b);
+  ctx.save(); ctx.strokeStyle = C.line; ctx.fillStyle = C.steel; ctx.lineWidth = 1; ctx.font = "11px " + cssv("--sans");
+  const nt = o.ticks || 5;
+  for (let i = 0; i <= nt; i++) {
+    const xv = o.x0 + (o.x1 - o.x0) * i / nt, yv = o.y0 + (o.y1 - o.y0) * i / nt;
+    ctx.beginPath(); ctx.moveTo(X(xv), hgt - p.b); ctx.lineTo(X(xv), hgt - p.b + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.l - 4, Y(yv)); ctx.lineTo(p.l, Y(yv)); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(fmt(xv), X(xv), hgt - p.b + 16);
+    ctx.textAlign = "right"; ctx.fillText(fmt(yv), p.l - 7, Y(yv) + 4);
+  }
+  ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, hgt - p.b); ctx.lineTo(w - p.r, hgt - p.b); ctx.stroke();
+  ctx.fillStyle = C.ink; ctx.textAlign = "center";
+  if (o.xlabel) ctx.fillText(o.xlabel, (p.l + w - p.r) / 2, hgt - 4);
+  if (o.ylabel) { ctx.save(); ctx.translate(12, (p.t + hgt - p.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylabel, 0, 0); ctx.restore(); }
+  ctx.restore();
+  return {X, Y, p};
+}
+function fmt(v) { if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v)); const a = Math.abs(v); if (a >= 1000) return v.toFixed(0); if (a >= 10) return v.toFixed(0); if (a >= 1) return v.toFixed(1); if (a === 0) return "0"; return v.toFixed(2); }
+function polyline(ctx, pts, color, width, dash) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width || 2; if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.restore();
+}
+function dot(ctx, x, y, r, color, stroke) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+/* Labelled slider bound to a value. */
+function slider(parent, o, on) {
+  const out = h("output", {}, o.fmt ? o.fmt(o.value) : o.value);
+  const inp = h("input", {type: "range", min: o.min, max: o.max, step: o.step || 1, value: o.value, "aria-label": o.label});
+  inp.addEventListener("input", () => { const v = parseFloat(inp.value); out.textContent = o.fmt ? o.fmt(v) : v; on && on(v); });
+  parent.append(h("div", {class: "ctl"}, h("label", {}, o.label, " ", out), inp));
+  return inp;
+}
+function readout(parent, names) {
+  const box = h("div", {class: "readout"}), cells = {};
+  names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; box.append(h("div", {}, n, b)); });
+  parent.append(box);
+  return (n, v) => { cells[n].textContent = v; };
+}
+function legend(parent, items) {
+  const C = COL();
+  parent.append(h("div", {class: "legend"}, items.map(([t, i]) => h("span", {}, h("i", {style: "background:" + (typeof i === "number" ? C.c[i] : i)}), t))));
+}
+/* Animation loop that pauses when off screen or when reduced motion is requested. */
+function loop(step, ms) {
+  let on = false, raf = 0, last = 0, acc = 0;
+  const f = t => { if (!on) return; const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t; acc += dt * 1000; if (!ms || acc >= ms) { acc = 0; step(dt); } raf = requestAnimationFrame(f); };
+  return {start() { if (!on) { on = true; last = 0; raf = requestAnimationFrame(f); } }, stop() { on = false; cancelAnimationFrame(raf); }, get running() { return on; }};
+}
+const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Knowledge checks, citation popups, flashcards and reading progress on lecture pages. */
+function initLecture(day) {
+  const kcs = $$(".kc"), key = "d" + day + ":kc", st = store.get(key, {});
+  const bar = $(".lec-bar i"), txt = $(".lec-txt");
+  const upd = () => {
+    const n = kcs.length, d = Object.values(st).filter(Boolean).length;
+    if (bar) bar.style.width = (n ? 100 * d / n : 0) + "%";
+    if (txt) txt.textContent = n ? `Knowledge checks answered correctly: ${d} of ${n}` : "";
+    store.set(key, st); store.set("d" + day + ":progress", n ? d / n : 0);
+  };
+  kcs.forEach((k, i) => {
+    const ans = +k.dataset.answer, fb = $(".fb", k);
+    $(".btn", k).addEventListener("click", () => {
+      const sel = $("input:checked", k);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === ans;
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + k.dataset.why;
+      st[i] = ok || st[i] || false; upd();
+    });
+    if (st[i]) { const r = $$("input", k)[ans]; if (r) r.checked = true; }
+  });
+  upd();
+  const refs = JSON.parse(($("#refdata") || {textContent: "{}"}).textContent || "{}");
+  let pop = null;
+  document.addEventListener("click", e => {
+    const c = e.target.closest(".cite");
+    if (pop) { pop.remove(); pop = null; }
+    if (!c) return;
+    pop = h("div", {class: "pop", role: "note"});
+    c.dataset.refs.split(",").forEach(n => pop.append(h("p", {html: "[" + n + "] " + (refs[n] || "")})));
+    document.body.append(pop);
+    const r = c.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 440)) + "px";
+    pop.style.top = (window.scrollY + r.bottom + 6) + "px";
+  });
+  $$(".card").forEach(c => { const t = () => c.classList.toggle("flip"); c.addEventListener("click", t); c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t(); } }); });
+}
+
+/* Lab shell: tabs, self-assessment with confidence ratings, reflection and learning-log export. */
+function initLab(day, title, SELF, REFLECT) {
+  const tabs = $$(".tabs button"), panels = $$(".tabpanel");
+  tabs.forEach((b, i) => b.addEventListener("click", () => {
+    tabs.forEach((x, j) => { x.setAttribute("aria-selected", i === j); panels[j].hidden = i !== j; });
+    window.dispatchEvent(new Event("resize"));
+  }));
+  const qbox = $("#quiz"), res = store.get("d" + day + ":quiz", {});
+  SELF.forEach((q, i) => {
+    const fb = h("div", {class: "fb"}), name = "q" + i;
+    const opts = q.options.map((o, j) => h("label", {}, h("input", {type: "radio", name, value: j}), " ", o));
+    const conf = h("div", {class: "conf"}, "Confidence:", ["sure", "unsure", "guess"].map(c => h("label", {}, h("input", {type: "radio", name: name + "c", value: c}), " " + c)));
+    const btn = h("button", {class: "btn", type: "button"}, "Check answer");
+    const box = h("div", {class: "kc"}, h("p", {class: "q"}, (i + 1) + ". " + q.q), opts, conf, btn, fb);
+    btn.addEventListener("click", () => {
+      const sel = $(`input[name=${name}]:checked`, box), cf = $(`input[name=${name}c]:checked`, box);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === q.answer, c = cf ? cf.value : "not rated";
+      res[i] = {ok, conf: c}; store.set("d" + day + ":quiz", res);
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + q.why + (!ok && c === "sure" ? " A confident error marks a topic to revisit first." : "");
+      summary();
+    });
+    qbox.append(box);
+  });
+  const sum = h("p", {class: "small"}); qbox.append(sum);
+  function summary() {
+    const v = Object.values(res), ok = v.filter(r => r.ok).length, conf = v.filter(r => !r.ok && r.conf === "sure").length;
+    sum.textContent = `Answered: ${v.length} of ${SELF.length}. Correct: ${ok}. Confident errors: ${conf}.`;
+  }
+  summary();
+  const rbox = $("#reflect"), refl = store.get("d" + day + ":reflect", {});
+  REFLECT.forEach((p, i) => {
+    const ta = h("textarea", {rows: 4, style: "width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)"});
+    ta.value = refl[i] || "";
+    ta.addEventListener("input", () => { refl[i] = ta.value; store.set("d" + day + ":reflect", refl); });
+    rbox.append(h("p", {}, h("b", {}, (i + 1) + ". "), p), ta);
+  });
+  const ex = h("button", {class: "btn", type: "button"}, "Export learning log");
+  ex.addEventListener("click", () => {
+    const lines = [`# Learning log, day ${day}: ${title}`, "", `Exported: ${new Date().toISOString()}`, "", "## Self-assessment", ""];
+    SELF.forEach((q, i) => { const r = res[i]; lines.push(`${i + 1}. ${q.q}`, `   Result: ${r ? (r.ok ? "correct" : "incorrect") + ", confidence " + r.conf : "not answered"}`); });
+    lines.push("", "## Reflection", "");
+    REFLECT.forEach((p, i) => lines.push(`**${i + 1}. ${p}**`, "", refl[i] || "(no answer)", ""));
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown"}));
+    const a = h("a", {href: url, download: `learning_log_day${String(day).padStart(2, "0")}.md`}); document.body.append(a); a.click(); a.remove();
+  });
+  rbox.append(h("p", {}, ex));
+}
+
+/* Course home: progress per day from local storage. */
+function initHome(n, nq) {
+  for (let d = 1; d <= n; d++) {
+    const el = $("#dy" + d + " .done"); if (!el) continue;
+    const p = store.get("d" + d + ":progress", 0), q = Object.values(store.get("d" + d + ":quiz", {})).filter(r => r.ok).length;
+    el.textContent = (p > 0 || q > 0) ? `Reading checks ${Math.round(100 * p)}%, self-assessment ${q} of ${nq || 8} correct` : "";
+  }
+}
+
+/* Opaque blend of a palette colour with a background colour, used for heat maps without seams. */
+function mix(c1, c2, a) {
+  const hx = c => { c = (c || "#ffffff").trim(); if (c[0] === "#") { if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    return [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16)); } const m = c.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : [255, 255, 255]; };
+  const A = hx(c1), B = hx(c2); return "rgb(" + A.map((v, i) => Math.round(a * v + (1 - a) * B[i])).join(",") + ")";
+}
+
+/* Interactive scenes of the lecture pages. sv() builds an SVG element; scene() returns the parts of one scene:
+   its drawing, rows of buttons, a line that tells what happened and a row of readouts. SCENE_SHOT holds, for each
+   scene, a function that sets the state shown in the screenshot of the course README. */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (k === "text") e.textContent = v; else if (v != null) e.setAttribute(k, v); }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+window.SCENE_SHOT = window.SCENE_SHOT || {};
+function scene(id, w, hgt, label) {
+  const root = document.getElementById(id);
+  if (!root) return null;
+  const box = h("div", {class: "sn-box"}), svg = sv("svg", {class: "sn-svg", viewBox: `0 0 ${w} ${hgt}`, role: "img", "aria-label": label});
+  box.append(svg); root.append(box);
+  const say = h("p", {class: "sn-say", "aria-live": "polite"});
+  return {root, box, svg, say,
+    row(label) { const r = h("div", {class: "sn-btns"}); if (label) r.append(h("span", {class: "sn-lab"}, label)); box.append(r); return r; },
+    btn(row, text, fn, ghost) {
+      const b = h("button", {class: ghost ? "btn ghost" : "btn", type: "button"}, text);
+      b.addEventListener("click", fn); row.append(b); return b; },
+    toggle(row, text, on, fn) {
+      const b = h("button", {class: "btn ghost", type: "button", "aria-pressed": String(!!on)}, text);
+      b.addEventListener("click", () => { const v = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(v)); fn(v); });
+      row.append(b); return b; },
+    tellAt() { box.append(say); },
+    tell(html) { say.innerHTML = html; },
+    ro(names) {
+      const r = h("div", {class: "sn-ro"}), cells = {};
+      names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; r.append(h("span", {}, n + ": ", b)); });
+      box.append(r); return (n, v) => { cells[n].textContent = v; }; }};
+}
+/* Colours of a scene, read from the theme: fill and stroke styles for SVG elements. */
+const fillc = c => `fill:var(${c})`, strokec = (c, w) => `fill:none;stroke:var(${c});stroke-width:${w || 2}`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"neutral"});</script>
+<script>initLecture(3);
+
+function softmaxV(z){ const m=Math.max(...z), e=z.map(v=>Math.exp(v-m)), s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s); }
+function sample(p,r){ let u=r(), a=0; while(a<p.length-1&&u>p[a]){ u-=p[a]; a++; } return a; }
+function entropyV(p){ return -p.reduce((s,v)=>s+(v>0?v*Math.log(v):0),0); }
+
+(function(){ const root=document.getElementById('a1'); if(!root) return;
+const win=[0.2,0.8,0.5]; let lr=0.1, base=true, timer=null, hist=[], th=[0,0,0], avg=0, k=0, rr=RNG(3);
+legend(root.querySelector('#r-leg'),[['probability of the best arm',2],['probability of the other arms',3]]);
+const ro=readout(root.querySelector('#r-ro'),['step','probability of the best arm','policy entropy']);
+const sl=root.querySelector('#r-sl');
+slider(sl,{label:'Learning rate',min:0.02,max:1,step:0.02,value:lr,fmt:v=>v.toFixed(2)},v=>{lr=v;});
+const cb=h('input',{type:'checkbox'}); cb.checked=true; cb.addEventListener('change',()=>{base=cb.checked;}); sl.append(h('label',{},cb,' running-average baseline'));
+const btn=h('button',{class:'btn',type:'button'},'Play 600 steps'); sl.append(btn);
+function reset(){ th=[0,0,0]; avg=0; k=0; hist=[]; rr=RNG(3); }
+function stepOnce(){ const p=softmaxV(th), a=sample(p,rr), r=rr()<win[a]?1:0, adv=base?r-avg:r;
+  for(let i=0;i<3;i++) th[i]+=lr*adv*((i===a?1:0)-p[i]); avg+=0.05*(r-avg); k++; hist.push(softmaxV(th)); }
+btn.addEventListener('click',()=>{ if(timer) return; reset(); timer=setInterval(()=>{ for(let j=0;j<10;j++) stepOnce(); st.redraw(); if(k>=600){ clearInterval(timer); timer=null; } }, reduced()?1:30); });
+const st=stage(root.querySelector('#r-cv'),0.42,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const F=frame(ctx,w,hh,{x0:0,x1:600,y0:0,y1:1,xlabel:'step',ylabel:'probability'});
+  [0,2].forEach(i=>polyline(ctx,hist.map((p,j)=>[F.X(j),F.Y(p[i])]),C.c[3],1.2)); polyline(ctx,hist.map((p,j)=>[F.X(j),F.Y(p[1])]),C.c[2],2.4);
+  const p=hist.length?hist[hist.length-1]:[1/3,1/3,1/3]; ro('step',k); ro('probability of the best arm',p[1].toFixed(3)); ro('policy entropy',entropyV(p).toFixed(3)); });
+})();
+
+
+(function(){
+const S = scene("scene", 480, 290, "A robot throws a ball at a hoop with one of three styles; bars show the probability of each style under the policy");
+if (!S) return;
+const MU = [0.2, 0.8, 0.5], NAMES = ["A", "B", "C"], ALPHA = 0.4, AB = 0.15;
+const f2 = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2), sg = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+let th, b, useB = true, rng, n, hits, busy = false;
+const soft = () => { const e = th.map(Math.exp), s = e.reduce((x, y) => x + y, 0); return e.map(x => x / s); };
+const DARK = "#1c2333";
+const gCourt = sv("g"), gBars = sv("g"), gBall = sv("g");
+S.svg.append(gCourt, gBars, gBall);
+// court: the robot, the hoop and the three arcs of the styles
+const HX = 410, HY = 92, RX = 70, RY = 150;
+const ARC = [[RX + 20, RY - 20, 250, 150], [RX + 20, RY - 20, 240, -20], [RX + 20, RY - 20, 300, 40]];
+gCourt.append(
+  sv("rect", {x: HX + 26, y: HY - 46, width: 8, height: 190, style: "fill:var(--steel)"}),
+  sv("rect", {x: HX + 2, y: HY - 46, width: 36, height: 30, rx: 3, style: "fill:none;stroke:var(--steel);stroke-width:3"}),
+  sv("ellipse", {cx: HX, cy: HY, rx: 24, ry: 6, style: "fill:none;stroke:var(--c5);stroke-width:4"}),
+  sv("line", {x1: 20, y1: 236, x2: 465, y2: 236, style: "stroke:var(--line);stroke-width:2"}),
+  sv("rect", {x: RX - 18, y: RY - 2, width: 36, height: 44, rx: 8, style: "fill:var(--c1)"}),
+  sv("rect", {x: RX - 15, y: RY - 30, width: 30, height: 24, rx: 7, style: "fill:var(--c1)"}),
+  sv("circle", {cx: RX - 6, cy: RY - 19, r: 4, style: "fill:#fff"}), sv("circle", {cx: RX + 6, cy: RY - 19, r: 4, style: "fill:#fff"}),
+  sv("circle", {cx: RX - 5, cy: RY - 19, r: 1.8, style: "fill:" + DARK}), sv("circle", {cx: RX + 7, cy: RY - 19, r: 1.8, style: "fill:" + DARK}),
+  sv("line", {x1: RX + 16, y1: RY + 8, x2: RX + 24, y2: RY - 16, style: "stroke:var(--c1);stroke-width:6;stroke-linecap:round"}),
+  sv("circle", {cx: RX - 9, cy: RY + 48, r: 6, style: "fill:" + DARK}), sv("circle", {cx: RX + 9, cy: RY + 48, r: 6, style: "fill:" + DARK}));
+const ball = sv("circle", {cx: RX + 24, cy: RY - 20, r: 9, style: "fill:var(--c2);stroke:" + DARK + ";stroke-width:1.5"});
+gBall.append(ball);
+const path = (i, hit) => { const [x0, y0] = [RX + 24, RY - 20], x1 = hit ? HX : HX + (i === 0 ? -70 : 40), y1 = hit ? HY : HY + (i === 0 ? 120 : 60);
+  const cxp = (x0 + x1) / 2, cyp = [HY + 10, HY - 120, HY - 60][i]; return t => [(1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cxp + t * t * x1, (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * cyp + t * t * y1]; };
+function fly(i, hit, done) {
+  const p = path(i, hit);
+  if (reduced()) { const [x, y] = p(1); ball.setAttribute("cx", x); ball.setAttribute("cy", y); done(); return; }
+  const t0 = performance.now(), T = 520;
+  const f = now => { const t = Math.min(1, (now - t0) / T), [x, y] = p(t); ball.setAttribute("cx", x); ball.setAttribute("cy", y);
+    if (t < 1) requestAnimationFrame(f); else done(); };
+  requestAnimationFrame(f);
+}
+function drawBars(changed, dir) {
+  gBars.replaceChildren();
+  const pi = soft(), X0 = 150, BW = 46, GAP = 34, H = 120, Y = 236;
+  pi.forEach((p, i) => { const x = X0 + i * (BW + GAP), hgt = Math.max(2, p * H);
+    gBars.append(sv("rect", {x, y: Y - hgt, width: BW, height: hgt, rx: 4, style: `fill:var(--c${i === 1 ? 3 : i === 0 ? 5 : 2});opacity:${changed === i ? 1 : .75}`}),
+      sv("text", {x: x + BW / 2, y: Y - hgt - 7, "text-anchor": "middle", "font-size": 16, "font-weight": 700, text: p.toFixed(2)}),
+      sv("text", {x: x + BW / 2, y: Y + 22, "text-anchor": "middle", "font-size": 16, text: "style " + NAMES[i]}),
+      sv("text", {x: x + BW / 2, y: Y + 42, "text-anchor": "middle", "font-size": 13, style: "fill:var(--steel)", text: `hits ${Math.round(MU[i] * 100)}%`}));
+    if (changed === i && dir) gBars.append(sv("text", {x: x + BW + 12, y: Y - hgt + 14, "text-anchor": "middle", "font-size": 20, "font-weight": 700, style: `fill:var(${dir > 0 ? "--ok" : "--bad"})`, text: dir > 0 ? "↑" : "↓"}));
+  });
+  gBars.append(sv("text", {x: 150, y: 70, "font-size": 15, style: "fill:var(--steel)", text: "probability of each style, π(a)"}));
+}
+function throwOnce(quiet, done) {
+  const pi = soft(), u = rng(); let a = 0, acc = 0;
+  for (let i = 0; i < 3; i++) { acc += pi[i]; if (u < acc) { a = i; break; } a = i; }
+  const r = rng() < MU[a] ? 1 : 0, base = useB ? b : 0, adv = r - base;
+  th = th.map((t, k) => t + ALPHA * adv * ((k === a ? 1 : 0) - pi[k]));
+  if (useB) b = b + AB * (r - b);
+  n += 1; hits += r;
+  const after = soft();
+  const finish = () => {
+    drawBars(a, Math.sign(adv)); show();
+    if (quiet) { done && done(); return; }
+    let m = `Style <b>${NAMES[a]}</b> was drawn with probability ${pi[a].toFixed(2)} and ${r ? "hit: reward 1" : "missed: reward 0"}. `;
+    if (useB) m += `The baseline was ${f2(base)}, so the advantage is ${r} − ${f2(base)} = ${sg(adv)}: ` +
+      (adv > 0 ? `better than usual, and π(${NAMES[a]}) rises to ${after[a].toFixed(2)}.` : `worse than usual, and π(${NAMES[a]}) falls to ${after[a].toFixed(2)}.`);
+    else m += r ? `Without a baseline every hit pushes its style up, here to ${after[a].toFixed(2)}, ${a === 1 ? "the best style." : "although " + NAMES[a] + " is not the best style."}`
+                : "Without a baseline the update is 0 times the gradient: A miss teaches nothing.";
+    S.tell(m); done && done();
+  };
+  if (quiet) finish(); else fly(a, !!r, finish);
+}
+function show() { const pi = soft();
+  ro("throws", n); ro("hits", hits); ro("baseline b", useB ? f2(b) : "off"); NAMES.forEach((x, i) => ro("π(" + x + ")", pi[i].toFixed(2))); }
+function reset() { th = [0, 0, 0]; b = 0; rng = RNG(3); n = 0; hits = 0; ball.setAttribute("cx", RX + 24); ball.setAttribute("cy", RY - 20); drawBars(); }
+const row = S.row();
+S.btn(row, "Throw", () => { if (!busy) { busy = true; throwOnce(false, () => { busy = false; }); } });
+S.btn(row, "20 throws", () => {
+  if (busy) return;
+  for (let i = 0; i < 20; i++) throwOnce(true);
+  const pi = soft();
+  S.tell(`After ${n} throws the policy gives style B, which hits 80 percent of the time, the probability ${pi[1].toFixed(2)}. ` +
+    (useB ? "With the baseline, a hit of a weak style counts for little and a miss of any style counts against it." : "Without the baseline only hits move the policy, so it learns from fewer throws and more noisily."));
+}, true);
+S.toggle(row, "Baseline", true, v => { useB = v; show(); S.tell(v ? "The baseline is on: Each reward is compared with the running average of the rewards so far." : "The baseline is off: The update uses the reward itself, 1 for a hit and 0 for a miss."); });
+S.btn(row, "Reset", () => { if (!busy) { reset(); show(); S.tell("All three styles have the probability 1/3 again."); } }, true);
+S.tellAt();
+const ro = S.ro(["throws", "hits", "baseline b", "π(A)", "π(B)", "π(C)"]);
+reset(); show();
+S.tell("The policy starts with the probability 1/3 for each style and does not know that style B hits most often. Press <b>Throw</b>: A style is drawn from the policy, the ball flies, and REINFORCE moves the probabilities.");
+window.SCENE_SHOT.scene = () => { reset(); for (let i = 0; i < 14; i++) throwOnce(true); throwOnce(false); };
+})();
+
+
+(function(){ const root=document.getElementById('a2'); if(!root) return;
+let eps=0.2, r0=1.0;
+legend(root.querySelector('#p-leg'),[['positive advantage, A = +1',2],['negative advantage, A = -1',3],['objective without a clip, ρ A',0]]);
+const ro=readout(root.querySelector('#p-ro'),['ratio ρ','objective, A = +1','gradient, A = +1','objective, A = -1','gradient, A = -1']);
+const sl=root.querySelector('#p-sl');
+slider(sl,{label:'Clip range epsilon',min:0.05,max:0.5,step:0.01,value:eps,fmt:v=>v.toFixed(2)},v=>{eps=v;st.redraw();});
+slider(sl,{label:'Probability ratio ρ',min:0.2,max:2,step:0.01,value:r0,fmt:v=>v.toFixed(2)},v=>{r0=v;st.redraw();});
+const L=(r,A)=>Math.min(r*A,clamp(r,1-eps,1+eps)*A);
+const G=(r,A)=>{ const d=1e-4; return (L(r+d,A)-L(r-d,A))/(2*d); };
+const st=stage(root.querySelector('#p-cv'),0.45,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const F=frame(ctx,w,hh,{x0:0.2,x1:2,y0:-2,y1:2,xlabel:'probability ratio ρ = new probability / old probability',ylabel:'objective'});
+  const xs=[]; for(let x=0.2;x<=2.0001;x+=0.01) xs.push(x);
+  polyline(ctx,xs.map(x=>[F.X(x),F.Y(x)]),C.c[0],1,[4,4]); polyline(ctx,xs.map(x=>[F.X(x),F.Y(-x)]),C.c[0],1,[4,4]);
+  polyline(ctx,xs.map(x=>[F.X(x),F.Y(L(x,1))]),C.c[2],2.4); polyline(ctx,xs.map(x=>[F.X(x),F.Y(L(x,-1))]),C.c[3],2.4);
+  [[1-eps],[1+eps]].forEach(([x])=>polyline(ctx,[[F.X(x),F.Y(-2)],[F.X(x),F.Y(2)]],C.steel,1,[2,3]));
+  dot(ctx,F.X(r0),F.Y(L(r0,1)),5,C.c[2],C.ink); dot(ctx,F.X(r0),F.Y(L(r0,-1)),5,C.c[3],C.ink);
+  ro('ratio ρ',r0.toFixed(2)); ro('objective, A = +1',L(r0,1).toFixed(2)); ro('gradient, A = +1',G(r0,1).toFixed(2));
+  ro('objective, A = -1',L(r0,-1).toFixed(2)); ro('gradient, A = -1',G(r0,-1).toFixed(2)); });
+})();
+</script>
+</div></body></html>

@@ -1,0 +1,658 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Value-Based Methods | Reinforcement Learning and Language Model Alignment</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><style>:root{
+  --ink:#1B2A38; --paper:#F3F5F0; --panel:#FFFFFF; --steel:#56656F; --line:#D2DAD0; --grid:#E4EAE2;
+  --accent:#0E7A78; --ok:#2E8B57; --bad:#B53F2E; --band:rgba(14,122,120,.09);
+  --c1:#1F5F8B; --c2:#C98510; --c3:#2E8B57; --c4:#8B3F82; --c5:#B53F2E;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --head:'Barlow Semi Condensed','Arial Narrow','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E3EAEE; --paper:#0F171D; --panel:#16222A; --steel:#9DB0B9; --line:#2A3B45; --grid:#1B2A33;
+  --accent:#4FC2BE; --ok:#63C08E; --bad:#E58372; --band:rgba(79,194,190,.12);
+  --c1:#6FB0DA; --c2:#E6A83F; --c3:#63C08E; --c4:#CC8CC3; --c5:#E58372;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--c1);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding:26px 20px 64px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+header.top .course{margin:0;color:var(--steel);font-size:.93rem}
+header.top h1{font-family:var(--head);font-weight:600;font-size:clamp(1.8rem,4.2vw,2.7rem);line-height:1.08;margin:.3rem 0 .45rem;letter-spacing:.005em}
+header.top .who{margin:0;font-size:.9rem;color:var(--steel)}
+header.top nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px}
+header.top nav a{font-size:.95rem}
+h2{font-family:var(--head);font-weight:600;font-size:1.7rem;line-height:1.15;margin:2rem 0 .55rem}
+h3{font-family:var(--head);font-weight:600;font-size:1.28rem;margin:1.4rem 0 .4rem}
+p,li{max-width:72ch}
+.small{font-size:.87rem;color:var(--steel)}
+code,pre{font-family:var(--mono);font-size:.86em}
+code{background:var(--band);padding:.08em .3em;border-radius:3px}
+p,li{overflow-wrap:break-word}
+p code,li code,td code,p.small a{overflow-wrap:anywhere}
+pre{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c1);padding:12px 14px;overflow-x:auto;border-radius:4px;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1.1rem 0;padding:.6rem 1rem;border-left:4px solid var(--c2);background:var(--panel);border-radius:0 4px 4px 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem;background:var(--panel)}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--band)}
+.tablewrap{overflow-x:auto}
+img{max-width:100%;height:auto}
+figure{margin:1.3rem 0}
+figure img{border:1px solid var(--line);border-radius:4px;background:#fff}
+figcaption{font-size:.87rem;color:var(--steel);margin-top:.35rem}
+button,select,input{font:inherit}
+select{padding:.3rem .45rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);max-width:100%}
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:.42rem .9rem;cursor:pointer}
+.btn:hover{background:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.ctl{display:flex;flex-direction:column;gap:2px;min-width:170px;flex:1}
+.ctl label{font-size:.86rem;color:var(--steel)}
+.ctl output{font-family:var(--mono);font-size:.85rem;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.paper{background-color:var(--panel);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:12px 12px;border:1px solid var(--line);border-radius:4px;display:block;width:100%;touch-action:none}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 9px;font-size:.86rem}
+.readout b{display:block;font-family:var(--mono);font-size:1.05rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem;color:var(--steel)}
+.legend i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);flex-wrap:wrap;margin-top:8px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:.5rem .85rem;cursor:pointer;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.tabpanel[hidden]{display:none}
+.kc{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 14px;margin:1.2rem 0}
+.kc .q{font-weight:700;margin:0 0 6px}
+.kc label{display:block;padding:3px 0;cursor:pointer}
+.kc .fb{margin-top:6px;font-size:.93rem}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.conf{display:flex;gap:10px;flex-wrap:wrap;font-size:.86rem;color:var(--steel);margin-top:4px}
+.anim{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin:1.3rem 0}
+.anim h4{font-family:var(--head);font-size:1.12rem;margin:0 0 6px}
+.lec-tools{position:sticky;top:0;z-index:5;background:var(--paper);padding:6px 0;border-bottom:1px solid var(--line)}
+.lec-prog{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--steel)}
+.lec-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.lec-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.cite{cursor:pointer;color:var(--c1);border-bottom:1px dotted var(--c1)}
+.pop{position:absolute;z-index:20;max-width:420px;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.18);padding:10px 12px;border-radius:6px;font-size:.86rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{min-height:110px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;cursor:pointer;font-size:.93rem}
+.card .b{display:none;color:var(--steel)} .card.flip .f{display:none} .card.flip .b{display:block}
+.pycorner{background:var(--panel);border:1px dashed var(--c1);border-radius:6px;padding:4px 16px 8px;margin:1.3rem 0}
+.disc td:first-child{white-space:nowrap;font-weight:700}
+footer.sig{margin-top:48px;border-top:2px solid var(--ink);padding-top:14px;font-size:.84rem;color:var(--steel)}
+footer.sig p{max-width:none}
+.weeks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:14px 0}
+.wk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c1);border-radius:4px;padding:10px 12px}
+.wk h3{margin:.1rem 0 .3rem;font-size:1.12rem}
+.wk .n{font-family:var(--head);color:var(--steel);font-size:.9rem}
+.wk .links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.88rem;margin-top:6px}
+.wk .done{font-size:.8rem;color:var(--ok)}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:center}
+.hero canvas{width:100%;height:auto}
+@media (max-width:720px){.hero{grid-template-columns:1fr}.ctl{min-width:140px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.lec-tools,.tabs,nav,.btn{display:none}}
+
+.callout{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin:14px 0;border-radius:4px}
+.callout b.t{display:block;margin-bottom:4px;color:var(--accent)}
+.eq{overflow-x:auto;margin:10px 0;text-align:center}
+.anim{margin:16px 0}
+details.ans{margin:4px 0 14px}
+/* Colab call-to-action boxes inside the lecture */
+.colabbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line,#d9dccf);border-left:5px solid #f9ab00;background:var(--panel,#fff);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn img{display:block;height:22px}
+.colabpart{margin:.8rem 0 0;font-size:.95rem}
+/* Step-by-step calculators of the lab */
+.labpart{scroll-margin-top:10px}
+h3[id]{scroll-margin-top:10px}
+.stepcalc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:12px 0;outline:none}
+.stepcalc .bench{margin:0 0 10px}
+.sc-presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}
+.sc-presets .btn{font-size:.86rem;padding:.22rem .6rem}
+ol.sc-steps{list-style:none;margin:8px 0 0;padding:0}
+ol.sc-steps li{max-width:none;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0;background:var(--paper)}
+ol.sc-steps li.cur{border-left-color:var(--accent);background:var(--panel);box-shadow:0 1px 8px rgba(0,0,0,.07)}
+ol.sc-steps li.new{animation:scin .35s ease}
+ol.sc-steps li.chg .sc-m{animation:scflash .9s ease}
+.sc-st{font-weight:700;font-size:.97rem}
+.sc-st .sc-n{display:inline-block;min-width:4.2em;color:var(--accent);font-family:var(--head);font-weight:600}
+.sc-x{font-size:.93rem;color:var(--steel);margin:3px 0;max-width:none}
+.sc-x p{margin:.2rem 0;max-width:none}
+.sc-m{overflow-x:auto;overflow-y:hidden;margin:4px 0;padding:2px 0;border-radius:4px;font-size:1.04em}
+.sc-m mjx-container[display="true"]{margin:.35em 0!important}
+.sc-q{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;font-size:.93rem}
+.sc-q label{font-weight:600}
+.sc-q input{width:7.5rem;padding:.25rem .4rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}
+.sc-ok{font-size:.86rem;color:var(--ok);font-weight:600}
+.sc-nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.sc-nav .sc-count{margin-left:auto;font-size:.88rem;color:var(--steel)}
+.sc-dots{display:flex;gap:4px;width:100%}
+.sc-dots i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.sc-dots i.on{background:var(--accent)}
+.sc-score{margin:.2rem 0 0}
+code.tex{font-size:.8rem;white-space:pre-wrap;word-break:break-word}
+@keyframes scin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes scflash{from{background:var(--band)}to{background:transparent}}
+/* Boxes in the lecture that open a part of the interactive lab */
+.labbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--panel);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.labbox p{margin:0}
+.labbox a.btn{white-space:nowrap;text-decoration:none;font-size:.9rem}
+@media (max-width:560px){.labbox,.colabbox{flex-direction:column;align-items:flex-start}}
+/* Interactive scenes of the lecture pages: a small drawing, buttons and a line that tells what happened */
+.scene{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c2);border-radius:10px;padding:12px 14px;margin:1.4rem 0}
+.scene>p.small{margin:0 0 4px}
+.scene .sn-svg{display:block;width:100%;max-width:560px;height:auto;margin:6px auto 2px}
+.scene svg text{font-family:var(--sans);fill:var(--ink)}
+.scene svg .sn-t{transition:transform .28s ease}
+.sn-btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;align-items:center}
+.sn-btns .btn{font-size:.9rem;padding:.34rem .75rem;min-height:2.15rem;line-height:1.25}
+.sn-btns .btn[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--ink)}
+.sn-btns .btn.ghost[aria-pressed=true]{background:var(--band);border-color:var(--accent);color:var(--ink)}
+.sn-lab{font-size:.84rem;color:var(--steel);margin-right:2px}
+.sn-say{min-height:3.3em;margin:6px 0 4px;padding:7px 11px;border-radius:8px;background:var(--band);font-size:.95rem;max-width:none}
+.sn-ro{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.86rem;color:var(--steel);margin:4px 0 0}
+.sn-ro b{font-family:var(--mono);color:var(--ink);font-weight:600;font-size:.84rem}
+.sn-pad{display:inline-grid;grid-template-columns:repeat(3,2.7rem);gap:4px;margin-right:10px}
+.sn-pad .btn{padding:.3rem 0;min-width:0}
+.sn-loop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:.86rem;margin:6px 0 2px;color:var(--steel)}
+.sn-node{border:1px solid var(--line);border-radius:999px;padding:.08rem .6rem;background:var(--paper);color:var(--ink);transition:background .2s,border-color .2s}
+.sn-loop .on{border-color:var(--accent);background:var(--band)}
+.sn-loop b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.scene .sn-pop{animation:snpop 1.1s ease forwards}
+@keyframes snpop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+.sn-box:focus{outline:none}
+.sn-box:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.sn-note{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:6px 10px;margin:6px 0;font-family:var(--mono);font-size:.84rem}
+.sn-note-h{font-family:var(--sans);font-size:.84rem;color:var(--steel);margin-bottom:2px}
+.sn-note-l{overflow-wrap:anywhere}
+.sn-cards{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.sn-card{flex:1 1 180px;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--paper);transition:border-color .2s,box-shadow .2s}
+.sn-card .sn-pos{display:block;font-size:.8rem;color:var(--steel)}
+.sn-card .sn-txt{font-family:var(--mono);font-size:.88rem;overflow-wrap:anywhere}
+.sn-card.win{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.sn-card.tie{border-color:var(--c2)}
+.sn-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:6px 0;background:var(--panel)}
+.sn-table th,.sn-table td{border:1px solid var(--line);padding:3px 6px;text-align:right}
+.sn-table th{background:var(--band);font-weight:600}
+.sn-table td.mv{background:var(--band);transition:background .3s}
+.sn-table td.ok{color:var(--ok);font-weight:700;text-align:center}
+.sn-table td.bad{color:var(--bad);font-weight:700;text-align:center}
+.sn-table td:first-child,.sn-table th:first-child{text-align:left}
+/* Theme layer of the Vel Tech courses, applied on top of style.css. */
+:root{
+  --ink:#1C2333; --paper:#F4F6FB; --panel:#FFFFFF; --steel:#5A6478; --line:#D5DAE7; --grid:#E7EAF3;
+  --ok:#23946B; --bad:#C9473B;
+  --c1:#2A5BD7; --c2:#D4870B; --c3:#23946B; --c4:#8E4BA8; --c5:#C9473B;
+  --sans:'Source Sans 3','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --head:'Lexend','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E4E8F2; --paper:#11151F; --panel:#1A2030; --steel:#A3ACC2; --line:#2C3448; --grid:#1F2638;
+  --ok:#5CC796; --bad:#EE8A7E;
+  --c1:#7FA2F5; --c2:#F0B34A; --c3:#5CC796; --c4:#C79BDA; --c5:#EE8A7E;
+}}
+body{font-size:17.5px;line-height:1.6}
+header.top{border:1px solid var(--line);border-top:6px solid var(--accent);border-radius:12px;background:var(--panel);
+  padding:16px 20px 14px;margin-bottom:26px;box-shadow:0 1px 2px rgba(20,30,60,.05)}
+header.top h1{font-weight:600;letter-spacing:-.01em}
+header.top nav a{background:var(--band);padding:.12rem .55rem;border-radius:999px;text-decoration:none;color:var(--accent);font-weight:600;font-size:.9rem}
+header.top nav a:hover{background:var(--accent);color:var(--panel)}
+h2{font-weight:600;letter-spacing:-.005em}
+h2::after{content:"";display:block;width:46px;height:3px;border-radius:2px;background:var(--accent);margin-top:7px}
+h3{font-weight:600}
+a{color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border-radius:8px}
+.btn:hover{background:var(--ink)}
+.btn.ghost{border-radius:8px}
+.bench,.kc,.card,pre,table,.readout div{border-radius:10px}
+.kc{border-radius:0 10px 10px 0}
+.readout div{background:var(--band)}
+.tabs button[aria-selected=true]{color:var(--accent)}
+th{background:var(--band)}
+blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
+/* Colab call-to-action boxes and links */
+.colabbox{display:flex;gap:.9rem;align-items:center;border:1px solid var(--line);border-left:5px solid #F9AB00;
+  background:var(--panel);border-radius:10px;padding:.7rem 1rem;margin:1.2rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn{flex:0 0 auto;line-height:0}
+.colabbox .colabbtn img,.colabpart img{height:20px;width:auto;max-width:none;display:inline-block;vertical-align:middle}
+.colabpart{margin:.9rem 0 0;font-size:.95rem}
+.colabpart a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;font-weight:600}
+/* Readable buttons: the accent of the dark scheme is light, so buttons on it carry dark text, and a ghost button
+   under the pointer gets a light tint instead of the ink colour */
+.btn.ghost:hover{background:var(--band)}
+@media (prefers-color-scheme:dark){.btn,.btn:hover{color:#111827}}
+:root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"global"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><div class="wrap">
+<header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 2 of 5</p><h1>Value-Based Methods</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-02">Day overview</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb">Colab notebook</a><a href="lab.html">Interactive lab</a><a href="Day02_Lecture_Notes.pdf">PDF notes</a></nav></header>
+<div class="lec-tools"><div class="lec-prog"><span class="lec-bar"><i></i></span><span class="lec-txt" aria-live="polite"></span></div></div>
+<article class="lecture"><h2 id="overview">Overview</h2>
+<p>Day 1 solved problems whose transitions were known. In practice an agent rarely has such a model; it must learn from its own experience. This day covers the methods that learn values directly from experience: Monte Carlo methods, which wait for the end of an episode, temporal difference learning, which learns from each step <span class="cite" tabindex="0" data-refs="1">[1]</span>, and two control methods. These are SARSA, named after the state, action, reward, state and action that one of its updates uses <span class="cite" tabindex="0" data-refs="2">[2]</span>, and Q-learning <span class="cite" tabindex="0" data-refs="3">[3]</span>, and they differ in one detail with large consequences near a cliff. The day ends with a deep Q-network, whose two engineering ideas, replay and a target network <span class="cite" tabindex="0" data-refs="4,5">[4, 5]</span>, are tested by removing them.</p><h2 id="day-at-a-glance">Day at a glance</h2>
+<pre class="mermaid">flowchart LR
+  A[&quot;Learning without a model&quot;] --&gt; B[&quot;Monte Carlo and temporal differences&quot;]
+  B --&gt; C[&quot;SARSA and Q-learning&quot;]
+  C --&gt; D[&quot;The cliff&quot;]
+  D --&gt; E[&quot;Deep Q-networks&quot;]
+  E --&gt; S[&quot;TokenWorld, stage 2&quot;]
+  S --&gt; F[&quot;Your field&quot;]
+  F --&gt; G[&quot;Python step 2&quot;]</pre><div class="callout"><b class="t">Python code of this day</b><p>Every method on this page is also written as Python code in the <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb" target="_blank" rel="noopener">Colab notebook of the day</a>. A Colab notebook is a document of text and Python code that runs in the web browser, with nothing to install. Its code is divided into numbered sections. Each orange box on this page names the section whose code carries out what the text above the box explains. The box says what to run and what to look at in that section, and its button opens the notebook at that place. The practice parts and the self-assessment of the day are in the <a href="lab.html">interactive lab</a>.</p></div><h2 id="learning-without-a-model">Learning without a model</h2><div class="callout"><b class="t">TokenWorld so far</b><p>Day 1 described TokenWorld, the project of the course, as a Markov decision process: An agent writes a sentence of at most four tokens from the vocabulary <code>the</code>, <code>cat</code>, <code>sat</code> and <code>&lt;eos&gt;</code>, the end-of-sentence token, and the finished sentence earns a reward by fixed rules. Because the rules were known, value iteration solved TokenWorld exactly. The best sentence, <code>the cat sat &lt;eos&gt;</code>, earns 2.75, and a policy that writes at random earns \(-0.49\) on average.</p><p>This day takes the rules away. The agent no longer knows where a token leads or what a sentence will earn: It can only write sentences and observe their rewards. The day measures how close methods that learn from such experience come to the optimum of Day 1, which remains the scoreboard of every experiment. Its last part replaces the table of values by a neural network, the first step towards the language model of Day 4.</p></div><p>Day 1 described a decision problem as a Markov decision process, abbreviated MDP: states, actions, transition probabilities, rewards and a discount factor. The transition probabilities and the rewards together are called the model of the environment. Value iteration needs the model, because each of its updates sums over all possible next states. Methods that compute values from a model are called dynamic programming. A learning agent has no model: It can only act and observe, and its experience is a stream of states, actions, rewards and next states. Without a model, values are estimated from experience.</p><p>The symbols are those of Day 1. At step \(t\) the agent is in the state \(s_t\), takes the action \(a_t\) and receives the reward \(r_{t+1}\) and the next state \(s_{t+1}\). Its policy \(\pi(a \mid s)\) is the probability of taking action \(a\) in state \(s\). An episode is one run from the start to an end state, also called a terminal state. The return \(G_t\) adds up the rewards after step \(t\), each multiplied by a power of the discount factor \(\gamma\). The value of a state is the return that the agent can expect from it under its policy:</p><div class="eq">\[\begin{aligned} G_t &amp;= r_{t+1} + \gamma\, r_{t+2} + \gamma^2 r_{t+3} + \cdots \\[4pt] V^{\pi}(s) &amp;= \mathbb{E}_{\pi}\left[\, G_t \mid s_t = s \,\right] \end{aligned}\]</div><p>The sign \(\mathbb{E}_{\pi}\) is the average over everything that can happen while the agent follows \(\pi\), and the vertical bar reads <em>given</em>. Finding \(V^{\pi}\) for a given policy is called policy evaluation. The agent keeps a table with one estimate per state. An estimate is marked with a hat: \(\hat{V}(s)\) is the number in the table, and \(V^{\pi}(s)\) is the exact value that it should approach. A method that produces such estimates from data is called an estimator.</p><p>Every method of this day changes an estimate in the same way. It computes a target, a number that the estimate should come closer to, and moves the estimate a part of the way towards it:</p><div class="eq">\[\text{new estimate} = \text{old estimate} + \alpha \left( \text{target} - \text{old estimate} \right)\]</div><p>The number \(\alpha\) lies between 0 and 1 and is called the step size or learning rate. With \(\alpha = 0.1\) the estimate moves one tenth of the way to the target. The methods of the day differ in the target.</p><p><strong>Monte Carlo.</strong> A Monte Carlo method plays an episode to its end and moves the value of each visited state towards the return that actually followed. Its target is the return \(G_t\):</p><div class="eq">\[\hat{V}(s_t) \leftarrow \hat{V}(s_t) + \alpha \left[\, G_t - \hat{V}(s_t) \,\right]\]</div><p>The arrow reads <em>is replaced by</em>. The update is made for every state of the episode, after the episode has ended, because \(G_t\) is not known earlier. The name Monte Carlo stands for methods that estimate an average from random samples, here from complete episodes.</p><p><strong>Temporal differences.</strong> A temporal difference (TD) method does not wait: After each step it moves the value of the state towards the reward plus the discounted value of the next state, an estimate built on another estimate <span class="cite" tabindex="0" data-refs="1">[1]</span>. The difference between this target and the old estimate is written \(\delta_t\), with the Greek letter delta:</p><div class="eq">\[\begin{aligned} \delta_t &amp;= r_{t+1} + \gamma\, \hat{V}(s_{t+1}) - \hat{V}(s_t) \\[4pt] \hat{V}(s_t) &amp;\leftarrow \hat{V}(s_t) + \alpha\, \delta_t \end{aligned}\]</div><p>The target is \(r_{t+1} + \gamma \hat{V}(s_{t+1})\), and \(\delta_t\) is called the temporal difference error or TD error. When \(s_{t+1}\) is terminal, nothing follows it, and the target is the reward alone. Building an estimate on another estimate is called bootstrapping. The figures label this method TD(0): The zero says that the target looks one step ahead before it bootstraps.</p><p>The TD target rests on the Bellman equation of a policy <span class="cite" tabindex="0" data-refs="8">[8]</span>: The value of a state is the expected reward of the next step plus the discounted value of the state that follows.</p><div class="eq">\[V^{\pi}(s) = \sum_{a} \pi(a \mid s) \sum_{s&#x27;} P(s&#x27; \mid s, a)\,\left[ r(s, a, s&#x27;) + \gamma V^{\pi}(s&#x27;) \right]\]</div><p>Here \(P(s&#x27; \mid s, a)\) is the probability that action \(a\) in state \(s\) leads to the next state \(s&#x27;\), and \(r(s, a, s&#x27;)\) is the reward of that step. The two sums, written with the sign \(\sum\), average over the action that the policy chooses and over the state that follows. With a model, the right-hand side can be computed, which is how the exact values that score the estimates of this day are obtained. Without a model, one step of experience gives one sample of the bracket, with \(\hat{V}\) in place of the unknown \(V^{\pi}\), and TD takes this sample as its target.</p><p>Monte Carlo is unbiased but noisy; TD is less noisy but starts from biased guesses. Unbiased means right on average: The mean of many returns from a state is its value. Noisy means that a single return can lie far from this mean, because it depends on every random choice until the end of the episode. A TD target depends on one step and varies less, but it contains the estimate of the next state, which is wrong at the beginning. This systematic error is called bias.</p><div class="callout"><b class="t">In everyday life: waiting for the result or updating on the way</b><p>Someone who drives home every evening estimates how long the trip will take. A Monte Carlo driver changes the estimate only after arriving, from the total time of the trip. A temporal difference driver changes it on the way: When a traffic jam at the first junction costs ten minutes, the estimate for the whole trip goes up at once, long before the trip ends. Sutton and Barto use this example to introduce temporal difference learning <span class="cite" tabindex="0" data-refs="1">[1]</span>.</p></div><div class="callout"><b class="t">Worked example: one episode, two updates</b><p>All estimates are zero, \(\alpha = 0.05\) and \(\gamma = 1\). The agent writes the sentence <code>the cat sat &lt;eos&gt;</code> of TokenWorld and visits four states: the empty sentence, <code>the</code>, <code>the cat</code> and <code>the cat sat</code>. Its first three steps have a reward of 0 and the last step a reward of 2.75, so the return from each of the four states is \(0 + 0 + 0 + 2.75 = 2.75\).</p><p>Monte Carlo moves each of the four estimates towards this return: \(0 + 0.05 \times (2.75 - 0)\)​\({} = 0.05 \times 2.75\)​\({} = 0.1375\). TD updates the four states in the order of the episode. For the first three, the target is the reward 0 plus the estimate of the next state, which is still 0, so the TD error is \(0 + 0 - 0 = 0\) and nothing changes. For <code>the cat sat</code> the next state is terminal, so the target is the reward 2.75, the TD error is \(2.75 - 0 = 2.75\), and the estimate becomes \(0 + 0.05 \times 2.75 = 0.1375\).</p><p>After a second episode with the same sentence, Monte Carlo holds \(0.1375\)​\({} + 0.05 \times (2.75 - 0.1375)\)​\({} = 0.1375 + 0.05 \times 2.6125\)​\({} = 0.1375 + 0.1306\)​\({} = 0.2681\) for all four states. TD gives <code>the cat</code> the target \(0 + 0.1375\), so its estimate becomes \(0 + 0.05 \times 0.1375\)​\({} = 0.0069\), and <code>the cat sat</code> reaches \(0.1375\)​\({} + 0.05 \times (2.75 - 0.1375)\)​\({} = 0.2681\), like Monte Carlo. The first two states stay at zero: The final reward travels back by one state per episode.</p></div><div class="labbox"><a class="btn" href="lab.html#pd" target="_blank" rel="noopener">Open lab Part D</a><p><b>Interactive lab, Part D.</b> The two updates of this worked example for up to six episodes, with sliders for the step size and the final reward. A figure compares the four estimates of Monte Carlo and TD after each episode.</p></div><p>In the project, the two estimators evaluate one policy of TokenWorld. The state is the sentence written so far, called a prefix while it is unfinished, and the action is the next token. An episode ends with <code>&lt;eos&gt;</code> or with the fourth token. Every reward is zero except the last one, which scores the finished sentence by the rules of the <a href="https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-01/lecture.html#markov-decision-processes" target="_blank" rel="noopener">reward table of Day 1</a>, and nothing is discounted, \(\gamma = 1\). TokenWorld has 161 states, of which 40 are prefixes: the empty sentence and 3, 9 and 27 prefixes of one, two and three words.</p><p>The best sentence, <code>the cat sat &lt;eos&gt;</code>, starts with <code>the</code>, contains <code>cat</code> once and has <code>sat</code> after it, and each of its three words costs 0.25: It earns \(1.0 + 1.5 + 1.0 - 3 \times 0.25\)​\({} = 2.75\). This exact optimum of Day 1 is the scoreboard of the day.</p><p>The policy that produces the episodes, the behaviour policy, writes the best next token with probability 0.7375 and each other token with probability 0.0875. Its exact value at the empty sentence is 1.38. Both estimators learn from the same 3000 episodes with \(\alpha = 0.05\), and the experiment is repeated with ten seeds. A seed is the number that starts the random number generator, so ten seeds give ten different runs. A table of estimates is scored by its root mean square error, abbreviated RMSE, over the \(n = 40\) prefixes:</p><div class="eq">\[\mathrm{RMSE} = \sqrt{\frac{1}{n} \sum_{s} \left( \hat{V}(s) - V^{\pi}(s) \right)^2}\]</div><p>Each error is squared, the squares are averaged, and the root brings the result back to the unit of the values. A table of zeros, the start of both methods, has an RMSE of 1.25.</p><div class="callout"><b class="t">Worked example: the exact value of the behaviour policy</b><p>The exact values come from the Bellman equation of the policy, applied from the end of the sentence backwards. The value of a prefix adds, for each of the four tokens, its probability times what follows it: the reward when the token ends the sentence, otherwise the value of the longer prefix. Products are written in full, and each value is rounded to three decimals before it is used.</p><p>After <code>the cat sat</code> every token ends the episode. The best token <code>&lt;eos&gt;</code> is written with probability 0.7375 and earns 2.75. The tokens <code>the</code>, <code>cat</code> and <code>sat</code> are written with probability 0.0875 each and earn 2.50, 0.20 and 2.50. The value of this prefix is \(0.7375 \times 2.75\)​\({} + 0.0875 \times (2.50 + 0.20 + 2.50)\), which is \(2.028125 + 0.0875 \times 5.20\)​\({} = 2.028125 + 0.455\)​\({} = 2.483\).</p><p>After <code>the cat the</code>, the best token <code>sat</code> earns 2.50, and the other three earn 1.50, \(-0.80\) and 1.75, which add up to 2.45. The value is \(0.7375 \times 2.50\)​\({} + 0.0875 \times 2.45\)​\({} = 1.84375 + 0.214375\)​\({} = 2.058\). After <code>the cat cat</code>, the best token <code>sat</code> earns 0.20, and the other three earn \(-0.80\), \(-1.60\) and \(-0.55\), together \(-2.95\). The value is \(0.7375 \times 0.20\)​\({} + 0.0875 \times (-2.95)\)​\({} = 0.1475 - 0.258125\)​\({} = -0.111\).</p><p>One step earlier, after <code>the cat</code>, the best token <code>sat</code> leads to the value 2.483, the tokens <code>the</code> and <code>cat</code> lead to 2.058 and \(-0.111\), and <code>&lt;eos&gt;</code> ends the sentence with the reward 2.00. The value is \(0.7375 \times 2.483\)​\({} + 0.0875 \times (2.058 - 0.111 + 2.00)\). Its two terms are 1.8312125 and \(0.0875 \times 3.947\)​\({} = 0.3453625\), and their sum is 2.177.</p><p>The same rule gives the values of the other prefixes, listed in the table. At <code>the</code>, the best token <code>cat</code> leads to 2.177, and the value is \(0.7375 \times 2.177\)​\({} + 0.0875 \times (1.692 + 1.268 + 0.25)\)​\({} = 1.6055375 + 0.280875\)​\({} = 1.886\). At the empty sentence, the best token <code>the</code> leads to 1.886, and the value is \(0.7375 \times 1.886\)​\({} + 0.0875 \times (0.870 - 0.021 - 1.00)\)​\({} = 1.390925 - 0.0132125\)​\({} = 1.378\). The policy earns 1.38 on average, half of the optimum of 2.75, because every exploring token can spoil the sentence.</p></div><div class="tablewrap"><table><thead><tr><th>Prefix</th><th>Best next token</th><th>Value under the behaviour policy</th></tr></thead><tbody><tr><td><code>the cat sat</code></td><td><code>&lt;eos&gt;</code></td><td>2.483</td></tr><tr><td><code>the cat the</code></td><td><code>sat</code></td><td>2.058</td></tr><tr><td><code>the cat cat</code></td><td><code>sat</code></td><td>\(-0.111\)</td></tr><tr><td><code>the cat</code></td><td><code>sat</code></td><td>2.177</td></tr><tr><td><code>the the</code></td><td><code>cat</code></td><td>1.692</td></tr><tr><td><code>the sat</code></td><td><code>cat</code></td><td>1.268</td></tr><tr><td><code>the</code></td><td><code>cat</code></td><td>1.886</td></tr><tr><td><code>cat</code></td><td><code>sat</code></td><td>0.870</td></tr><tr><td><code>sat</code></td><td><code>cat</code></td><td>\(-0.021\)</td></tr><tr><td>(empty)</td><td><code>the</code></td><td>1.378</td></tr></tbody></table></div><p>After 100, 500 and 3000 episodes the mean error of Monte Carlo is 0.99, 0.81 and 0.59, and that of TD is 1.05, 0.85 and 0.61. Monte Carlo is ahead in each of the ten seeds. The figure that this code draws shows both error curves with a band from the 10th to the 90th percentile, the values below which 10 and 90 percent of the seeds fall. Two facts explain the result. The single reward comes at the end, so TD has to wait until it has travelled back through the prefixes, as in the worked example. And the behaviour policy writes 26 of the 40 prefixes in fewer than one episode out of a hundred. Their estimates stay close to zero and carry most of the error, and a TD target built on such a prefix inherits its error. On the 14 prefixes that are written often, the two methods are almost equally accurate, with errors of about 0.13 and 0.12.</p><p>The opposite case is the random walk of the animation. Five states in a row are named A to E, and every episode starts in the middle state C. At each step the agent moves one state to the left or to the right, each with probability one half, so there is no choice and the policy is fixed. The episode ends when the agent leaves the row. Leaving on the right, beyond E, gives a reward of 1, every other step a reward of 0, and nothing is discounted. The value of a state is therefore the probability of leaving on the right: \(1/6\), \(2/6\), \(3/6\), \(4/6\) and \(5/6\) for A to E. An episode lasts 9 steps on average, and its return is 0 or 1 like the toss of a coin. Both tables start at 0.5 for every state.</p><div class="anim" id="a1"><p class="small"><strong>Animation.</strong> Monte Carlo and TD learning on the five-state random walk, averaged over 40 runs. The lines show the mean estimates next to the true values, and the readout shows the RMSE of each method. Change the step size and the number of episodes and compare the errors.</p><div class="row" id="w-sl"></div><canvas class="paper" id="w-cv" aria-label="Monte Carlo and TD on a random walk"></canvas><div class="legend" id="w-leg"></div><div id="w-ro"></div></div><p>With the default step size of 0.1 and 100 episodes, the readout shows an RMSE of 0.160 for Monte Carlo and 0.052 for TD. A return of 0 or 1 is a noisy target for a state whose value is one half, and with a constant step size this noise never averages out. The TD target of the middle state is the estimate of a neighbour, close to \(1/3\) or \(2/3\), and varies three times less. The bias of TD shows at the smallest step size, 0.01. After 100 episodes its estimates for B and D are 0.45 and 0.55, still close to the starting value, and Monte Carlo is ahead with 0.096 against 0.128.</p><p>Which one learns faster depends on the problem: On TokenWorld, whose reward comes only at the end, Monte Carlo wins; on a random walk with many steps, TD wins. The structure of a problem suggests the winner. Long episodes with many random steps make returns noisy and favour TD. A single reward at the end of a short episode and many rarely visited states favour Monte Carlo, because TD waits for the reward to travel back and builds its targets on poor estimates. A measurement against exact values decides.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 2.</b> Open Section 2 of the Colab notebook and run it. The function <code>behaviour_policy</code> defines the policy that is evaluated, the loop under the comment <code>ground truth</code> computes its exact values, and the function <code>evaluate_mc_td</code> contains the two updates of this section. The cell prints the error of both methods after 100, 500 and 3000 episodes and draws the two error curves.</p></div><div class="kc" data-answer="1" data-why="It bootstraps from its own estimate of the next state."><p class="q">Check your understanding. What does a temporal difference update use instead of the full return?</p><label><input type="radio" name="KC0" value="0"> Nothing</label><label><input type="radio" name="KC0" value="1"> The reward of one step plus the discounted value estimate of the next state</label><label><input type="radio" name="KC0" value="2"> The optimal value</label><label><input type="radio" name="KC0" value="3"> A model</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><div class="kc" data-answer="1" data-why="The TD error is \(0 + 0.90 - 0.40 = 0.50\), and one tenth of it is added: \(0.40 + 0.1 \times 0.50 = 0.45\)."><p class="q">Check your understanding. A state has the estimate 0.40. One step gives a reward of 0 and leads to a state with the estimate 0.90. With \(\gamma = 1\) and \(\alpha = 0.1\), what is the estimate of the first state after a TD update?</p><label><input type="radio" name="KC1" value="0"> 0.41</label><label><input type="radio" name="KC1" value="1"> 0.45</label><label><input type="radio" name="KC1" value="2"> 0.50</label><label><input type="radio" name="KC1" value="3"> 0.90</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="sarsa-and-q-learning">SARSA and Q-learning</h2><p>Evaluating a given policy is one half of the problem. The other half, finding a good policy, is called control. To improve behaviour, the agent learns the values of actions, Q-values, and prefers actions with high values while still exploring. The action value \(Q^{\pi}(s, a)\) is the return that the agent can expect when it takes action \(a\) in state \(s\) and follows the policy \(\pi\) afterwards:</p><div class="eq">\[Q^{\pi}(s, a) = \mathbb{E}_{\pi}\left[\, G_t \mid s_t = s,\; a_t = a \,\right]\]</div><p>State values are not enough without a model: To choose between actions with \(V\), the agent would have to know where each action leads. A Q-table holds one estimate \(\hat{Q}(s, a)\) for every pair of a state and an action, and the action with the largest entry in the current state is called the greedy action. The action values of the best possible policy are written \(Q^*(s, a)\).</p><p>An agent that always takes the greedy action never tries the others and cannot discover that one of them is better. The epsilon-greedy rule of Day 1, written \(\varepsilon\)-greedy, therefore explores with a small probability:</p><div class="eq">\[a_t = \begin{cases} \text{an action chosen at random} &amp; \text{with probability } \varepsilon \\ \operatorname*{arg\,max}_{a}\; \hat{Q}(s_t, a) &amp; \text{with probability } 1 - \varepsilon \end{cases}\]</div><p>The symbol arg max returns the action with the largest entry. With \(K\) actions, the random choice falls on each of them with probability \(\varepsilon / K\), the greedy one included. The greedy action is therefore taken with probability \(1 - \varepsilon + \varepsilon / K\). With \(\varepsilon = 0.2\) and the four tokens of TokenWorld this is \(1 - 0.2 + 0.2 / 4\)​\({} = 0.8 + 0.05\)​\({} = 0.85\), and \(0.2 / 4 = 0.05\) remains for each other token. The behaviour policy of the comparison above is the same rule with \(\varepsilon = 0.35\) around the best tokens: \(1 - 0.35 + 0.35 / 4\)​\({} = 0.65 + 0.0875\)​\({} = 0.7375\) for the best token and \(0.35 / 4 = 0.0875\) for each other token.</p><p>Both control methods of the day apply the TD update to Q-values. The agent takes the action \(a_t\) in the state \(s_t\), receives \(r_{t+1}\) and \(s_{t+1}\), and chooses its next action \(a_{t+1}\) with the \(\varepsilon\)-greedy rule. SARSA updates towards the value of the action it will actually take next, including exploratory ones <span class="cite" tabindex="0" data-refs="2">[2]</span>:</p><div class="eq">\[\hat{Q}(s_t, a_t) \leftarrow \hat{Q}(s_t, a_t) + \alpha \left[\, r_{t+1} + \gamma\, \hat{Q}(s_{t+1}, a_{t+1}) - \hat{Q}(s_t, a_t) \,\right]\]</div><p>The name SARSA lists the five items of one update: state, action, reward, next state and next action. Q-learning updates towards the value of the best next action, whatever it actually does <span class="cite" tabindex="0" data-refs="3">[3]</span>:</p><div class="eq">\[\hat{Q}(s_t, a_t) \leftarrow \hat{Q}(s_t, a_t) + \alpha \left[\, r_{t+1} + \gamma \max_{a&#x27;} \hat{Q}(s_{t+1}, a&#x27;) - \hat{Q}(s_t, a_t) \,\right]\]</div><p>Here \(\max_{a&#x27;}\) takes the largest entry of the next state over all actions \(a&#x27;\). In both rules the bracket is a TD error, and when \(s_{t+1}\) is terminal the target is the reward alone.</p><div class="scene" id="scene"><p class="small"><strong>Scene: A mouse learns a maze.</strong> A mouse learns a maze of three rows and five columns with Q-learning, with \(\alpha = 0.5\), \(\gamma = 0.9\) and \(\varepsilon = 0.2\). The cheese pays \(+1\) and the cat costs \(-1\), both ending the episode, and every other move pays 0. Each cell shows the Q-values of its four actions as triangles, green for positive and red for negative values, with an arrow for the greedy action. The button One step prints the target and the update of a single step with their numbers, and episode by episode the values spread backwards from the cheese.</p></div><p>The policy that chooses the actions during learning is called the behaviour policy, and the policy whose values are learned is the target policy. SARSA learns about the policy it follows and is called on-policy. Q-learning learns about the greedy policy while exploring and is called off-policy. The difference between the two methods comes from exploration alone: When the next action is the greedy one, the two targets are the same number, and with \(\varepsilon = 0\) the two methods would be one. On TokenWorld with \(\varepsilon = 0.2\), for example, the first token <code>the</code> is worth 2.75 under the greedy policy and about 2.25 under the policy that keeps exploring.</p><div class="callout"><b class="t">In everyday life: planning with or without one's own mistakes</b><p>A learner driver on a mountain road knows that the steering still slips now and then, and plans for it by keeping to the lane away from the edge. This is the plan of SARSA, which learns the values of its own exploring behaviour. An experienced driver who never slips takes the faster lane next to the edge. This is the plan of Q-learning, which learns the values of the greedy behaviour and is right only once the slips have stopped.</p></div><div class="callout"><b class="t">Worked example: one step, two targets</b><p>The entry of the current state and action is \(\hat{Q}(s, a) = 1.2\), the step has a reward of 0, \(\alpha = 0.1\) and \(\gamma = 1\). In the next state the largest entry is 2.0, but the agent explores and chooses an action whose entry is 0.5.</p><p>Q-learning uses the largest entry: The target is \(0 + 1 \times 2.0 = 2.0\), the TD error is \(2.0 - 1.2 = 0.8\), and the new value is \(1.2 + 0.1 \times 0.8\)​\({} = 1.2 + 0.08\)​\({} = 1.28\). SARSA uses the chosen action: The target is \(0 + 1 \times 0.5 = 0.5\), the TD error is \(0.5 - 1.2 = -0.7\), and the new value is \(1.2 + 0.1 \times (-0.7)\)​\({} = 1.2 - 0.07\)​\({} = 1.13\). Had the agent chosen the greedy action, both methods would have written 1.28.</p></div><div class="labbox"><a class="btn" href="lab.html#pc" target="_blank" rel="noopener">Open lab Part C</a><p><b>Interactive lab, Part C.</b> One Q-learning update and one SARSA update by hand, with other numbers than in this worked example. The lab checks both values.</p></div><p>The whole algorithm is short. All entries start at zero. At the start of an episode the agent chooses an action with the \(\varepsilon\)-greedy rule. Then it repeats four things until the next state is terminal: It takes the action, observes the reward and the next state, chooses the next action, and applies the update. In the project, both methods learn TokenWorld for 4000 episodes with \(\alpha = 0.1\), \(\varepsilon = 0.2\) and \(\gamma = 1\), over ten seeds. The table has 160 entries, four tokens for each of the 40 prefixes.</p><p>Two numbers score a learned table, and both use the exact solution of Day 1. The first is the return of the greedy policy: the reward of the sentence that results when the greedy token is taken at every prefix, at best 2.75. The second is the RMSE of the 160 entries against the optimal action values \(Q^*(s, a)\). After 4000 episodes the greedy policy of Q-learning earns 2.25 on average, 82 percent of the optimum, and that of SARSA 2.55, 93 percent. The errors of the values are 1.23 and 1.22, where a table of zeros has 1.54.</p><p>Neither method has finished learning. Q-learning writes the best sentence in 2 of the 10 seeds and SARSA in 4, and most other runs have settled on a sentence that earns 2.5, such as <code>the cat the sat</code>. The large error has a plain cause: With a constant \(\varepsilon\) of 0.2 the agent mostly repeats its current sentence. In a run of Q-learning about 50 of the 160 pairs are never tried and keep their starting value of zero, and on the pairs tried at least 50 times the error is about 0.4. The last section of this lecture, Going further, gives schedules for \(\varepsilon\) and \(\alpha\) that bring Q-learning to the optimum in every seed.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 3.</b> Open Section 3 of the Colab notebook and run it. The functions <code>greedy_return</code> and <code>q_rmse</code> compute the two scores. The function <code>tabular_control</code> trains either method, and its variable <code>boot</code> is the only line in which they differ: the entry of the action chosen next for SARSA, the largest entry of the next state for Q-learning. The cell prints the return of the greedy policy and the RMSE of each method and draws both scores over the 4000 episodes.</p></div><div class="labbox"><a class="btn" href="lab.html#pb" target="_blank" rel="noopener">Open lab Part B</a><p><b>Interactive lab, Part B.</b> Six methods of Days 1 and 2 to classify: on-policy or off-policy temporal difference learning, Monte Carlo, or dynamic programming with a model.</p></div><div class="kc" data-answer="1" data-why="It learns about the greedy policy while following another."><p class="q">Check your understanding. Q-learning updates towards the best next action even when the agent explores. What is this property called?</p><label><input type="radio" name="KC2" value="0"> On-policy</label><label><input type="radio" name="KC2" value="1"> Off-policy</label><label><input type="radio" name="KC2" value="2"> Monte Carlo</label><label><input type="radio" name="KC2" value="3"> Model-based</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="the-cliff">The cliff</h2><p>The difference shows on a cliff, the grid of the Windy Cliff of Day 1, with 4 rows and 8 columns. The start is the bottom left corner, the goal is the bottom right corner, and the six cells between them are the cliff. The actions are up, down, left and right, and a move against the border leaves the agent in its cell. Every step has a reward of \(-1\), except the step that reaches the goal, which has a reward of 0 and ends the episode. A step into the cliff has a reward of \(-100\) and puts the agent back at the start. In this section the wind of Day 1 is switched off and nothing is discounted, \(\gamma = 1\), so the only source of risk is the agent's own exploration.</p><p>Two routes matter. The shortest one goes up one cell, runs along the row above the cliff and comes down at the goal: 9 steps and a return of \(-8\). A longer one climbs to the top row and needs 13 steps, a return of \(-12\). Q-learning learns the shortest path along the edge, which would be optimal if the agent never explored; while it still explores, it sometimes steps off. SARSA takes its own exploration into account and learns a path further from the edge.</p><p>Both methods run for 800 episodes with \(\alpha = 0.5\) and \(\varepsilon = 0.1\), an episode is cut off after 300 steps, and ten seeds are used. Two measures describe the result. The greedy path is the path that results when the agent takes the greedy action of the learned table in every cell. The online return is the return of an episode as it was played during learning, exploring steps and falls included, averaged over the last 100 episodes. In every seed the greedy path of Q-learning is the 9-step path along the edge, and that of SARSA is a 13-step path through the top row. The online return is \(-31.0\) for Q-learning and \(-19.1\) for SARSA. During learning, SARSA therefore collects clearly more reward, although Q-learning's final greedy path is shorter.</p><div class="callout"><b class="t">Worked example: the price of exploring next to the edge</b><p>On the path along the edge, seven cells have the cliff as a neighbour: the start and the six cells above the cliff. In each of them an exploring step ends in the cliff when the random action points at it. With \(\varepsilon = 0.1\) and four actions this happens with probability \(0.1 / 4 = 0.025\) per step.</p><p>Each of these steps is safe with probability \(1 - 0.025 = 0.975\), so all seven are passed without a fall with probability \(0.975^7 = 0.838\), about 0.84. About \(1 - 0.84 = 0.16\), or 16 percent, of the walks along the edge therefore end in the cliff, at a cost of 100, and start again. An exact evaluation of this exploring policy with the Bellman equation gives an expected return of about \(-31\) per episode. This is the online return measured for Q-learning, although the same path earns \(-8\) without exploration. On the 13-step path only the start has the cliff as a neighbour.</p></div><div class="anim" id="a2"><p class="small"><strong>Animation.</strong> Greedy paths of Q-learning and SARSA after 500 episodes on the cliff without wind, with their online returns, averaged over the last 100 episodes. Raise the exploration rate \(\varepsilon\) and compare the two returns.</p><div class="row" id="c-sl"></div><canvas class="paper" id="c-cv" aria-label="Greedy paths of Q-learning and SARSA on a cliff"></canvas><div class="legend" id="c-leg"></div><div id="c-ro"></div></div><p>The animation repeats the experiment in the browser with one seed and 500 episodes. At the default \(\varepsilon = 0.1\) it shows \(-28.0\) for Q-learning and \(-21.4\) for SARSA. Q-learning keeps the path along the edge at every setting, and its online return falls from about \(-10\) at \(\varepsilon = 0.01\) to about \(-118\) at \(\varepsilon = 0.3\), where SARSA stands at about \(-44\). From 0.02 to 0.05, Q-learning has the better online return: Falls are then so rare that the four extra steps of the detour cost more. The path of SARSA changes from setting to setting and at some settings does not reach the goal, because one run of 500 episodes leaves its table unfinished.</p><p>Which is better depends on whether mistakes during learning are expensive, as they are for a real robot. When exploration stops after training, the shorter path of Q-learning is the better result. When the agent keeps exploring while it is in use, the values of SARSA describe what will really happen.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-4" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 4.</b> Open Section 4 of the Colab notebook and run it. The function <code>cliff_control</code> is the code of Section 3 moved to the grid, and its option <code>slip=0.0</code> switches the wind off. The cell prints, for each method, the number of steps of its greedy path and its online return over the last 100 episodes.</p></div><div class="kc" data-answer="1" data-why="An on-policy method values the risk created by its own random moves."><p class="q">Check your understanding. Why does SARSA collect more reward than Q-learning while learning on the cliff?</p><label><input type="radio" name="KC3" value="0"> It learns faster</label><label><input type="radio" name="KC3" value="1"> It accounts for its own exploration and keeps away from the edge</label><label><input type="radio" name="KC3" value="2"> It has no exploration</label><label><input type="radio" name="KC3" value="3"> It uses a model</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><div class="kc" data-answer="1" data-why="The agent explores with probability 0.2, and one of the four random actions points down: \(0.2 / 4 = 0.05\), one step in twenty."><p class="q">Check your understanding. An agent explores with \(\varepsilon = 0.2\) and stands in a cell above the cliff. Its greedy action points along the edge. How likely is it that its next step ends in the cliff?</p><label><input type="radio" name="KC4" value="0"> 0.2</label><label><input type="radio" name="KC4" value="1"> 0.05</label><label><input type="radio" name="KC4" value="2"> 0.25</label><label><input type="radio" name="KC4" value="3"> 0.8</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="deep-q-networks">Deep Q-networks</h2><p>A table needs one entry for every pair of a state and an action. TokenWorld has 160 pairs, but a language model that writes long texts from thousands of tokens has more states than any memory can hold. When states are too many for a table, a neural network approximates the Q-values. Computing values from a set of adjustable numbers, called weights, is called function approximation. Learning then means changing the weights, and one change moves the values of many states at once. On TokenWorld a table would still do. The network is trained there all the same, because the exact \(Q^*\) of Day 1 is known and the error of the network can be measured.</p><p><strong>The network.</strong> A neural network is a function built from layers of simple operations. The network of this code first writes the state as a list \(x\) of 20 numbers. Each of the four positions of the sentence holds one of the four tokens or is still empty, and gets five numbers: a 1 for its content and 0 elsewhere. This is called a one-hot encoding. Two layers follow:</p><div class="eq">\[\begin{aligned} h &amp;= \max\left( 0,\; W_1 x + b_1 \right) \\[4pt] \hat{Q}_w(s, \cdot) &amp;= W_2 h + b_2 \end{aligned}\]</div><p>The first layer multiplies \(x\) by the matrix \(W_1\), adds the vector \(b_1\) and replaces every negative result by zero, an operation called rectified linear unit and abbreviated ReLU. Its 64 results form the hidden layer \(h\). The second layer turns \(h\) into four numbers, the Q-values of the four tokens, and the dot in \(\hat{Q}_w(s, \cdot)\) stands for all four actions at once. The letter \(w\) collects all weights, the entries of \(W_1\), \(b_1\), \(W_2\) and \(b_2\): \(20 \times 64 + 64 + 64 \times 4 + 4\)​\({} = 1280 + 64 + 256 + 4\)​\({} = 1604\) numbers.</p><p><strong>The target and the loss.</strong> The network is trained with the idea of Q-learning. A transition is the record of one step: the state \(s\), the action \(a\), the reward \(r\) and the next state \(s&#x27;\). Its target is</p><div class="eq">\[y = \begin{cases} r &amp; \text{if } s&#x27; \text{ is terminal} \\ r + \gamma \max_{a&#x27;} \hat{Q}_{w^-}(s&#x27;, a&#x27;) &amp; \text{otherwise} \end{cases}\]</div><p>The weights \(w^-\) belong to the target network, which is explained below, and \(\gamma = 1\) on TokenWorld. The error on the transition is \(e = \hat{Q}_w(s, a) - y\), the output of the network minus the target. Training makes a loss small, a number that measures how wrong the network is. The loss used here is the Huber loss:</p><div class="eq">\[\ell(e) = \begin{cases} \frac{1}{2}\, e^2 &amp; \text{if } |e| \le 1 \\ |e| - \frac{1}{2} &amp; \text{otherwise} \end{cases}\]</div><p>For errors up to 1 in size, the Huber loss is half the squared error. For larger errors it grows only in proportion to the error, so one wild target cannot pull the weights far. The loss of a batch of transitions is the mean of their losses.</p><div class="callout"><b class="t">Worked example: a target and its loss</b><p>A stored transition has a reward of 0 and a next state that is not terminal. The target network gives the four values 1.2, 2.4, 0.3 and 2.0 for the next state. The largest of them is 2.4, so the target is \(y = 0 + 2.4 = 2.4\). The network gives 0.9 for the stored state and action. The error is \(e = 0.9 - 2.4 = -1.5\), larger than 1 in size, so the Huber loss is \(|e| - 0.5\)​\({} = 1.5 - 0.5\)​\({} = 1.0\), where half the squared error would be \(1.5^2 / 2 = 2.25 / 2 = 1.125\).</p><p>A second transition ends its episode with a reward of 2.75, so its target is \(y = 2.75\). The network gives 2.5, the error is \(2.5 - 2.75 = -0.25\), at most 1 in size, and the loss is \((-0.25)^2 / 2\)​\({} = 0.0625 / 2\)​\({} = 0.031\).</p></div><p><strong>The gradient.</strong> Training needs to know how the loss changes with every weight. This slope is found layer by layer, from the output back to the input, a procedure called backpropagation. For one transition, let \(d\) be a list of four numbers that is zero except at the action \(a\) that was taken. There it holds the slope of the Huber loss, which is the error \(e\) limited to the range from \(-1\) to 1. Then</p><div class="eq">\[\begin{aligned} \frac{\partial \ell}{\partial W_2} &amp;= d\, h^{\top}, \qquad \frac{\partial \ell}{\partial b_2} = d \\[4pt] u &amp;= \left( W_2^{\top} d \right) \odot \mathbf{1}[h &gt; 0] \\[4pt] \frac{\partial \ell}{\partial W_1} &amp;= u\, x^{\top}, \qquad \frac{\partial \ell}{\partial b_1} = u \end{aligned}\]</div><p>The sign \(\partial\) marks a slope with respect to one group of weights. The product \(d\, h^{\top}\) is a table with one row per action and one column per hidden unit: Only the row of the action taken is not zero, and it holds \(h\) times the limited error. The list \(u\) carries the error back to the hidden layer. The sign \(\odot\) multiplies entry by entry, and \(\mathbf{1}[h &gt; 0]\) is 1 where a hidden unit is active and 0 where the ReLU has set it to zero, so inactive units pass nothing back. The gradient \(g\) of a batch is the mean of these slopes over its transitions.</p><p><strong>The update.</strong> The weights are changed by gradient descent. The gradient \(g\) holds for every weight the slope of the loss: the amount by which the loss grows when this weight grows a little. A step against the gradient, \(w \leftarrow w - \alpha g\), makes the loss smaller, with a learning rate \(\alpha\). The experiment uses a refined form of this step, the Adam optimiser, short for adaptive moment estimation. For every weight, Adam keeps a running average \(m\) of its gradient and a running average \(v\) of its squared gradient:</p><div class="eq">\[\begin{aligned} m &amp;\leftarrow \beta_1 m + (1 - \beta_1)\, g \\[4pt] v &amp;\leftarrow \beta_2 v + (1 - \beta_2)\, g^2 \\[4pt] w &amp;\leftarrow w - \alpha\, \frac{m / (1 - \beta_1^k)}{\sqrt{v / (1 - \beta_2^k)} + 10^{-8}} \end{aligned}\]</div><p>The index \(k\) counts the updates. The experiment uses \(\beta_1 = 0.9\), \(\beta_2 = 0.999\) and \(\alpha = 0.003\). The divisions by \(1 - \beta_1^k\) and \(1 - \beta_2^k\) correct the two averages, which start at zero. Dividing by the root of \(v\) gives every weight a step of similar size, and the tiny number \(10^{-8}\) prevents a division by zero.</p><div class="labbox"><a class="btn" href="lab.html#pe" target="_blank" rel="noopener">Open lab Part E</a><p><b>Interactive lab, Part E.</b> One update of a network small enough to follow by hand: three inputs, two hidden units with ReLU and two Q-values. The steps go from the input through both layers to the target, the error, the Huber loss and one step of gradient descent on the second layer, and a figure of the network shows the values of each step.</p></div><p><strong>Two remedies.</strong> Training the network naively, on every step as it comes, is unstable: Successive samples are strongly correlated, and the target moves with every update. Correlated means that the steps of one episode resemble each other, so the network sees nearly the same input several times in a row. The target moves because it is computed by the network that is being changed. A deep Q-network, abbreviated DQN, adds two remedies <span class="cite" tabindex="0" data-refs="4">[4]</span>. Experience replay stores past transitions and trains on random batches of them <span class="cite" tabindex="0" data-refs="5">[5]</span>, and a target network, a copy updated only now and then, keeps the target still.</p><div class="callout"><b class="t">In everyday life: replay and a fixed answer key</b><p>A student who revises only the last lesson forgets the earlier ones. Mixing old exercises at random keeps all of them in mind, as experience replay mixes old transitions into every batch. A target network works like an answer key that is updated once a week instead of after every answer, so the student does not chase a key that changes with every attempt.</p></div><p>In the experiment the store, called the replay buffer, has room for 4000 transitions, more than the at most 2800 steps of a run. As soon as it holds 64 transitions, every step of the agent is followed by one Adam update on a batch of 64 transitions drawn from it at random. A transition is therefore used about 60 times. The target network receives a fresh copy of the weights every 100 steps. The agent acts \(\varepsilon\)-greedily on the Q-values of the network, and \(\varepsilon\) falls in a straight line from 0.6 to 0.05:</p><div class="eq">\[\varepsilon_i = \max\left( 0.05,\; 0.6 \left( 1 - \frac{i}{700} \right) \right)\]</div><p>Here \(i\) is the number of the episode, counted from 0, in a run of 700 episodes. Much exploration at the beginning fills the buffer with many different sentences.</p><p><strong>What each part buys.</strong> The experiment removes each remedy in turn. An experiment that removes one part of a method to measure what it contributes is called an ablation. Each of the four configurations runs with three seeds, and the table shows the means of the two scores of the previous section.</p><div class="tablewrap"><table><thead><tr><th>Configuration</th><th>Return of the greedy policy</th><th>Share of the optimum</th><th>RMSE of the Q-values</th></tr></thead><tbody><tr><td>full DQN</td><td>2.75</td><td>100 percent</td><td>0.35</td></tr><tr><td>without replay</td><td>1.83</td><td>67 percent</td><td>1.47</td></tr><tr><td>without the target network</td><td>2.75</td><td>100 percent</td><td>0.58</td></tr><tr><td>without both</td><td>1.83</td><td>67 percent</td><td>1.39</td></tr></tbody></table></div><p>Without replay the network is trained on the latest transition alone, and none of its three runs reaches the optimum. Their greedy sentences earn 1.5, 1.5 and 2.5, on average two thirds of the optimum. Without the target network all three runs still write the best sentence, while the value estimates are clearly worse: The error rises from 0.35 to 0.58.</p><p>The third row shows that a greedy policy can be correct while the values behind it are wrong. The greedy action depends only on which entry of a state is the largest, and an error that leaves this order intact does not change the sentence. It does mislead every method that uses the values themselves, such as the actor-critic methods of Day 3.</p><p>The full network is also more accurate than the Q-table that Q-learning filled on TokenWorld, which ended with an error of 1.23 after 4000 episodes. It uses every transition many times, and its shared weights give values to pairs that were never tried. A run leaves about 40 of the 160 pairs untried. On them the error of the network is about 0.6, where the zeros of a table are off by about 1.7.</p><p>The max in the target has a known weakness. Among several uncertain estimates the largest one is more often too high than too low, so the targets are too high on average. Double Q-learning reduces this bias with the two sets of weights that a DQN already has <span class="cite" tabindex="0" data-refs="9">[9]</span>: The network chooses the best next action, and the target network evaluates it.</p><div class="eq">\[y = r + \gamma\, \hat{Q}_{w^-}\left( s&#x27;,\; \operatorname*{arg\,max}_{a&#x27;}\; \hat{Q}_w(s&#x27;, a&#x27;) \right)\]</div><p>The <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=challenges" target="_blank" rel="noopener">application challenge for computer science</a> asks for this target.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 5.</b> Open Section 5 of the Colab notebook and run it. The class <code>QNet</code> is the network: Its function <code>forward</code> computes the Q-values, and <code>train_step</code> computes the gradient and makes the Adam update. The function <code>dqn</code> contains the replay buffer and the target network, and its options <code>replay=False</code> and <code>target_net=False</code> remove them. The cell prints the table of the four configurations.</p></div><div class="kc" data-answer="1" data-why="Random batches from a memory decorrelate consecutive samples."><p class="q">Check your understanding. What does experience replay do?</p><label><input type="radio" name="KC5" value="0"> It replays the best episode</label><label><input type="radio" name="KC5" value="1"> It trains on random batches of stored past transitions, which breaks correlations</label><label><input type="radio" name="KC5" value="2"> It copies the network</label><label><input type="radio" name="KC5" value="3"> It explores</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="tokenworld-stage-2-values-learned-from-experience">TokenWorld, stage 2: values learned from experience</h2><p>The methods of this day now come together on the project. Each of them wrote sentences of TokenWorld without knowing its rules, observed the reward of every finished sentence and turned this experience into estimates of values. The exact solution of Day 1 scored every result. The first figure shows the stage of the project, and the second the loop that all methods of the day share.</p><figure><img src="figures/d02_tw_stage.png" alt="The stage of the project reached today: learning values from experience." style="max-width:100%"><figcaption>The stage of the project reached today: learning values from experience.</figcaption></figure><figure><img src="figures/d02_tw_pipeline.png" alt="The learning loop of Day 2 on TokenWorld. The methods differ only in the target of step 3 and in what stores the values in step 4." style="max-width:100%"><figcaption>The learning loop of Day 2 on TokenWorld. The methods differ only in the target of step 3 and in what stores the values in step 4.</figcaption></figure><div class="tablewrap"><table><thead><tr><th>Method</th><th>What is learned</th><th>Experience</th><th>Result on TokenWorld</th></tr></thead><tbody><tr><td>Monte Carlo and TD(0)</td><td>Values of the behaviour policy, 40 prefixes</td><td>3000 episodes, 10 seeds</td><td>RMSE 0.59 and 0.61, where a table of zeros has 1.25</td></tr><tr><td>SARSA</td><td>Q-table of 160 entries</td><td>4000 episodes, 10 seeds</td><td>Greedy return 2.55, 93 percent of the optimum, best sentence in 4 of 10 seeds</td></tr><tr><td>Q-learning</td><td>Q-table of 160 entries</td><td>4000 episodes, 10 seeds</td><td>Greedy return 2.25, 82 percent, best sentence in 2 of 10 seeds</td></tr><tr><td>Q-learning with a decaying \(\varepsilon\) and the poly step size</td><td>Q-table of 160 entries</td><td>4000 episodes, 8 seeds</td><td>Best sentence in 8 of 8 seeds, RMSE 0.52</td></tr><tr><td>Deep Q-network</td><td>Network of 1604 weights</td><td>700 episodes, 3 seeds</td><td>Best sentence in 3 of 3 seeds, RMSE 0.35</td></tr></tbody></table></div><p>Two lessons carry over to the next stages. Learning from experience reaches the optimum of TokenWorld, but only with care: A constant exploration rate leaves many pairs untried, and only decaying schedules or a network that shares its weights reach the best sentence in every seed. And a policy derived from values is only as good as the order of these values. Day 3 therefore learns the probabilities of the tokens directly, a policy with parameters, as a language model does.</p><h2 id="your-field">Your field</h2><p>The application of the day builds a gridworld from one of three fields: a warehouse with shelves and a forklift lane, a drone route with wind and a no-fly zone, or a building to evacuate with fire. SARSA and Q-learning learn in it side by side, and their greedy paths are drawn on the map. A gridworld is a world of cells like the cliff. Each domain has a start, a goal, walls and hazards. A move into a wall or across the border leaves the agent in its cell. A step into a hazard has the penalty of the domain as its reward and puts the agent back at the start. Every other step has a reward of \(-1\), and the step that reaches the goal a reward of 0. With the slip probability of the domain, the chosen action is replaced by a random one of the four.</p><div class="tablewrap"><table><thead><tr><th>Domain</th><th>Grid</th><th>Walls</th><th>Hazards</th><th>Slip probability</th><th>Penalty</th></tr></thead><tbody><tr><td>warehouse</td><td>6 rows, 8 columns</td><td>7 cells of shelves</td><td>3 cells of a forklift lane</td><td>0.05</td><td>\(-20\)</td></tr><tr><td>drone</td><td>5 rows, 8 columns</td><td>2 cells</td><td>6 cells of a no-fly zone in the bottom row</td><td>0.20</td><td>\(-50\)</td></tr><tr><td>evacuation</td><td>6 rows, 6 columns</td><td>5 cells</td><td>3 cells of fire and smoke</td><td>0.10</td><td>\(-100\)</td></tr></tbody></table></div><p>Both methods run for 800 episodes with \(\alpha = 0.2\), \(\gamma = 0.98\) and \(\varepsilon = 0.1\), an episode is cut off after 200 steps, and five seeds are used. Each method is judged by its mean online return over the last 200 episodes and by the worst of these episodes. In the warehouse the two methods end level, with \(-13.4\) for SARSA and \(-13.5\) for Q-learning. Both greedy paths need 12 steps and pass no cell next to the forklift lane, so a single exploring step cannot lead into a hazard.</p><p>A slip belongs to the environment and not to the policy, so its cost enters the targets of both methods. In the drone domain, where one move in five slips, both greedy paths of the first seed fly one row above the direct route, which runs right over the no-fly zone. They need 9 steps where 7 would do. Which method collects more reward while learning differs from domain to domain.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 6.</b> Open Section 6 of the Colab notebook. Its first line is a switch, <code>DOMAIN = &quot;warehouse&quot;</code>. Replace the word by <code>drone</code> or <code>evacuation</code> and run the section. The function <code>td_control</code> trains SARSA and Q-learning on the map of that field, and the cell prints their online returns and draws the two greedy paths on the map.</p></div><h2 id="going-further-optional">Going further (optional)</h2><p>Two topics deepen the day. The first is the choice of schedules for the exploration rate and the step size. The second is the deadly triad, a combination of three techniques under which learning can fall apart.</p><p><strong>Schedules.</strong> A schedule is a rule that changes a setting during learning. The Q-learning experiment on TokenWorld is repeated with three schedules for the exploration rate, called const, decay and 1/t. Here \(i\) is the number of the episode, counted from 0, in a run of 4000 episodes:</p><div class="eq">\[\begin{aligned} \text{const:} \quad &amp; \varepsilon_i = 0.2 \\[4pt] \text{decay:} \quad &amp; \varepsilon_i = \max\left( 0.02,\; 0.5 \left( 1 - \frac{i}{4000} \right) \right) \\[4pt] \text{1/t:} \quad &amp; \varepsilon_i = \frac{1}{1 + i / 200} \end{aligned}\]</div><p>The decay schedule falls in a straight line from 0.5 and is held at 0.02 during the last 160 episodes. The 1/t schedule starts at 1, has fallen to 0.5 after 200 episodes and ends near 0.05. They are combined with three schedules for the step size, in which \(N(s, a)\) counts the updates that the pair of state and action has received, the current one included:</p><div class="eq">\[\begin{aligned} \text{const:} \quad &amp; \alpha = 0.1 \\[4pt] \text{1/n:} \quad &amp; \alpha = \frac{1}{N(s, a)} \\[4pt] \text{poly:} \quad &amp; \alpha = N(s, a)^{-0.7} \end{aligned}\]</div><p>With the step size \(1 / N(s, a)\) the estimate is exactly the mean of all targets that the pair has received. The schedule poly, short for polynomial, shrinks more slowly, so later targets count more. This suits Q-learning, whose targets improve while the later prefixes are being learned.</p><div class="callout"><b class="t">Worked example: two schedules in numbers</b><p>At episode 1000 the decay schedule gives \(\varepsilon\)​\({} = 0.5 \times (1 - 1000 / 4000)\)​\({} = 0.5 \times 0.75\)​\({} = 0.375\), and the 1/t schedule gives \(1 / (1 + 1000 / 200)\)​\({} = 1 / (1 + 5)\)​\({} = 1 / 6\)​\({} = 0.167\).</p><p>A pair that receives its tenth update has the step size \(1 / 10 = 0.1\) under 1/n and \(10^{-0.7} = 0.20\) under poly. At the hundredth update the step sizes are \(1 / 100 = 0.01\) and \(100^{-0.7} = 0.04\): Under poly a new target still counts \(0.04 / 0.01 = 4\) times as much.</p></div><div class="tablewrap"><table><thead><tr><th>Exploration</th><th>Step size</th><th>Mean return of the greedy policy</th><th>Seeds at the optimum</th><th>RMSE of the Q-values</th></tr></thead><tbody><tr><td>decay</td><td>poly</td><td>2.75</td><td>8 of 8</td><td>0.52</td></tr><tr><td>decay</td><td>1/n</td><td>2.72</td><td>7 of 8</td><td>0.57</td></tr><tr><td>1/t</td><td>poly</td><td>2.75</td><td>8 of 8</td><td>0.76</td></tr><tr><td>1/t</td><td>1/n</td><td>2.56</td><td>6 of 8</td><td>0.77</td></tr><tr><td>const</td><td>poly</td><td>2.72</td><td>7 of 8</td><td>0.90</td></tr><tr><td>const</td><td>1/n</td><td>2.66</td><td>5 of 8</td><td>0.96</td></tr><tr><td>decay</td><td>const</td><td>2.63</td><td>6 of 8</td><td>1.08</td></tr><tr><td>const</td><td>const</td><td>2.28</td><td>1 of 8</td><td>1.23</td></tr><tr><td>1/t</td><td>const</td><td>1.78</td><td>1 of 8</td><td>1.23</td></tr></tbody></table></div><p>The table lists the nine combinations after 4000 episodes and eight seeds, sorted by the error of the values. The schedules of the exploration rate and the step size decide whether a method reaches the optimum at all. With a decaying exploration rate and the poly step size, all eight seeds find it; with both constant, only one. The row with both constant is the Q-learning experiment of the section on SARSA and Q-learning. The step size matters most: The three rows with a constant step size are the last three. At 0.1, each update leaves 0.9 of the remaining distance to a fixed target, so after 22 updates \(0.9^{22} = 0.098\) of it remains: A value needs 22 updates to cover nine tenths of the way to its target, and with constant settings about 115 of the 160 pairs receive fewer than ten.</p><p><strong>The deadly triad.</strong> Function approximation, bootstrapping and off-policy learning together form the deadly triad <span class="cite" tabindex="0" data-refs="1">[1]</span>: Each is harmless alone, and together they can make the weights grow without limit, as Baird's counterexample shows. The three techniques are called its legs, and any two of them are safe together.</p><p>Baird's counterexample has seven states. Every reward is zero, so the true value of every state is zero. The values are computed from eight weights \(w_1, \ldots, w_8\) by linear function approximation: Each state \(s\) has a list of eight fixed numbers, its features \(x(s)\). Its value is the sum of the features times the weights.</p><div class="eq">\[\hat{V}_w(s) = x(s)^{\top} w = \sum_{j} x_j(s)\, w_j\]</div><p>The sign \(\top\) marks this product of two lists. In Baird's example each of the first six states uses its own weight twice and the last weight once, and the seventh state uses its own weight once and the last weight twice:</p><div class="eq">\[\begin{aligned} \hat{V}_w(s) &amp;= 2 w_s + w_8 \qquad \text{for } s = 1, \ldots, 6 \\[4pt] \hat{V}_w(7) &amp;= w_7 + 2 w_8 \end{aligned}\]</div><p>The weight \(w_8\) is shared by all states. The weights start at 1, except \(w_7 = 10\), so the first six states start with the value 3 and the seventh with 12. With all weights at zero every value would be exactly right, so the approximation can represent the truth.</p><p>Two policies are involved. The target policy \(\pi\), whose values are to be learned, always moves to the seventh state. The behaviour policy \(b\), which produces the data, moves there with probability \(1/7\) and otherwise to one of the first six states, and each update starts from a state drawn at random. Learning about \(\pi\) from the data of \(b\) needs a correction: Every update is multiplied by the importance ratio, written with the Greek letter rho.</p><div class="eq">\[\rho = \frac{\pi(a \mid s)}{b(a \mid s)}\]</div><p>The ratio is \(1 / (1/7) = 7\) for a move to the seventh state and 0 for every other move, which the target policy never makes. The update is the TD update, applied to the weights:</p><div class="eq">\[w \leftarrow w + \alpha\, \rho \left[\, r + \gamma\, \hat{V}_w(s&#x27;) - \hat{V}_w(s) \,\right] x(s)\]</div><p>The bracket is the TD error, with \(r = 0\), \(\gamma = 0.99\) and \(\alpha = 0.01\) in this experiment, and each weight changes in proportion to its feature. The size of all weights together is measured by their norm, which starts at \(\sqrt{7 \times 1^2 + 10^2}\)​\({} = \sqrt{107}\)​\({} = 10.34\):</p><div class="eq">\[\|w\| = \sqrt{w_1^2 + w_2^2 + \cdots + w_8^2}\]</div><div class="callout"><b class="t">Worked example: one update in Baird's counterexample</b><p>The first state has the value 3 and the seventh the value 12. A move from the first state to the seventh has the TD error \(0 + 0.99 \times 12 - 3\)​\({} = 11.88 - 3\)​\({} = 8.88\). With \(\rho = 7\) and \(\alpha = 0.01\) the step is \(0.01 \times 7 \times 8.88 = 0.6216\) times the features of the first state, 2 for \(w_1\) and 1 for \(w_8\). So \(w_1\) rises from 1 to \(1 + 2 \times 0.6216\)​\({} = 1 + 1.2432\)​\({} = 2.243\) and \(w_8\) from 1 to \(1 + 1 \times 0.6216 = 1.622\).</p><p>The value of the first state rises from 3 to \(2 \times 2.243 + 1.622\)​\({} = 4.486 + 1.622\)​\({} = 6.108\), as intended. But \(w_8\) is shared: The value of the seventh state rises from 12 to \(10 + 2 \times 1.622\)​\({} = 10 + 3.244\)​\({} = 13.244\), and the values of the other five states rise from 3 to \(2 \times 1 + 1.622 = 3.622\). For these five states the TD error has grown from 8.88 to \(0.99 \times 13.244 - 3.622\)​\({} = 13.112 - 3.622\)​\({} = 9.490\). The update has moved the target up together with the estimate.</p></div><figure><img src="figures/d02_fig1.png" alt="Baird&#x27;s counterexample: The norm of the weights over 3000 updates on a logarithmic axis, with all three legs of the triad and with each leg removed in turn. The legend gives the norm at the end of each run." style="max-width:100%"><figcaption>Baird's counterexample: The norm of the weights over 3000 updates on a logarithmic axis, with all three legs of the triad and with each leg removed in turn. The legend gives the norm at the end of each run.</figcaption></figure><p>The vertical axis of the figure is logarithmic: Each labelled line stands for ten times the value of the line below, so a straight rising line means growth by a constant factor. With all three legs the norm climbs from 10.3 to \(6.13 \times 10^4\), which the legend writes as 6.13e+04. The estimated values of the seven states have then risen to between 70000 and 95000, although every true value is zero.</p><p>Each of the other runs removes one leg, and its curve stays flat. With tabular features every state has its own weight, \(\hat{V}_w(s) = w_s\), and nothing is shared. The norm rises from 14.1 to 30.3, because the six values of 3 move towards the value of the seventh state, and levels off. With Monte Carlo targets the bootstrapped target is replaced by the true return, zero. All values go to zero, and the norm ends at 8.63: Eight weights for seven states can give every state the value zero without being zero themselves. With on-policy sampling the agent follows the target policy itself, \(\rho = 1\), and the norm ends at 14.9.</p><p>Each leg is in use for a reason, so removing one has a price. Function approximation is needed when the states are too many for a table. Bootstrapping lets the agent learn before an episode ends and from less noisy targets. Off-policy learning lets it learn about the greedy policy while it explores, and from stored data, as experience replay does. A deep Q-network uses all three, and its two remedies make divergence less likely without ruling it out.</p><div class="labbox"><a class="btn" href="lab.html#pa" target="_blank" rel="noopener">Open lab Part A</a><p><b>Interactive lab, Part A.</b> Baird's counterexample in the browser, with a switch for each leg of the deadly triad and a slider for the step size. The norm of the weights shows at once whether a setting diverges.</p></div><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 7.</b> Open Section 7 of the Colab notebook, which is optional, and run it. The function <code>schedules</code> trains Q-learning with one of the nine combinations, and the cell prints the table above. The function <code>baird</code> runs Baird's counterexample. Its options <code>features=&quot;tabular&quot;</code>, <code>target=&quot;mc&quot;</code> and <code>sampling=&quot;on-policy&quot;</code> each remove one leg of the triad, and the cell draws the figure shown here.</p></div><h2 id="python-step">Python step 2: NumPy arrays and tables of values</h2><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=python-step" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, right after Section 0 (setup).</b> Open the notebook and run this step cell by cell: It consists of short pieces of Python code with their explanations, a quick check and three exercises. Topics: A table of values as an array · One temporal difference update · An environment as a function · Monte Carlo and temporal differences on the chain · The table, readable.</p></div><p>The <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb">notebook</a> continues with the hands-on sections, and the <a href="lab.html">interactive lab</a> holds three practice parts and the self-assessment. The study path, the daily task and the research assignment are on the <a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-02">day overview</a>.</p><h2 id="review-cards">Review cards</h2><p class="small">Select a card to turn it over.</p><div class="cards"><div class="card" tabindex="0" role="button"><div class="f">Monte Carlo method</div><div class="b">Moves a value towards the return that actually followed, at the end of an episode.</div></div><div class="card" tabindex="0" role="button"><div class="f">Temporal difference learning</div><div class="b">Moves a value towards one reward plus the discounted estimate of the next state <span class="cite" tabindex="0" data-refs="1">[1]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Q-value</div><div class="b">The expected return of taking an action in a state and following the policy afterwards.</div></div><div class="card" tabindex="0" role="button"><div class="f">SARSA</div><div class="b">On-policy: updates towards the action actually taken next <span class="cite" tabindex="0" data-refs="2">[2]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Q-learning</div><div class="b">Off-policy: updates towards the best next action <span class="cite" tabindex="0" data-refs="3">[3]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Experience replay</div><div class="b">Training on random batches of stored transitions <span class="cite" tabindex="0" data-refs="5">[5]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Target network</div><div class="b">A copy of the network, updated rarely, that keeps the training target still <span class="cite" tabindex="0" data-refs="4">[4]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Deadly triad</div><div class="b">Function approximation, bootstrapping and off-policy learning together can diverge.</div></div><div class="card" tabindex="0" role="button"><div class="f">Model</div><div class="b">The transition probabilities and the rewards of an environment, which the methods of this day do not need.</div></div><div class="card" tabindex="0" role="button"><div class="f">Step size</div><div class="b">The part \(\alpha\) of the way that an estimate moves towards its target in one update, also called the learning rate.</div></div><div class="card" tabindex="0" role="button"><div class="f">Bootstrapping</div><div class="b">Building the target of an estimate on another estimate.</div></div><div class="card" tabindex="0" role="button"><div class="f">TD error</div><div class="b">The target of a temporal difference update minus the old estimate, \(\delta_t\)​\({} = r_{t+1}\)​\({} + \gamma \hat{V}(s_{t+1})\)​\({} - \hat{V}(s_t)\).</div></div><div class="card" tabindex="0" role="button"><div class="f">Root mean square error (RMSE)</div><div class="b">The root of the mean squared difference between estimates and exact values.</div></div><div class="card" tabindex="0" role="button"><div class="f">Epsilon-greedy rule</div><div class="b">A random action with probability \(\varepsilon\), otherwise the action with the largest estimate.</div></div><div class="card" tabindex="0" role="button"><div class="f">Behaviour policy and target policy</div><div class="b">The behaviour policy chooses the actions during learning, and the target policy is the one whose values are learned.</div></div><div class="card" tabindex="0" role="button"><div class="f">On-policy and off-policy</div><div class="b">An on-policy method learns about the policy it follows, an off-policy method about a different one.</div></div><div class="card" tabindex="0" role="button"><div class="f">Online return</div><div class="b">The return of an episode as it is played during learning, exploring steps included.</div></div><div class="card" tabindex="0" role="button"><div class="f">Function approximation</div><div class="b">Computing values from adjustable weights in place of storing one number per state.</div></div><div class="card" tabindex="0" role="button"><div class="f">Deep Q-network (DQN)</div><div class="b">Q-learning with a neural network, experience replay and a target network <span class="cite" tabindex="0" data-refs="4">[4]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Huber loss</div><div class="b">Half the squared error for errors up to 1 and the absolute error minus one half beyond, so that single wild targets pull less.</div></div><div class="card" tabindex="0" role="button"><div class="f">Double Q-learning</div><div class="b">One set of weights chooses the best next action and another evaluates it, which reduces the bias of the maximum <span class="cite" tabindex="0" data-refs="9">[9]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Schedule</div><div class="b">A rule that changes a setting such as the exploration rate or the step size during learning.</div></div><div class="card" tabindex="0" role="button"><div class="f">Importance ratio</div><div class="b">The probability of an action under the target policy divided by its probability under the behaviour policy.</div></div></div><h2 id="references">References</h2><p class="small" id="ref-1">[1] Sutton, R. S., &amp; Barto, A. G. (2018). Reinforcement Learning: An Introduction (2nd ed.). MIT Press.</p><p class="small" id="ref-2">[2] Rummery, G. A., &amp; Niranjan, M. (1994). On-line Q-learning using connectionist systems (Technical Report CUED/F-INFENG/TR 166). Cambridge University Engineering Department.</p><p class="small" id="ref-3">[3] Watkins, C. J. C. H., &amp; Dayan, P. (1992). Q-learning. Machine Learning, 8(3-4), 279-292.</p><p class="small" id="ref-4">[4] Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Veness, J., Bellemare, M. G., Graves, A., Riedmiller, M., Fidjeland, A. K., Ostrovski, G., et al. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529-533. <a href="https://doi.org/10.1038/nature14236">https://doi.org/10.1038/nature14236</a></p><p class="small" id="ref-5">[5] Lin, L.-J. (1992). Self-improving reactive agents based on reinforcement learning, planning and teaching. Machine Learning, 8(3-4), 293-321.</p><p class="small" id="ref-6">[6] Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <a href="https://doi.org/10.1038/s41586-020-2649-2">https://doi.org/10.1038/s41586-020-2649-2</a></p><p class="small" id="ref-7">[7] McKinney, W. (2010). Data structures for statistical computing in Python. In Proceedings of the 9th Python in Science Conference (pp. 56-61). <a href="https://doi.org/10.25080/Majora-92bf1922-00a">https://doi.org/10.25080/Majora-92bf1922-00a</a></p><p class="small" id="ref-8">[8] Bellman, R. (1957). A Markovian decision process. Journal of Mathematics and Mechanics, 6(5), 679-684.</p><p class="small" id="ref-9">[9] van Hasselt, H., Guez, A., &amp; Silver, D. (2016). Deep reinforcement learning with double Q-learning. In Proceedings of the AAAI Conference on Artificial Intelligence, 30(1), 2094-2100.</p></article>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<script type="application/json" id="refdata">{"1": "Sutton, R. S., &amp; Barto, A. G. (2018). Reinforcement Learning: An Introduction (2nd ed.). MIT Press.", "2": "Rummery, G. A., &amp; Niranjan, M. (1994). On-line Q-learning using connectionist systems (Technical Report CUED/F-INFENG/TR 166). Cambridge University Engineering Department.", "3": "Watkins, C. J. C. H., &amp; Dayan, P. (1992). Q-learning. Machine Learning, 8(3-4), 279-292.", "4": "Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Veness, J., Bellemare, M. G., Graves, A., Riedmiller, M., Fidjeland, A. K., Ostrovski, G., et al. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529-533. <a href=\"https://doi.org/10.1038/nature14236\">https://doi.org/10.1038/nature14236</a>", "5": "Lin, L.-J. (1992). Self-improving reactive agents based on reinforcement learning, planning and teaching. Machine Learning, 8(3-4), 293-321.", "6": "Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <a href=\"https://doi.org/10.1038/s41586-020-2649-2\">https://doi.org/10.1038/s41586-020-2649-2</a>", "7": "McKinney, W. (2010). Data structures for statistical computing in Python. In Proceedings of the 9th Python in Science Conference (pp. 56-61). <a href=\"https://doi.org/10.25080/Majora-92bf1922-00a\">https://doi.org/10.25080/Majora-92bf1922-00a</a>", "8": "Bellman, R. (1957). A Markovian decision process. Journal of Mathematics and Mechanics, 6(5), 679-684.", "9": "van Hasselt, H., Guez, A., &amp; Silver, D. (2016). Deep reinforcement learning with double Q-learning. In Proceedings of the AAAI Conference on Artificial Intelligence, 30(1), 2094-2100."}</script>
+<script>window.COURSE_PREFIX="vtrl";</script>
+<script>"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "html") e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COL = () => ({ink: cssv("--ink"), steel: cssv("--steel"), line: cssv("--line"), grid: cssv("--grid"),
+  panel: cssv("--panel"), accent: cssv("--accent"), ok: cssv("--ok"), bad: cssv("--bad"),
+  c: [cssv("--c1"), cssv("--c2"), cssv("--c3"), cssv("--c4"), cssv("--c5")]});
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+function RNG(seed) {
+  let s = seed >>> 0;
+  const r = () => { s += 0x6D2B79F5; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  r.normal = () => { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  r.int = n => Math.floor(r() * n);
+  r.uniform = (a, b) => a + (b - a) * r();
+  return r;
+}
+const store = {
+  key: k => (window.COURSE_PREFIX || "vt") + ":" + k,
+  get(k, d) { try { const v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} }
+};
+/* Canvas with device-pixel scaling. draw(ctx, w, h) is called on setup and on resize. */
+function stage(cv, aspect, draw) {
+  const ctx = cv.getContext("2d");
+  const fit = () => {
+    const w = cv.clientWidth || 600, hgt = Math.round(w * aspect), d = window.devicePixelRatio || 1;
+    cv.style.height = hgt + "px"; cv.width = Math.round(w * d); cv.height = Math.round(hgt * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0); cv._w = w; cv._h = hgt; draw && draw(ctx, w, hgt);
+  };
+  new ResizeObserver(() => fit()).observe(cv);
+  fit();
+  return {ctx, redraw: () => draw && draw(ctx, cv._w, cv._h), size: () => [cv._w, cv._h]};
+}
+/* Axes frame: returns mapping helpers. */
+function frame(ctx, w, hgt, o) {
+  const C = COL(), p = Object.assign({l: 48, r: 12, t: 12, b: 34}, o.pad || {});
+  const X = x => p.l + (x - o.x0) / (o.x1 - o.x0) * (w - p.l - p.r);
+  const Y = y => hgt - p.b - (y - o.y0) / (o.y1 - o.y0) * (hgt - p.t - p.b);
+  ctx.save(); ctx.strokeStyle = C.line; ctx.fillStyle = C.steel; ctx.lineWidth = 1; ctx.font = "11px " + cssv("--sans");
+  const nt = o.ticks || 5;
+  for (let i = 0; i <= nt; i++) {
+    const xv = o.x0 + (o.x1 - o.x0) * i / nt, yv = o.y0 + (o.y1 - o.y0) * i / nt;
+    ctx.beginPath(); ctx.moveTo(X(xv), hgt - p.b); ctx.lineTo(X(xv), hgt - p.b + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.l - 4, Y(yv)); ctx.lineTo(p.l, Y(yv)); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(fmt(xv), X(xv), hgt - p.b + 16);
+    ctx.textAlign = "right"; ctx.fillText(fmt(yv), p.l - 7, Y(yv) + 4);
+  }
+  ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, hgt - p.b); ctx.lineTo(w - p.r, hgt - p.b); ctx.stroke();
+  ctx.fillStyle = C.ink; ctx.textAlign = "center";
+  if (o.xlabel) ctx.fillText(o.xlabel, (p.l + w - p.r) / 2, hgt - 4);
+  if (o.ylabel) { ctx.save(); ctx.translate(12, (p.t + hgt - p.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylabel, 0, 0); ctx.restore(); }
+  ctx.restore();
+  return {X, Y, p};
+}
+function fmt(v) { if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v)); const a = Math.abs(v); if (a >= 1000) return v.toFixed(0); if (a >= 10) return v.toFixed(0); if (a >= 1) return v.toFixed(1); if (a === 0) return "0"; return v.toFixed(2); }
+function polyline(ctx, pts, color, width, dash) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width || 2; if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.restore();
+}
+function dot(ctx, x, y, r, color, stroke) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+/* Labelled slider bound to a value. */
+function slider(parent, o, on) {
+  const out = h("output", {}, o.fmt ? o.fmt(o.value) : o.value);
+  const inp = h("input", {type: "range", min: o.min, max: o.max, step: o.step || 1, value: o.value, "aria-label": o.label});
+  inp.addEventListener("input", () => { const v = parseFloat(inp.value); out.textContent = o.fmt ? o.fmt(v) : v; on && on(v); });
+  parent.append(h("div", {class: "ctl"}, h("label", {}, o.label, " ", out), inp));
+  return inp;
+}
+function readout(parent, names) {
+  const box = h("div", {class: "readout"}), cells = {};
+  names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; box.append(h("div", {}, n, b)); });
+  parent.append(box);
+  return (n, v) => { cells[n].textContent = v; };
+}
+function legend(parent, items) {
+  const C = COL();
+  parent.append(h("div", {class: "legend"}, items.map(([t, i]) => h("span", {}, h("i", {style: "background:" + (typeof i === "number" ? C.c[i] : i)}), t))));
+}
+/* Animation loop that pauses when off screen or when reduced motion is requested. */
+function loop(step, ms) {
+  let on = false, raf = 0, last = 0, acc = 0;
+  const f = t => { if (!on) return; const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t; acc += dt * 1000; if (!ms || acc >= ms) { acc = 0; step(dt); } raf = requestAnimationFrame(f); };
+  return {start() { if (!on) { on = true; last = 0; raf = requestAnimationFrame(f); } }, stop() { on = false; cancelAnimationFrame(raf); }, get running() { return on; }};
+}
+const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Knowledge checks, citation popups, flashcards and reading progress on lecture pages. */
+function initLecture(day) {
+  const kcs = $$(".kc"), key = "d" + day + ":kc", st = store.get(key, {});
+  const bar = $(".lec-bar i"), txt = $(".lec-txt");
+  const upd = () => {
+    const n = kcs.length, d = Object.values(st).filter(Boolean).length;
+    if (bar) bar.style.width = (n ? 100 * d / n : 0) + "%";
+    if (txt) txt.textContent = n ? `Knowledge checks answered correctly: ${d} of ${n}` : "";
+    store.set(key, st); store.set("d" + day + ":progress", n ? d / n : 0);
+  };
+  kcs.forEach((k, i) => {
+    const ans = +k.dataset.answer, fb = $(".fb", k);
+    $(".btn", k).addEventListener("click", () => {
+      const sel = $("input:checked", k);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === ans;
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + k.dataset.why;
+      st[i] = ok || st[i] || false; upd();
+    });
+    if (st[i]) { const r = $$("input", k)[ans]; if (r) r.checked = true; }
+  });
+  upd();
+  const refs = JSON.parse(($("#refdata") || {textContent: "{}"}).textContent || "{}");
+  let pop = null;
+  document.addEventListener("click", e => {
+    const c = e.target.closest(".cite");
+    if (pop) { pop.remove(); pop = null; }
+    if (!c) return;
+    pop = h("div", {class: "pop", role: "note"});
+    c.dataset.refs.split(",").forEach(n => pop.append(h("p", {html: "[" + n + "] " + (refs[n] || "")})));
+    document.body.append(pop);
+    const r = c.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 440)) + "px";
+    pop.style.top = (window.scrollY + r.bottom + 6) + "px";
+  });
+  $$(".card").forEach(c => { const t = () => c.classList.toggle("flip"); c.addEventListener("click", t); c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t(); } }); });
+}
+
+/* Lab shell: tabs, self-assessment with confidence ratings, reflection and learning-log export. */
+function initLab(day, title, SELF, REFLECT) {
+  const tabs = $$(".tabs button"), panels = $$(".tabpanel");
+  tabs.forEach((b, i) => b.addEventListener("click", () => {
+    tabs.forEach((x, j) => { x.setAttribute("aria-selected", i === j); panels[j].hidden = i !== j; });
+    window.dispatchEvent(new Event("resize"));
+  }));
+  const qbox = $("#quiz"), res = store.get("d" + day + ":quiz", {});
+  SELF.forEach((q, i) => {
+    const fb = h("div", {class: "fb"}), name = "q" + i;
+    const opts = q.options.map((o, j) => h("label", {}, h("input", {type: "radio", name, value: j}), " ", o));
+    const conf = h("div", {class: "conf"}, "Confidence:", ["sure", "unsure", "guess"].map(c => h("label", {}, h("input", {type: "radio", name: name + "c", value: c}), " " + c)));
+    const btn = h("button", {class: "btn", type: "button"}, "Check answer");
+    const box = h("div", {class: "kc"}, h("p", {class: "q"}, (i + 1) + ". " + q.q), opts, conf, btn, fb);
+    btn.addEventListener("click", () => {
+      const sel = $(`input[name=${name}]:checked`, box), cf = $(`input[name=${name}c]:checked`, box);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === q.answer, c = cf ? cf.value : "not rated";
+      res[i] = {ok, conf: c}; store.set("d" + day + ":quiz", res);
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + q.why + (!ok && c === "sure" ? " A confident error marks a topic to revisit first." : "");
+      summary();
+    });
+    qbox.append(box);
+  });
+  const sum = h("p", {class: "small"}); qbox.append(sum);
+  function summary() {
+    const v = Object.values(res), ok = v.filter(r => r.ok).length, conf = v.filter(r => !r.ok && r.conf === "sure").length;
+    sum.textContent = `Answered: ${v.length} of ${SELF.length}. Correct: ${ok}. Confident errors: ${conf}.`;
+  }
+  summary();
+  const rbox = $("#reflect"), refl = store.get("d" + day + ":reflect", {});
+  REFLECT.forEach((p, i) => {
+    const ta = h("textarea", {rows: 4, style: "width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)"});
+    ta.value = refl[i] || "";
+    ta.addEventListener("input", () => { refl[i] = ta.value; store.set("d" + day + ":reflect", refl); });
+    rbox.append(h("p", {}, h("b", {}, (i + 1) + ". "), p), ta);
+  });
+  const ex = h("button", {class: "btn", type: "button"}, "Export learning log");
+  ex.addEventListener("click", () => {
+    const lines = [`# Learning log, day ${day}: ${title}`, "", `Exported: ${new Date().toISOString()}`, "", "## Self-assessment", ""];
+    SELF.forEach((q, i) => { const r = res[i]; lines.push(`${i + 1}. ${q.q}`, `   Result: ${r ? (r.ok ? "correct" : "incorrect") + ", confidence " + r.conf : "not answered"}`); });
+    lines.push("", "## Reflection", "");
+    REFLECT.forEach((p, i) => lines.push(`**${i + 1}. ${p}**`, "", refl[i] || "(no answer)", ""));
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown"}));
+    const a = h("a", {href: url, download: `learning_log_day${String(day).padStart(2, "0")}.md`}); document.body.append(a); a.click(); a.remove();
+  });
+  rbox.append(h("p", {}, ex));
+}
+
+/* Course home: progress per day from local storage. */
+function initHome(n, nq) {
+  for (let d = 1; d <= n; d++) {
+    const el = $("#dy" + d + " .done"); if (!el) continue;
+    const p = store.get("d" + d + ":progress", 0), q = Object.values(store.get("d" + d + ":quiz", {})).filter(r => r.ok).length;
+    el.textContent = (p > 0 || q > 0) ? `Reading checks ${Math.round(100 * p)}%, self-assessment ${q} of ${nq || 8} correct` : "";
+  }
+}
+
+/* Opaque blend of a palette colour with a background colour, used for heat maps without seams. */
+function mix(c1, c2, a) {
+  const hx = c => { c = (c || "#ffffff").trim(); if (c[0] === "#") { if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    return [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16)); } const m = c.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : [255, 255, 255]; };
+  const A = hx(c1), B = hx(c2); return "rgb(" + A.map((v, i) => Math.round(a * v + (1 - a) * B[i])).join(",") + ")";
+}
+
+/* Interactive scenes of the lecture pages. sv() builds an SVG element; scene() returns the parts of one scene:
+   its drawing, rows of buttons, a line that tells what happened and a row of readouts. SCENE_SHOT holds, for each
+   scene, a function that sets the state shown in the screenshot of the course README. */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (k === "text") e.textContent = v; else if (v != null) e.setAttribute(k, v); }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+window.SCENE_SHOT = window.SCENE_SHOT || {};
+function scene(id, w, hgt, label) {
+  const root = document.getElementById(id);
+  if (!root) return null;
+  const box = h("div", {class: "sn-box"}), svg = sv("svg", {class: "sn-svg", viewBox: `0 0 ${w} ${hgt}`, role: "img", "aria-label": label});
+  box.append(svg); root.append(box);
+  const say = h("p", {class: "sn-say", "aria-live": "polite"});
+  return {root, box, svg, say,
+    row(label) { const r = h("div", {class: "sn-btns"}); if (label) r.append(h("span", {class: "sn-lab"}, label)); box.append(r); return r; },
+    btn(row, text, fn, ghost) {
+      const b = h("button", {class: ghost ? "btn ghost" : "btn", type: "button"}, text);
+      b.addEventListener("click", fn); row.append(b); return b; },
+    toggle(row, text, on, fn) {
+      const b = h("button", {class: "btn ghost", type: "button", "aria-pressed": String(!!on)}, text);
+      b.addEventListener("click", () => { const v = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(v)); fn(v); });
+      row.append(b); return b; },
+    tellAt() { box.append(say); },
+    tell(html) { say.innerHTML = html; },
+    ro(names) {
+      const r = h("div", {class: "sn-ro"}), cells = {};
+      names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; r.append(h("span", {}, n + ": ", b)); });
+      box.append(r); return (n, v) => { cells[n].textContent = v; }; }};
+}
+/* Colours of a scene, read from the theme: fill and stroke styles for SVG elements. */
+const fillc = c => `fill:var(${c})`, strokec = (c, w) => `fill:none;stroke:var(${c});stroke-width:${w || 2}`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"neutral"});</script>
+<script>initLecture(2);
+
+(function(){ const root=document.getElementById('a1'); if(!root) return;
+// The five-state random walk: start in the middle, step left or right with equal probability, reward 1 on the right exit.
+const TRUE=[1,2,3,4,5].map(i=>i/6); let alpha=0.1, eps=100;
+legend(root.querySelector('#w-leg'),[['true values',0],['Monte Carlo',3],['TD(0)',1]]);
+const ro=readout(root.querySelector('#w-ro'),['RMSE, Monte Carlo','RMSE, TD(0)','episodes']);
+const sl=root.querySelector('#w-sl');
+slider(sl,{label:'Step size alpha',min:0.01,max:0.3,step:0.01,value:alpha,fmt:v=>v.toFixed(2)},v=>{alpha=v;st.redraw();});
+slider(sl,{label:'Episodes',min:1,max:300,step:1,value:eps},v=>{eps=v;st.redraw();});
+function learn(seed){ const r=RNG(seed); const mc=Array(5).fill(0.5), td=Array(5).fill(0.5);
+  for(let e=0;e<eps;e++){ let s=2; const path=[]; let ret=0;
+    while(true){ const s2=s+(r()<0.5?-1:1); path.push(s); if(s2<0){ret=0;break;} if(s2>4){ret=1;break;}
+      td[s]+=alpha*(0+td[s2]-td[s]); s=s2; }
+    const last=path[path.length-1]; td[last]+=alpha*(ret-td[last]);
+    path.forEach(x=>{ mc[x]+=alpha*(ret-mc[x]); }); }
+  return {mc,td}; }
+const st=stage(root.querySelector('#w-cv'),0.42,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const N=40, mc=Array(5).fill(0), td=Array(5).fill(0); let em=0, et=0;
+  for(let k=0;k<N;k++){ const o=learn(50+k); for(let i=0;i<5;i++){ mc[i]+=o.mc[i]/N; td[i]+=o.td[i]/N; }
+    em+=Math.sqrt(o.mc.reduce((s,v,i)=>s+(v-TRUE[i])**2,0)/5)/N; et+=Math.sqrt(o.td.reduce((s,v,i)=>s+(v-TRUE[i])**2,0)/5)/N; }
+  const F=frame(ctx,w,hh,{x0:0.5,x1:5.5,y0:0,y1:1,ticks:5,xlabel:'state A to E',ylabel:'estimated value'});
+  polyline(ctx,TRUE.map((v,i)=>[F.X(i+1),F.Y(v)]),C.c[0],2,[5,4]);
+  polyline(ctx,mc.map((v,i)=>[F.X(i+1),F.Y(v)]),C.c[3],2.2); polyline(ctx,td.map((v,i)=>[F.X(i+1),F.Y(v)]),C.c[1],2.2);
+  ro('RMSE, Monte Carlo',em.toFixed(3)); ro('RMSE, TD(0)',et.toFixed(3)); ro('episodes',eps); });
+})();
+
+
+(function(){
+const S = scene("scene", 480, 300, "A maze of three rows and five columns with a mouse, cheese and a cat; each cell shows the four Q-values of its actions as coloured triangles");
+if (!S) return;
+const NR = 3, NC = 5, CW = 96, ALPHA = 0.5, GAMMA = 0.9, START = [2, 0], CHEESE = "0,4", CAT = "1,2", WALLS = ["1,3"];
+const ACTS = ["up", "right", "down", "left"], D = {up: [-1, 0], right: [0, 1], down: [1, 0], left: [0, -1]};
+const cx = c => c * CW + CW / 2, cy = r => r * CW + CW / 2 + 6;
+const f2 = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+let Q, rng, pos, ep, steps, eps = 0.2, busy = false, lastDelta = null, epSteps = 0;
+const key = (r, c) => r + "," + c, term = k => k === CHEESE || k === CAT;
+const gQ = sv("g"), gArr = sv("g"), gObj = sv("g"), gMouse = sv("g", {class: "sn-t"});
+S.svg.append(gQ, gArr, gObj, gMouse);
+const DARK = "#1c2333";
+// cheese, cat and the wall
+(function objects() {
+  const [cr, cc] = CHEESE.split(",").map(Number), [tr, tc] = CAT.split(",").map(Number);
+  const x = cx(cc), y = cy(cr);
+  gObj.append(sv("path", {d: `M${x - 24} ${y + 14} L${x + 24} ${y + 14} L${x + 24} ${y - 2} L${x - 24} ${y - 16} Z`, style: "fill:#F2C14E;stroke:#B8860B;stroke-width:2"}),
+    sv("circle", {cx: x - 6, cy: y + 5, r: 3.5, style: "fill:#D9A520"}), sv("circle", {cx: x + 10, cy: y + 2, r: 2.8, style: "fill:#D9A520"}),
+    sv("text", {x, y: y + 38, "text-anchor": "middle", "font-size": 15, "font-weight": 700, text: "+1"}));
+  const X = cx(tc), Y = cy(tr);
+  gObj.append(sv("path", {d: `M${X - 20} ${Y - 6} L${X - 16} ${Y - 26} L${X - 6} ${Y - 14} Z M${X + 20} ${Y - 6} L${X + 16} ${Y - 26} L${X + 6} ${Y - 14} Z`, style: "fill:" + DARK}),
+    sv("circle", {cx: X, cy: Y, r: 19, style: "fill:" + DARK}),
+    sv("circle", {cx: X - 7, cy: Y - 3, r: 4, style: "fill:#9BE564"}), sv("circle", {cx: X + 7, cy: Y - 3, r: 4, style: "fill:#9BE564"}),
+    sv("text", {x: X, y: Y + 38, "text-anchor": "middle", "font-size": 15, "font-weight": 700, text: "−1"}));
+  WALLS.forEach(k => { const [wr, wc] = k.split(",").map(Number);
+    gObj.append(sv("rect", {x: wc * CW + 3, y: wr * CW + 9, width: CW - 6, height: CW - 6, rx: 8, style: "fill:var(--steel);opacity:.55"})); });
+})();
+gMouse.append(sv("path", {d: "M14 6 C 26 10, 30 20, 22 26", style: "fill:none;stroke:#8a8f9c;stroke-width:2.5"}),
+  sv("ellipse", {cx: 0, cy: 4, rx: 17, ry: 12, style: "fill:#A7ADBA"}),
+  sv("circle", {cx: -12, cy: -8, r: 7, style: "fill:#A7ADBA"}), sv("circle", {cx: -12, cy: -8, r: 4, style: "fill:#F4B6C2"}),
+  sv("circle", {cx: -17, cy: 2, r: 2.2, style: "fill:" + DARK}), sv("circle", {cx: -26, cy: 5, r: 2.4, style: "fill:#F4B6C2"}));
+
+function drawQ() {
+  gQ.replaceChildren(); gArr.replaceChildren();
+  for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) {
+    const k = key(r, c), x = c * CW, y = r * CW + 6, m = [x + CW / 2, y + CW / 2];
+    gQ.append(sv("rect", {x: x + 3, y: y + 3, width: CW - 6, height: CW - 6, rx: 8, style: "fill:var(--paper);stroke:var(--line);stroke-width:1.5"}));
+    if (term(k) || WALLS.includes(k)) continue;
+    const tri = {up: [[x + 5, y + 5], [x + CW - 5, y + 5]], right: [[x + CW - 5, y + 5], [x + CW - 5, y + CW - 5]],
+                 down: [[x + CW - 5, y + CW - 5], [x + 5, y + CW - 5]], left: [[x + 5, y + CW - 5], [x + 5, y + 5]]};
+    ACTS.forEach(a => { const q = Q[k][a]; if (Math.abs(q) < 0.005) return;
+      gQ.append(sv("path", {d: `M${tri[a][0]} L${tri[a][1]} L${m} Z`, style: `fill:var(${q > 0 ? "--ok" : "--bad"});fill-opacity:${Math.min(0.85, 0.15 + Math.abs(q))};stroke:var(--panel);stroke-width:1`})); });
+    const best = greedy(k);
+    if (best) { const [dr, dc] = D[best], T = [m[0] + dc * 27, m[1] + dr * 27], B = [T[0] - dc * 12, T[1] - dr * 12];
+      gArr.append(sv("line", {x1: m[0] - dc * 15, y1: m[1] - dr * 15, x2: B[0], y2: B[1], style: "stroke:var(--ink);stroke-width:3.5;stroke-linecap:round"}),
+        sv("path", {d: `M${T} L${B[0] - dr * 8},${B[1] + dc * 8} L${B[0] + dr * 8},${B[1] - dc * 8} Z`, style: "fill:var(--ink)"})); }
+  }
+}
+function greedy(k) {
+  const v = ACTS.map(a => Q[k][a]), mx = Math.max(...v);
+  if (v.every(x => Math.abs(x - mx) < 1e-9)) return null;
+  return ACTS[v.indexOf(mx)];
+}
+function choose(k) {
+  if (rng() < eps) return ACTS[Math.floor(rng() * 4)];
+  const v = ACTS.map(a => Q[k][a]), mx = Math.max(...v), best = ACTS.filter((a, i) => Math.abs(v[i] - mx) < 1e-9);
+  return best[Math.floor(rng() * best.length)];
+}
+function place() { gMouse.style.transform = `translate(${cx(pos[1])}px, ${cy(pos[0])}px)`; }
+function step(quiet) {
+  const k = key(...pos), a = choose(k), [dr, dc] = D[a];
+  let r2 = pos[0] + dr, c2 = pos[1] + dc;
+  if (r2 < 0 || r2 >= NR || c2 < 0 || c2 >= NC || WALLS.includes(key(r2, c2))) { r2 = pos[0]; c2 = pos[1]; }
+  const k2 = key(r2, c2), rew = k2 === CHEESE ? 1 : k2 === CAT ? -1 : 0;
+  const nextMax = term(k2) ? 0 : Math.max(...ACTS.map(b => Q[k2][b]));
+  const old = Q[k][a], target = rew + GAMMA * nextMax, delta = target - old;
+  Q[k][a] = old + ALPHA * delta; lastDelta = delta; steps += 1; epSteps += 1;
+  pos = [r2, c2];
+  const ended = term(k2) || epSteps >= 60;
+  if (!quiet) {
+    const where = `row ${r2 + 1}, column ${c2 + 1}`;
+    let m = `The mouse went <b>${a}</b>` + (k2 === k ? " and hit a wall" : ` to ${where}`) + `, reward ${rew > 0 ? "+1" : rew < 0 ? "−1" : "0"}. `;
+    m += term(k2) ? `The episode ends, so the target is the reward alone: ${rew > 0 ? "+1" : "−1"}. `
+                  : `Target: ${rew} + ${GAMMA} × ${f2(nextMax)} = ${f2(target)}, the reward plus the discounted best Q-value of the next cell. `;
+    m += `Update: Q ← ${f2(old)} + ${ALPHA} × (${f2(target)} − ${f2(old)}) = ${f2(Q[k][a])}.`;
+    if (ended) m += k2 === CHEESE ? " The mouse found the cheese." : k2 === CAT ? " The mouse ran into the cat." : "";
+    S.tell(m);
+  }
+  if (ended) { ep += 1; epSteps = 0; pos = START.slice(); }
+  return ended;
+}
+function show() { drawQ(); place(); const k = key(...START);
+  ro("episodes", ep); ro("steps", steps); ro("last TD error", lastDelta === null ? "–" : f2(lastDelta));
+  ro("value of the start", f2(Math.max(...ACTS.map(a => Q[k][a])))); }
+function reset() {
+  Q = {}; for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) { Q[key(r, c)] = {}; ACTS.forEach(a => Q[key(r, c)][a] = 0); }
+  rng = RNG(5); pos = START.slice(); ep = 0; steps = 0; epSteps = 0; lastDelta = null;
+}
+const row = S.row();
+S.btn(row, "One step", () => { if (!busy) { step(); show(); } });
+S.btn(row, "One episode", () => {
+  if (busy) return; busy = true; const e0 = ep;
+  const tick = () => { const end = step(); show(); if (end || ep > e0) { busy = false; return; } setTimeout(tick, reduced() ? 0 : 140); };
+  tick(); });
+S.btn(row, "20 episodes", () => {
+  if (busy) return; const e0 = ep; let guard = 0;
+  while (ep < e0 + 20 && guard++ < 5000) step(true);
+  show();
+  S.tell(`After ${ep} episodes the values have spread backwards from the cheese: Each update carries a part of the value of the next cell one cell back. ` +
+         `The start is worth ${f2(Math.max(...ACTS.map(a => Q[key(...START)][a])))}; the best path of six moves is worth 0.9<sup>5</sup> = 0.59. ` +
+         "The arrows show the greedy action of every cell, and the cells next to the cat have learned to avoid it.");
+}, true);
+S.toggle(row, "Explore with ε = 0.2", true, v => { eps = v ? 0.2 : 0; S.tell(v ? "The mouse explores: one move in five is chosen at random." : "The mouse is greedy now and always takes the action with the largest Q-value. Without exploration it can get stuck on the first path it found."); });
+S.btn(row, "Reset", () => { if (!busy) { reset(); show(); S.tell("All Q-values are zero again. Press <b>One step</b> to watch the first update."); } }, true);
+S.tellAt();
+const ro = S.ro(["episodes", "steps", "last TD error", "value of the start"]);
+reset(); show();
+S.tell("All Q-values start at zero. Press <b>One step</b>: The mouse moves, and the Q-value of the action it took moves half way towards the reward plus 0.9 times the best Q-value of the next cell.");
+window.SCENE_SHOT.scene = () => { reset(); let g = 0; while (ep < 60 && g++ < 9000) step(true); step(); step(); show(); };
+})();
+
+
+(function(){ const root=document.getElementById('a2'); if(!root) return;
+const R=4, Cn=8, A=[[-1,0],[1,0],[0,-1],[0,1]]; let eps=0.1;
+legend(root.querySelector('#c-leg'),[['Q-learning, greedy path',1],['SARSA, greedy path',3]]);
+const ro=readout(root.querySelector('#c-ro'),['online return, Q-learning','online return, SARSA']);
+slider(root.querySelector('#c-sl'),{label:'Exploration epsilon',min:0.01,max:0.3,step:0.01,value:eps,fmt:v=>v.toFixed(2)},v=>{eps=v;st.redraw();});
+function env(s,a){ const r=clamp(s[0]+A[a][0],0,R-1), c=clamp(s[1]+A[a][1],0,Cn-1);
+  if(r===3&&c>=1&&c<=6) return [[3,0],-100,false]; if(r===3&&c===7) return [[3,7],0,true]; return [[r,c],-1,false]; }
+function train(method,seed){ const rng=RNG(seed); const Q={}; const q=(s,a)=>Q[s+'|'+a]||0;
+  const pick=s=>{ if(rng()<eps) return Math.floor(rng()*4); let b=0; for(let a=1;a<4;a++) if(q(s,a)>q(s,b)) b=a; return b; };
+  let online=0;
+  for(let ep=0;ep<500;ep++){ let s=[3,0], a=pick(s), tot=0;
+    for(let k=0;k<300;k++){ const [s2,r,done]=env(s,a); tot+=r; const key=s+'|'+a;
+      if(done){ Q[key]=q(s,a)+0.5*(r-q(s,a)); break; }
+      const a2=pick(s2); const boot = method==='sarsa' ? q(s2,a2) : Math.max(...[0,1,2,3].map(x=>q(s2,x)));
+      Q[key]=q(s,a)+0.5*(r+boot-q(s,a)); s=s2; a=a2; }
+    if(ep>=400) online+=tot/100; }
+  const path=[[3,0]]; let s=[3,0]; for(let k=0;k<40;k++){ let b=0; for(let a=1;a<4;a++) if(q(s,a)>q(s,b)) b=a; const [s2,,done]=env(s,b); path.push(s2); s=s2; if(done) break; }
+  return {path,online}; }
+const st=stage(root.querySelector('#c-cv'),0.42,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh); const cw=w/Cn, ch=hh/R;
+  for(let r=0;r<R;r++) for(let c=0;c<Cn;c++){ ctx.fillStyle=(r===3&&c>=1&&c<=6)?C.ink:cssv('--panel'); ctx.fillRect(c*cw,r*ch,cw,ch); ctx.strokeStyle=C.line; ctx.strokeRect(c*cw,r*ch,cw,ch); }
+  ctx.fillStyle=C.ink; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.fillText('START',cw/2,3.5*ch+4); ctx.fillText('GOAL',7.5*cw,3.5*ch+4);
+  const ql=train('q',3), sa=train('sarsa',3);
+  [[ql,1,-6],[sa,3,6]].forEach(([o,i,off])=>polyline(ctx,o.path.map(([r,c])=>[c*cw+cw/2,r*ch+ch/2+off]),C.c[i],3));
+  ro('online return, Q-learning',ql.online.toFixed(1)); ro('online return, SARSA',sa.online.toFixed(1)); });
+})();
+</script>
+</div></body></html>

@@ -1,0 +1,676 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundations of Reinforcement Learning | Reinforcement Learning and Language Model Alignment</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><style>:root{
+  --ink:#1B2A38; --paper:#F3F5F0; --panel:#FFFFFF; --steel:#56656F; --line:#D2DAD0; --grid:#E4EAE2;
+  --accent:#0E7A78; --ok:#2E8B57; --bad:#B53F2E; --band:rgba(14,122,120,.09);
+  --c1:#1F5F8B; --c2:#C98510; --c3:#2E8B57; --c4:#8B3F82; --c5:#B53F2E;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --head:'Barlow Semi Condensed','Arial Narrow','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E3EAEE; --paper:#0F171D; --panel:#16222A; --steel:#9DB0B9; --line:#2A3B45; --grid:#1B2A33;
+  --accent:#4FC2BE; --ok:#63C08E; --bad:#E58372; --band:rgba(79,194,190,.12);
+  --c1:#6FB0DA; --c2:#E6A83F; --c3:#63C08E; --c4:#CC8CC3; --c5:#E58372;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--c1);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding:26px 20px 64px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+header.top .course{margin:0;color:var(--steel);font-size:.93rem}
+header.top h1{font-family:var(--head);font-weight:600;font-size:clamp(1.8rem,4.2vw,2.7rem);line-height:1.08;margin:.3rem 0 .45rem;letter-spacing:.005em}
+header.top .who{margin:0;font-size:.9rem;color:var(--steel)}
+header.top nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px}
+header.top nav a{font-size:.95rem}
+h2{font-family:var(--head);font-weight:600;font-size:1.7rem;line-height:1.15;margin:2rem 0 .55rem}
+h3{font-family:var(--head);font-weight:600;font-size:1.28rem;margin:1.4rem 0 .4rem}
+p,li{max-width:72ch}
+.small{font-size:.87rem;color:var(--steel)}
+code,pre{font-family:var(--mono);font-size:.86em}
+code{background:var(--band);padding:.08em .3em;border-radius:3px}
+p,li{overflow-wrap:break-word}
+p code,li code,td code,p.small a{overflow-wrap:anywhere}
+pre{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c1);padding:12px 14px;overflow-x:auto;border-radius:4px;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1.1rem 0;padding:.6rem 1rem;border-left:4px solid var(--c2);background:var(--panel);border-radius:0 4px 4px 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem;background:var(--panel)}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--band)}
+.tablewrap{overflow-x:auto}
+img{max-width:100%;height:auto}
+figure{margin:1.3rem 0}
+figure img{border:1px solid var(--line);border-radius:4px;background:#fff}
+figcaption{font-size:.87rem;color:var(--steel);margin-top:.35rem}
+button,select,input{font:inherit}
+select{padding:.3rem .45rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);max-width:100%}
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:.42rem .9rem;cursor:pointer}
+.btn:hover{background:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.ctl{display:flex;flex-direction:column;gap:2px;min-width:170px;flex:1}
+.ctl label{font-size:.86rem;color:var(--steel)}
+.ctl output{font-family:var(--mono);font-size:.85rem;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.paper{background-color:var(--panel);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:12px 12px;border:1px solid var(--line);border-radius:4px;display:block;width:100%;touch-action:none}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 9px;font-size:.86rem}
+.readout b{display:block;font-family:var(--mono);font-size:1.05rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem;color:var(--steel)}
+.legend i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);flex-wrap:wrap;margin-top:8px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:.5rem .85rem;cursor:pointer;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.tabpanel[hidden]{display:none}
+.kc{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 14px;margin:1.2rem 0}
+.kc .q{font-weight:700;margin:0 0 6px}
+.kc label{display:block;padding:3px 0;cursor:pointer}
+.kc .fb{margin-top:6px;font-size:.93rem}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.conf{display:flex;gap:10px;flex-wrap:wrap;font-size:.86rem;color:var(--steel);margin-top:4px}
+.anim{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin:1.3rem 0}
+.anim h4{font-family:var(--head);font-size:1.12rem;margin:0 0 6px}
+.lec-tools{position:sticky;top:0;z-index:5;background:var(--paper);padding:6px 0;border-bottom:1px solid var(--line)}
+.lec-prog{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--steel)}
+.lec-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.lec-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.cite{cursor:pointer;color:var(--c1);border-bottom:1px dotted var(--c1)}
+.pop{position:absolute;z-index:20;max-width:420px;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.18);padding:10px 12px;border-radius:6px;font-size:.86rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{min-height:110px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;cursor:pointer;font-size:.93rem}
+.card .b{display:none;color:var(--steel)} .card.flip .f{display:none} .card.flip .b{display:block}
+.pycorner{background:var(--panel);border:1px dashed var(--c1);border-radius:6px;padding:4px 16px 8px;margin:1.3rem 0}
+.disc td:first-child{white-space:nowrap;font-weight:700}
+footer.sig{margin-top:48px;border-top:2px solid var(--ink);padding-top:14px;font-size:.84rem;color:var(--steel)}
+footer.sig p{max-width:none}
+.weeks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:14px 0}
+.wk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c1);border-radius:4px;padding:10px 12px}
+.wk h3{margin:.1rem 0 .3rem;font-size:1.12rem}
+.wk .n{font-family:var(--head);color:var(--steel);font-size:.9rem}
+.wk .links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.88rem;margin-top:6px}
+.wk .done{font-size:.8rem;color:var(--ok)}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:center}
+.hero canvas{width:100%;height:auto}
+@media (max-width:720px){.hero{grid-template-columns:1fr}.ctl{min-width:140px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.lec-tools,.tabs,nav,.btn{display:none}}
+
+.callout{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin:14px 0;border-radius:4px}
+.callout b.t{display:block;margin-bottom:4px;color:var(--accent)}
+.eq{overflow-x:auto;margin:10px 0;text-align:center}
+.anim{margin:16px 0}
+details.ans{margin:4px 0 14px}
+/* Colab call-to-action boxes inside the lecture */
+.colabbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line,#d9dccf);border-left:5px solid #f9ab00;background:var(--panel,#fff);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn img{display:block;height:22px}
+.colabpart{margin:.8rem 0 0;font-size:.95rem}
+/* Step-by-step calculators of the lab */
+.labpart{scroll-margin-top:10px}
+h3[id]{scroll-margin-top:10px}
+.stepcalc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:12px 0;outline:none}
+.stepcalc .bench{margin:0 0 10px}
+.sc-presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}
+.sc-presets .btn{font-size:.86rem;padding:.22rem .6rem}
+ol.sc-steps{list-style:none;margin:8px 0 0;padding:0}
+ol.sc-steps li{max-width:none;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0;background:var(--paper)}
+ol.sc-steps li.cur{border-left-color:var(--accent);background:var(--panel);box-shadow:0 1px 8px rgba(0,0,0,.07)}
+ol.sc-steps li.new{animation:scin .35s ease}
+ol.sc-steps li.chg .sc-m{animation:scflash .9s ease}
+.sc-st{font-weight:700;font-size:.97rem}
+.sc-st .sc-n{display:inline-block;min-width:4.2em;color:var(--accent);font-family:var(--head);font-weight:600}
+.sc-x{font-size:.93rem;color:var(--steel);margin:3px 0;max-width:none}
+.sc-x p{margin:.2rem 0;max-width:none}
+.sc-m{overflow-x:auto;overflow-y:hidden;margin:4px 0;padding:2px 0;border-radius:4px;font-size:1.04em}
+.sc-m mjx-container[display="true"]{margin:.35em 0!important}
+.sc-q{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;font-size:.93rem}
+.sc-q label{font-weight:600}
+.sc-q input{width:7.5rem;padding:.25rem .4rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}
+.sc-ok{font-size:.86rem;color:var(--ok);font-weight:600}
+.sc-nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.sc-nav .sc-count{margin-left:auto;font-size:.88rem;color:var(--steel)}
+.sc-dots{display:flex;gap:4px;width:100%}
+.sc-dots i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.sc-dots i.on{background:var(--accent)}
+.sc-score{margin:.2rem 0 0}
+code.tex{font-size:.8rem;white-space:pre-wrap;word-break:break-word}
+@keyframes scin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes scflash{from{background:var(--band)}to{background:transparent}}
+/* Boxes in the lecture that open a part of the interactive lab */
+.labbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--panel);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.labbox p{margin:0}
+.labbox a.btn{white-space:nowrap;text-decoration:none;font-size:.9rem}
+@media (max-width:560px){.labbox,.colabbox{flex-direction:column;align-items:flex-start}}
+/* Interactive scenes of the lecture pages: a small drawing, buttons and a line that tells what happened */
+.scene{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c2);border-radius:10px;padding:12px 14px;margin:1.4rem 0}
+.scene>p.small{margin:0 0 4px}
+.scene .sn-svg{display:block;width:100%;max-width:560px;height:auto;margin:6px auto 2px}
+.scene svg text{font-family:var(--sans);fill:var(--ink)}
+.scene svg .sn-t{transition:transform .28s ease}
+.sn-btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;align-items:center}
+.sn-btns .btn{font-size:.9rem;padding:.34rem .75rem;min-height:2.15rem;line-height:1.25}
+.sn-btns .btn[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--ink)}
+.sn-btns .btn.ghost[aria-pressed=true]{background:var(--band);border-color:var(--accent);color:var(--ink)}
+.sn-lab{font-size:.84rem;color:var(--steel);margin-right:2px}
+.sn-say{min-height:3.3em;margin:6px 0 4px;padding:7px 11px;border-radius:8px;background:var(--band);font-size:.95rem;max-width:none}
+.sn-ro{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.86rem;color:var(--steel);margin:4px 0 0}
+.sn-ro b{font-family:var(--mono);color:var(--ink);font-weight:600;font-size:.84rem}
+.sn-pad{display:inline-grid;grid-template-columns:repeat(3,2.7rem);gap:4px;margin-right:10px}
+.sn-pad .btn{padding:.3rem 0;min-width:0}
+.sn-loop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:.86rem;margin:6px 0 2px;color:var(--steel)}
+.sn-node{border:1px solid var(--line);border-radius:999px;padding:.08rem .6rem;background:var(--paper);color:var(--ink);transition:background .2s,border-color .2s}
+.sn-loop .on{border-color:var(--accent);background:var(--band)}
+.sn-loop b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.scene .sn-pop{animation:snpop 1.1s ease forwards}
+@keyframes snpop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+.sn-box:focus{outline:none}
+.sn-box:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.sn-note{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:6px 10px;margin:6px 0;font-family:var(--mono);font-size:.84rem}
+.sn-note-h{font-family:var(--sans);font-size:.84rem;color:var(--steel);margin-bottom:2px}
+.sn-note-l{overflow-wrap:anywhere}
+.sn-cards{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.sn-card{flex:1 1 180px;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--paper);transition:border-color .2s,box-shadow .2s}
+.sn-card .sn-pos{display:block;font-size:.8rem;color:var(--steel)}
+.sn-card .sn-txt{font-family:var(--mono);font-size:.88rem;overflow-wrap:anywhere}
+.sn-card.win{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.sn-card.tie{border-color:var(--c2)}
+.sn-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:6px 0;background:var(--panel)}
+.sn-table th,.sn-table td{border:1px solid var(--line);padding:3px 6px;text-align:right}
+.sn-table th{background:var(--band);font-weight:600}
+.sn-table td.mv{background:var(--band);transition:background .3s}
+.sn-table td.ok{color:var(--ok);font-weight:700;text-align:center}
+.sn-table td.bad{color:var(--bad);font-weight:700;text-align:center}
+.sn-table td:first-child,.sn-table th:first-child{text-align:left}
+/* Theme layer of the Vel Tech courses, applied on top of style.css. */
+:root{
+  --ink:#1C2333; --paper:#F4F6FB; --panel:#FFFFFF; --steel:#5A6478; --line:#D5DAE7; --grid:#E7EAF3;
+  --ok:#23946B; --bad:#C9473B;
+  --c1:#2A5BD7; --c2:#D4870B; --c3:#23946B; --c4:#8E4BA8; --c5:#C9473B;
+  --sans:'Source Sans 3','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --head:'Lexend','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E4E8F2; --paper:#11151F; --panel:#1A2030; --steel:#A3ACC2; --line:#2C3448; --grid:#1F2638;
+  --ok:#5CC796; --bad:#EE8A7E;
+  --c1:#7FA2F5; --c2:#F0B34A; --c3:#5CC796; --c4:#C79BDA; --c5:#EE8A7E;
+}}
+body{font-size:17.5px;line-height:1.6}
+header.top{border:1px solid var(--line);border-top:6px solid var(--accent);border-radius:12px;background:var(--panel);
+  padding:16px 20px 14px;margin-bottom:26px;box-shadow:0 1px 2px rgba(20,30,60,.05)}
+header.top h1{font-weight:600;letter-spacing:-.01em}
+header.top nav a{background:var(--band);padding:.12rem .55rem;border-radius:999px;text-decoration:none;color:var(--accent);font-weight:600;font-size:.9rem}
+header.top nav a:hover{background:var(--accent);color:var(--panel)}
+h2{font-weight:600;letter-spacing:-.005em}
+h2::after{content:"";display:block;width:46px;height:3px;border-radius:2px;background:var(--accent);margin-top:7px}
+h3{font-weight:600}
+a{color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border-radius:8px}
+.btn:hover{background:var(--ink)}
+.btn.ghost{border-radius:8px}
+.bench,.kc,.card,pre,table,.readout div{border-radius:10px}
+.kc{border-radius:0 10px 10px 0}
+.readout div{background:var(--band)}
+.tabs button[aria-selected=true]{color:var(--accent)}
+th{background:var(--band)}
+blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
+/* Colab call-to-action boxes and links */
+.colabbox{display:flex;gap:.9rem;align-items:center;border:1px solid var(--line);border-left:5px solid #F9AB00;
+  background:var(--panel);border-radius:10px;padding:.7rem 1rem;margin:1.2rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn{flex:0 0 auto;line-height:0}
+.colabbox .colabbtn img,.colabpart img{height:20px;width:auto;max-width:none;display:inline-block;vertical-align:middle}
+.colabpart{margin:.9rem 0 0;font-size:.95rem}
+.colabpart a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;font-weight:600}
+/* Readable buttons: the accent of the dark scheme is light, so buttons on it carry dark text, and a ghost button
+   under the pointer gets a light tint instead of the ink colour */
+.btn.ghost:hover{background:var(--band)}
+@media (prefers-color-scheme:dark){.btn,.btn:hover{color:#111827}}
+:root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"global"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><div class="wrap">
+<header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 1 of 5</p><h1>Foundations of Reinforcement Learning</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-01">Day overview</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb">Colab notebook</a><a href="lab.html">Interactive lab</a><a href="Day01_Lecture_Notes.pdf">PDF notes</a></nav></header>
+<div class="lec-tools"><div class="lec-prog"><span class="lec-bar"><i></i></span><span class="lec-txt" aria-live="polite"></span></div></div>
+<article class="lecture"><h2 id="overview">Overview</h2>
+<p>Reinforcement learning is learning from interaction: An agent acts, the environment answers with a new situation and a reward, and the agent improves its behaviour to collect more reward over time <span class="cite" tabindex="0" data-refs="1">[1]</span>. The same idea trains game-playing programs, controls robots and, as Days 4 and 5 show, aligns language models with human preferences. This day introduces the vocabulary of the field on small problems: bandits, where the only question is which action to try <span class="cite" tabindex="0" data-refs="2,3">[2, 3]</span>; Markov decision processes, where actions also change the situation <span class="cite" tabindex="0" data-refs="1">[1]</span>; and values with the Bellman equation <span class="cite" tabindex="0" data-refs="4">[4]</span>, which allow a small world to be solved exactly. That exact solution becomes the yardstick for every method of the week.</p><h2 id="day-at-a-glance">Day at a glance</h2>
+<pre class="mermaid">flowchart LR
+  A[&quot;Learning from interaction&quot;] --&gt; B[&quot;Bandits&quot;]
+  B --&gt; C[&quot;Markov decision processes&quot;]
+  C --&gt; D[&quot;Values and the Bellman equation&quot;]
+  D --&gt; E[&quot;TokenWorld, stage 1: an exact optimum&quot;]
+  E --&gt; F[&quot;Your field&quot;]
+  F --&gt; G[&quot;Python step 1&quot;]</pre><div class="callout"><b class="t">Python code of this day</b><p>Every method on this page is also written as Python code in the <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb" target="_blank" rel="noopener">Colab notebook of the day</a>. A Colab notebook is a document of text and Python code that runs in the web browser, with nothing to install. Its code is divided into numbered sections. Each orange box on this page names the section whose code carries out what the text above the box explains. The box says what to run and what to look at in that section, and its button opens the notebook at that place. The practice parts and the self-assessment of the day are in the <a href="lab.html">interactive lab</a>.</p></div><h2 id="learning-from-interaction">Learning from interaction</h2><p>In supervised learning, every example comes with the right answer. In reinforcement learning, abbreviated RL, nobody gives the right action; the agent only receives a reward after acting, and the reward may come much later than the action that earned it <span class="cite" tabindex="0" data-refs="1">[1]</span>. The agent and the environment exchange three things in a loop: The environment shows a state, the agent chooses an action, and the environment returns a reward and the next state. The behaviour of the agent, the rule that maps states to actions, is called its policy, and its goal is to maximise the total reward over time, called the return.</p><div class="callout"><b class="t">In everyday life: learning from rewards</b><p>A child who learns to ride a bicycle gets no instruction for every movement of the handlebar, only the feedback of staying up or falling over. A chess player learns only at the end of a game whether all the moves together won or lost. Both learn from rewards, and in chess the reward comes long after the moves that earned it. This delay is what makes reinforcement learning hard: The learner has to find out which of its earlier actions deserve the credit.</p></div><div class="callout"><b class="t">TokenWorld, the project of the course</b><p>The course follows one small world through all five days. In TokenWorld an agent writes a short sentence one token at a time, and the finished sentence receives a reward for its quality. Writing a sentence token by token is what a language model does, so TokenWorld is a miniature of the alignment of language models that Days 4 and 5 treat.</p><p>Each day takes the project one step further. Day 1 describes TokenWorld as a decision problem and solves it exactly, which gives the optimum against which every later method is scored. Day 2 takes away the knowledge of the rules and learns the values of TokenWorld from experience. Day 3 learns the policy itself. Day 4 enlarges TokenWorld to a grammar of 1512 sentences, lets a small neural language model write them and aligns the model with preferences through a learned reward. Day 5 aligns the same model without a reward model and asks how the result of an alignment is measured.</p></div><p>These words have fixed symbols. Time is counted in steps \(t = 0, 1, 2, \ldots\) At step \(t\) the agent sees the state \(s_t\), chooses the action \(a_t\), and receives the reward \(r_{t+1}\), a number, together with the next state \(s_{t+1}\). The policy is written with the Greek letter pi, \(\pi(a \mid s)\): the probability that the agent chooses action \(a\) when it is in state \(s\). The vertical bar reads <em>given</em>. The return from step \(t\) on, written \(G_t\), is the sum of the rewards that follow:</p><div class="eq">\[G_t = r_{t+1} + r_{t+2} + r_{t+3} + \cdots\]</div><p>For example, an agent that receives the rewards 0, 0 and 5 in its next three steps and nothing afterwards has the return \(G_t = 0 + 0 + 5 = 5\). Reinforcement learning searches for a policy whose return is as large as possible on average.</p><div class="scene" id="scene"><p class="small"><strong>Scene: The robot in the fog.</strong> A robot in a grid of four rows and six columns, steered with the arrow buttons or the arrow keys. Every move earns the reward \(-1\), the charger \(+10\) and a pit \(-10\), and now and then the floor makes the robot slip in another direction. Fog hides a cell until the robot first enters it, so the map is learned from interaction alone. The readouts give the return of the episode, the sum of its rewards, and the button Random agent plays one episode with random actions for comparison.</p></div><p>Behind this goal stands the reward hypothesis: Every goal can be described as the maximisation of the expected sum of one number, the reward <span class="cite" tabindex="0" data-refs="1">[1]</span>. Three objections to it matter for Days 4 and 5. First, real goals are several at once, such as fast, safe and cheap, and merging them into one number needs weights that somebody has to choose. Second, a reward that is written down can differ from what was really wanted. An agent can then collect reward without doing the intended thing, which is called reward hacking. Third, for a task such as writing a good answer nobody can write the reward as a formula, so it has to be learned from people who compare answers.</p><div class="kc" data-answer="1" data-why="Rewards are the only feedback, and they may be delayed."><p class="q">Check your understanding. What does a reinforcement learning agent receive that tells it how well it acted?</p><label><input type="radio" name="KC0" value="0"> The correct action</label><label><input type="radio" name="KC0" value="1"> A reward, possibly long after the action</label><label><input type="radio" name="KC0" value="2"> A label for each state</label><label><input type="radio" name="KC0" value="3"> The model of the environment</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="bandits-exploration-against-exploitation">Bandits: exploration against exploitation</h2><p>The simplest problem has one state and several actions, like a row of slot machines, each paying with an unknown probability: a multi-armed bandit. The name comes from the one-armed bandit, a nickname of the slot machine with its lever. Each machine, and so each action, is called an arm, and playing an arm once is called a pull. There are \(K\) arms. Arm \(a\) pays a reward of 1 with a probability \(\mu_a\), the Greek letter mu, and a reward of 0 otherwise. The agent does not know these probabilities. The best arm has the highest one, written \(\mu^* = \max_a \mu_a\).</p><p>The agent can learn the probabilities only from what it has seen. Let \(N_a\) be the number of times that arm \(a\) has been pulled so far and \(S_a\) the number of rewards it has paid. The estimate of its probability, marked with a hat, is the share of pulls that paid:</p><div class="eq">\[\hat{\mu}_a = \frac{S_a}{N_a}\]</div><p>An arm that paid 6 times in 10 pulls has the estimate \(\hat{\mu}_a = 6 / 10 = 0.6\). After a few pulls the estimate can be far from the truth: An arm with a true probability of 0.45 pays only once in its first five pulls in about one case out of five, which gives an estimate of 0.2. The agent must therefore balance exploitation, choosing the arm that looks best now, with exploration, trying other arms that might be better. Four strategies strike this balance in different ways. In all of them \(a_t\) is the arm chosen at pull number \(t\).</p><div class="callout"><b class="t">In everyday life: exploration and exploitation</b><p>Choosing a restaurant is a bandit problem. The favourite place is the safe choice, exploitation, and a new place may turn out better or worse, exploration. Someone who only ever visits the favourite never finds out whether the new place is better, and someone who always tries new places rarely enjoys the best one. An online shop that shows two designs of a page to its visitors and keeps the one that sells more faces the same choice.</p></div><p><strong>Greedy.</strong> The greedy strategy always pulls the arm with the highest estimate:</p><div class="eq">\[a_t = \operatorname*{arg\,max}_{a}\; \hat{\mu}_a\]</div><p>The symbol arg max returns the arm at which the estimate is largest, while max would return the largest estimate itself. A greedy agent never explores and can lock onto a poor arm after a few unlucky early results.</p><p><strong>Epsilon-greedy.</strong> The epsilon-greedy strategy, also written \(\varepsilon\)-greedy with the Greek letter epsilon, explores at random a small share of the time:</p><div class="eq">\[a_t = \begin{cases} \text{an arm chosen at random} &amp; \text{with probability } \varepsilon \\ \operatorname*{arg\,max}_{a}\; \hat{\mu}_a &amp; \text{with probability } 1 - \varepsilon \end{cases}\]</div><p>With \(\varepsilon = 0.1\), one pull in ten is an exploration and nine in ten are greedy. This is the value used in the experiments of the day. With \(\varepsilon = 0\) the strategy is greedy, and with \(\varepsilon = 1\) it is purely random.</p><p><strong>Upper confidence bound.</strong> The upper confidence bound strategy, abbreviated UCB, explores where the uncertainty is largest <span class="cite" tabindex="0" data-refs="2">[2]</span>. It adds to each estimate a bonus that is large for arms that have been pulled rarely, and pulls the arm with the highest sum:</p><div class="eq">\[a_t = \operatorname*{arg\,max}_{a} \left[ \hat{\mu}_a + c \sqrt{\frac{\ln t}{N_a}} \right]\]</div><p>Here \(t\) is the number of the pull that is being decided, 1 for the first pull, \(\ln\) is the natural logarithm and \(c\) is a constant that sets the amount of exploration. The experiments of the day use \(c = 2\) and pull every arm once before the rule applies, so that no \(N_a\) is zero. The sum is an optimistic guess of how good the arm could still be: the upper end of a confidence interval around the estimate, which gives the strategy its name. An arm that has been pulled often has a small bonus and is judged by its estimate. The bonus of a neglected arm keeps growing with \(\ln t\), so the arm is pulled again sooner or later.</p><div class="callout"><b class="t">Worked example: greedy against UCB</b><p>Three arms have been pulled 20, 10 and 2 times and have paid 9, 6 and 0 times. These are \(20 + 10 + 2 = 32\) pulls, so the next pull has the number \(t = 33\). The estimates are \(9 / 20 = 0.45\), \(6 / 10 = 0.60\) and \(0 / 2 = 0.00\). Greedy pulls the second arm, the one with the largest estimate.</p><p>UCB with \(c = 2\) adds the bonus \(2 \sqrt{\ln 33 / N_a}\), with \(\ln 33 = 3.50\). In this and the following worked examples, intermediate values are rounded to two or three decimals, and each step continues with the rounded value. For the first arm, \(3.50 / 20 = 0.175\), \(\sqrt{0.175} = 0.418\) and the bonus is \(2 \times 0.418 = 0.84\). For the second arm, \(3.50 / 10 = 0.35\), \(\sqrt{0.35} = 0.592\) and the bonus is \(2 \times 0.592 = 1.18\). For the third arm, \(3.50 / 2 = 1.75\), \(\sqrt{1.75} = 1.323\) and the bonus is \(2 \times 1.323 = 2.65\).</p><p>The sums of estimate and bonus are \(0.45 + 0.84 = 1.29\), \(0.60 + 1.18 = 1.78\) and \(0.00 + 2.65 = 2.65\). UCB pulls the third arm: Two pulls are too little evidence to give up on it.</p></div><div class="labbox"><a class="btn" href="lab.html#pd" target="_blank" rel="noopener">Open lab Part D</a><p><b>Interactive lab, Part D.</b> The same calculation with sliders for the pulls and the rewards of each arm and for the constant \(c\). Each bonus and each sum is shown one step at a time, and a figure stacks the bonus of every arm on its estimate.</p></div><p><strong>Thompson sampling.</strong> Thompson sampling keeps for every arm a belief about its unknown probability, in the form of a probability distribution <span class="cite" tabindex="0" data-refs="3">[3]</span>. For rewards of 0 and 1 the suitable family is the Beta distribution, a distribution over the numbers between 0 and 1 with two parameters. The agent starts with a uniform belief, and after \(S_a\) paid pulls and \(N_a - S_a\) unpaid ones its belief about arm \(a\) is</p><div class="eq">\[\mu_a \sim \mathrm{Beta}\left( 1 + S_a,\; 1 + N_a - S_a \right)\]</div><p>The sign \(\sim\) reads <em>is distributed as</em>. The mean of this belief, \((1 + S_a) / (2 + N_a)\), lies close to the estimate, and the belief becomes narrower with every pull. At each pull the agent draws one random number, written \(\tilde{\mu}_a\) with a tilde, from the belief of every arm and pulls the arm with the largest draw, \(a_t = \operatorname*{arg\,max}_a\, \tilde{\mu}_a\). An arm with few pulls has a wide belief, so its draw is sometimes the largest and the arm is explored. As a result, each arm is pulled with the probability that it is the best one.</p><p>A belief \(\mathrm{Beta}(\alpha, \beta)\), with the Greek letters alpha and beta for its two parameters, has the mean and the standard deviation, a measure of its width,</p><div class="eq">\[\text{mean} = \frac{\alpha}{\alpha + \beta}, \qquad \text{standard deviation} = \sqrt{\frac{\alpha\, \beta}{(\alpha + \beta)^2\, (\alpha + \beta + 1)}}\]</div><div class="callout"><b class="t">Worked example: two beliefs in Thompson sampling</b><p>One arm has paid 6 times in 10 pulls. Its belief is \(\mathrm{Beta}(1 + 6, 1 + 4)\)​\({} = \mathrm{Beta}(7, 5)\), with the mean \(7 / (7 + 5) = 7 / 12 = 0.58\). For its standard deviation, \(\alpha \beta = 7 \times 5 = 35\) and \((\alpha + \beta)^2 (\alpha + \beta + 1)\)​\({} = 12^2 \times 13\)​\({} = 1872\), so the standard deviation is \(\sqrt{35 / 1872}\)​\({} = \sqrt{0.0187}\)​\({} = 0.14\). A second arm has paid once in 2 pulls. Its belief is \(\mathrm{Beta}(1 + 1, 1 + 1)\)​\({} = \mathrm{Beta}(2, 2)\), with the mean \(2 / 4 = 0.50\) and the standard deviation \(\sqrt{4 / (4^2 \times 5)}\)​\({} = \sqrt{0.05}\)​\({} = 0.22\).</p><p>The first arm looks better, but the belief about the second arm is much wider. The draw of the second arm is the larger one with a probability of 0.38, in about 38 of 100 pulls, so this arm is still pulled often. This probability is an integral over the two beliefs and is computed numerically.</p><p>After ten times as many pulls with the same shares, 60 rewards in 100 pulls and 10 in 20, the beliefs are \(\mathrm{Beta}(61, 41)\) and \(\mathrm{Beta}(11, 11)\). Their standard deviations are \(\sqrt{2501 / (102^2 \times 103)}\)​\({} = 0.05\) and \(\sqrt{121 / (22^2 \times 23)} = 0.10\). The second arm now wins the draw in only about 20 of 100 pulls: Exploration fades as the evidence grows.</p></div><p><strong>Regret.</strong> The price of learning is measured by regret, the reward lost compared with always pulling the best arm. One pull of arm \(a_t\) loses \(\mu^* - \mu_{a_t}\) on average, and the cumulative regret after \(T\) pulls is the sum of these losses:</p><div class="eq">\[R_T = \sum_{t=1}^{T} \left( \mu^* - \mu_{a_t} \right)\]</div><p>The sign \(\sum\) means: Add the term for \(t = 1, 2, \ldots, T\). For example, when the best arm pays with probability 0.45, then 33 pulls of an arm with 0.30 and 257 pulls of an arm with 0.40 cost \(33 \times 0.15 + 257 \times 0.05\)​\({} = 4.95 + 12.85\)​\({} = 17.8\). The same numbers appear in <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=python-step" target="_blank" rel="noopener">Python step 1</a>, the short Python program at the start of the Colab notebook of the day. The regret curve of a strategy that has found the best arm becomes flat, and the curve of a strategy that keeps pulling a worse arm rises in a straight line.</p><div class="labbox"><a class="btn" href="lab.html#pa" target="_blank" rel="noopener">Open lab Part A</a><p><b>Interactive lab, Part A.</b> A bandit game against the strategies of this section: five machines with hidden probabilities, fifty pulls for each player, and a scoreboard with the reward and the regret of both.</p></div><p><strong>The experiment in detail.</strong> The four strategies are compared on a bandit with \(K = 6\) arms whose probabilities lie close together: 0.30, 0.35, 0.38, 0.40, 0.42 and 0.45. The best arm is the sixth, with \(\mu^* = 0.45\). One run consists of \(T = 1500\) pulls. At every pull the experiment does four things. It chooses an arm by the rule of the strategy. It draws the reward, 1 with the probability of that arm and 0 otherwise. It adds one to \(N_a\) and the reward to \(S_a\). It records the loss \(\mu^* - \mu_{a_t}\) of the pull. The cumulative regret after each pull is the running sum of these losses.</p><p>Each strategy is run thirty times. A run is identified by its seed, the number that starts the random number generator: The same seed always produces the same run, and the seeds 0 to 29 give thirty different runs. For the final regrets \(x_1, \ldots, x_n\) of the \(n = 30\) runs, the experiment reports the mean, written \(\bar{x}\) with a bar, the standard deviation (SD), the usual measure of spread, and the largest value, the worst seed:</p><div class="eq">\[\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i, \qquad \mathrm{SD} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} \left( x_i - \bar{x} \right)^2}\]</div><p>The 10th and the 90th percentile, which bound the bands of the figure, are the values below which 10 and 90 percent of the runs fall.</p><div class="callout"><b class="t">Worked example: the first pulls of UCB in this experiment</b><p>In the run with seed 0, UCB first pulls every arm once, in order. Arms 2, 3 and 4 pay, and arms 1, 5 and 6 do not. The losses of these six pulls are \(0.15\)​\({} + 0.10\)​\({} + 0.07\)​\({} + 0.05\)​\({} + 0.03\)​\({} + 0\)​\({} = 0.40\), the regret so far.</p><p>Pull 7 is the first that uses the rule. Every arm has \(N_a = 1\), so every bonus is \(2 \sqrt{\ln 7 / 1}\). With \(\ln 7 = 1.946\) and \(\sqrt{1.946} = 1.395\), the bonus is \(2 \times 1.395 = 2.79\). The sums are \(1 + 2.79 = 3.79\) for the three arms that paid and \(0 + 2.79 = 2.79\) for the others. Among equal sums the first arm is taken, here arm 2, and this pull does not pay.</p><p>At pull 8, arm 2 has the estimate \(1 / 2 = 0.5\) and, after two pulls, a smaller bonus. With \(\ln 8 = 2.079\), its bonus is \(2 \sqrt{2.079 / 2}\)​\({} = 2 \sqrt{1.04}\)​\({} = 2 \times 1.020\)​\({} = 2.04\), a sum of \(0.5 + 2.04 = 2.54\). Arms 3 and 4 have the bonus \(2 \sqrt{2.079}\)​\({} = 2 \times 1.442\)​\({} = 2.88\) and the sum \(1 + 2.88 = 3.88\), and UCB pulls arm 3, the first of the two. With bonuses this large, UCB returns to every arm many times before the estimates decide.</p></div><div class="anim" id="a1"><p class="small"><strong>Animation.</strong> Mean cumulative regret of three strategies over 1500 pulls and twenty seeds. Change \(\varepsilon\) and the constant \(c\) of UCB and watch the ranking.</p><div class="row" id="b-sl"></div><canvas class="paper" id="b-cv" aria-label="Cumulative regret of three bandit strategies"></canvas><div class="legend" id="b-leg"></div><div id="b-ro"></div></div><figure><img src="figures/d01_fig1.png" alt="Cumulative regret of four strategies on six close arms, with the band between the 10th and 90th percentile over thirty seeds." style="max-width:100%"><figcaption>Cumulative regret of four strategies on six close arms, with the band between the 10th and 90th percentile over thirty seeds.</figcaption></figure><div class="tablewrap"><table><thead><tr><th>Strategy</th><th>Mean final regret</th><th>Standard deviation</th><th>Worst seed</th></tr></thead><tbody><tr><td>Greedy</td><td>51.5</td><td>50.0</td><td>223.5</td></tr><tr><td>Epsilon-greedy, \(\varepsilon = 0.1\)</td><td>37.9</td><td>27.1</td><td>138.1</td></tr><tr><td>UCB, \(c = 2\)</td><td>81.7</td><td>3.9</td><td>87.8</td></tr><tr><td>Thompson sampling</td><td>45.9</td><td>11.3</td><td>72.2</td></tr></tbody></table></div><p>The figure shows the mean cumulative regret of each strategy, with a band between the 10th and the 90th percentile of the thirty runs, and the table gives the regret after the last pull. For comparison, pulling arms purely at random loses \(0.45 - 0.383 = 0.067\) per pull on average, about 100 over 1500 pulls. Epsilon-greedy ends with the lowest mean regret, about 38, followed by Thompson sampling with 46, greedy with 52 and UCB with 82. Greedy varies most: In its best seed it finds the best arm at once and loses less than 1, and in its worst seed it locks onto a poor arm and loses 224. UCB with \(c = 2\) varies least, but on arms this close and with so few pulls its bonus buys more exploration than it repays. Its guarantee concerns the long run <span class="cite" tabindex="0" data-refs="2">[2]</span>.</p><p>The constant \(c\) decides how much UCB explores. The same experiment with other values of \(c\) gives:</p><div class="tablewrap"><table><thead><tr><th>Constant \(c\)</th><th>Mean final regret</th><th>Worst seed</th></tr></thead><tbody><tr><td>0.25</td><td>42.8</td><td>112.7</td></tr><tr><td>0.5</td><td>40.6</td><td>60.3</td></tr><tr><td>1</td><td>63.1</td><td>89.0</td></tr><tr><td>2</td><td>81.7</td><td>87.8</td></tr><tr><td>4</td><td>89.8</td><td>94.2</td></tr></tbody></table></div><p>A small constant explores too little and behaves like greedy in its bad seeds. A large one explores for too long. Here \(c = 0.5\) is the best compromise, with a mean regret of 41 and a worst seed of only 60. A mean alone would hide such differences. For this reason the standard deviation and the worst seed are reported next to every mean.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-1" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 1.</b> Open Section 1 of the Colab notebook and run it. The function <code>run_bandit</code> contains the four rules, each as one line of Python, and the cell prints the two tables and draws the figure shown here. Then change <code>c=2.0</code> or <code>eps=0.1</code> in the first line of the function and run the cell again to see the ranking change.</p></div><div class="kc" data-answer="1" data-why="Without exploration, an early wrong impression is never corrected."><p class="q">Check your understanding. Why can a purely greedy strategy end with a large regret?</p><label><input type="radio" name="KC1" value="0"> It explores too much</label><label><input type="radio" name="KC1" value="1"> It can lock onto a poor arm after a few unlucky early results</label><label><input type="radio" name="KC1" value="2"> It is too slow</label><label><input type="radio" name="KC1" value="3"> It needs a model</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><div class="kc" data-answer="2" data-why="The estimate is \(3 / 4 = 0.75\). For the bonus, \(\ln 100 = 4.605\), \(4.605 / 4 = 1.151\), \(\sqrt{1.151} = 1.073\) and \(2 \times 1.073 = 2.15\). The sum is \(0.75 + 2.15 = 2.90\)."><p class="q">Check your understanding. An arm has been pulled 4 times and has paid 3 times. At pull number \(t = 100\) and with \(c = 2\), what is its upper confidence bound?</p><label><input type="radio" name="KC2" value="0"> 0.75</label><label><input type="radio" name="KC2" value="1"> About 1.82</label><label><input type="radio" name="KC2" value="2"> About 2.90</label><label><input type="radio" name="KC2" value="3"> About 5.36</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="markov-decision-processes">Markov decision processes</h2><p>In most problems an action also changes the situation. A Markov decision process, abbreviated MDP, describes such a problem with five ingredients <span class="cite" tabindex="0" data-refs="1">[1]</span>: a set of states, a set of actions, transition probabilities, rewards and a discount factor. The transition probability \(P(s&#x27; \mid s, a)\) is the probability that the next state is \(s&#x27;\) when the agent takes action \(a\) in state \(s\). The reward \(r(s, a, s&#x27;)\) is the number that the agent receives for this step. The Markov property says that the next state depends only on the current state and action, not on the whole history:</p><div class="eq">\[P(s_{t+1} \mid s_t, a_t, s_{t-1}, a_{t-1}, \ldots, s_0, a_0) = P(s_{t+1} \mid s_t, a_t)\]</div><p>The discount factor \(\gamma\), the Greek letter gamma, is a number between 0 and 1 that makes rewards count less the later they come. With it the return becomes a discounted sum:</p><div class="eq">\[G_t = r_{t+1} + \gamma\, r_{t+2} + \gamma^2 r_{t+3} + \cdots = \sum_{k=0}^{\infty} \gamma^k\, r_{t+k+1}\]</div><p>A reward that arrives \(k\) steps later is multiplied by \(\gamma^k\). One run from a start state to an end state is called an episode.</p><div class="callout"><b class="t">In everyday life: the Markov property and discounting</b><p>A chess position has the Markov property: The possible next positions depend only on the position on the board and the move, not on the moves that led there. Discounting is familiar from money: 100 rupees today are usually preferred to 100 rupees in a year. A discount factor of 0.9 per step makes a reward one step later worth 90 percent of the same reward now, and a reward ten steps later only \(0.9^{10} = 0.35\) of it.</p></div><div class="callout"><b class="t">Worked example: a discounted return</b><p>An episode gives the rewards 2, 0 and 10 and then ends. With \(\gamma = 0.9\) the return is \(2 + 0.9 \times 0 + 0.9^2 \times 10\). Here \(0.9^2 = 0.81\) and \(0.81 \times 10 = 8.1\), so the return is \(2 + 0 + 8.1 = 10.1\). With \(\gamma = 0.5\) the same rewards give \(2 + 0.5 \times 0 + 0.5^2 \times 10\)​\({} = 2 + 0 + 0.25 \times 10\)​\({} = 4.5\): The late reward counts much less. With \(\gamma = 1\) nothing is discounted, and the return is the plain sum, 12.</p></div><p>The project of the course, TokenWorld, is a Markov decision process of this kind: The agent writes a short sentence one word at a time and is rewarded at the end for its quality. It is a miniature of how a language model is trained with reinforcement learning on Day 4. A unit of text, here a word, is called a token. The vocabulary has four tokens: <code>the</code>, <code>cat</code>, <code>sat</code> and <code>&lt;eos&gt;</code>, the end-of-sentence token. The state is the sentence written so far, the action is the next token, and the transition is certain: The token is appended. An episode ends when the agent writes <code>&lt;eos&gt;</code> or when the sentence has four tokens. Only then does the reward arrive, computed by the rules of the table, and no reward is discounted, \(\gamma = 1\). TokenWorld has 161 states: the empty sentence and 4, 12, 36 and 108 sentences of one, two, three and four tokens. Of these, 121 are finished sentences.</p><figure><img src="figures/d01_tw_tree.png" alt="One episode of TokenWorld along the best sentence. Each state is the sentence written so far, each action appends one token, and the only reward arrives when the sentence is finished. The lower row counts all sentences of each length." style="max-width:100%"><figcaption>One episode of TokenWorld along the best sentence. Each state is the sentence written so far, each action appends one token, and the only reward arrives when the sentence is finished. The lower row counts all sentences of each length.</figcaption></figure><div class="tablewrap"><table><thead><tr><th>Property of the finished sentence</th><th>Reward</th></tr></thead><tbody><tr><td>It starts with <code>the</code></td><td>\(+1.0\), otherwise \(-0.5\)</td></tr><tr><td><code>cat</code> appears exactly once</td><td>\(+1.5\)</td></tr><tr><td><code>cat</code> does not appear</td><td>\(-0.5\)</td></tr><tr><td><code>cat</code> appears more than once</td><td>\(-0.8\) for every repetition</td></tr><tr><td><code>sat</code> appears, and the first <code>cat</code> stands before it</td><td>\(+1.0\)</td></tr><tr><td>Each word, the end token not counted</td><td>\(-0.25\)</td></tr><tr><td>The sentence has no word at all</td><td>\(-1.0\) as the whole reward</td></tr></tbody></table></div><p>For example, the sentence <code>the cat sat &lt;eos&gt;</code> earns \(1.0 + 1.5 + 1.0 - 3 \times 0.25\)​\({} = 2.75\), and the sentence <code>cat cat &lt;eos&gt;</code> earns \(-0.5 - 0.8 - 2 \times 0.25\)​\({} = -1.8\).</p><p>The count can be followed step by step. After the first token there are 4 sentences, of which 3 are unfinished, because one of them is <code>&lt;eos&gt;</code> alone. Each unfinished sentence can be continued with 4 tokens. This gives \(3 \times 4 = 12\) sentences of two tokens, 9 of them unfinished, then \(9 \times 4 = 36\) of three tokens, 27 of them unfinished, and \(27 \times 4 = 108\) of four tokens. Together with the empty sentence these are \(1 + 4 + 12 + 36 + 108 = 161\) states. Finished are the \(1 + 3 + 9 = 13\) shorter sentences that end with <code>&lt;eos&gt;</code> and all 108 sentences of four tokens, in total 121.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 2.</b> Open Section 2 of the Colab notebook and run it. The function <code>score_sequence</code> is the reward table above written as Python code, and the function <code>step</code> appends one token to the sentence. The second cell counts the 161 states and prints the five best and the three worst sentences with their rewards.</p></div><div class="kc" data-answer="1" data-why="A discount below one makes rewards count less the later they come."><p class="q">Check your understanding. What does the discount factor control?</p><label><input type="radio" name="KC3" value="0"> The number of actions</label><label><input type="radio" name="KC3" value="1"> How much distant rewards count compared with near ones</label><label><input type="radio" name="KC3" value="2"> The learning rate</label><label><input type="radio" name="KC3" value="3"> The exploration</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="values-and-the-bellman-equation">Values and the Bellman equation</h2><p>The value of a state is the return the agent can expect from it when following its policy. As a formula, with \(\mathbb{E}_{\pi}\) for the average over everything that can happen while the agent follows the policy \(\pi\):</p><div class="eq">\[V^{\pi}(s) = \mathbb{E}_{\pi}\left[\, G_t \mid s_t = s \,\right]\]</div><div class="labbox"><a class="btn" href="lab.html#pb" target="_blank" rel="noopener">Open lab Part B</a><p><b>Interactive lab, Part B.</b> Six descriptions from the life of a delivery robot, each to be matched with its ingredient of a decision problem: state, action, reward, policy, value or discount factor.</p></div><div class="callout"><b class="t">In everyday life: values</b><p>A navigation app shows the remaining travel time from every junction of a route. The time from one junction is the time of the road to the next junction plus the remaining time from there. This is the Bellman equation, with travel times in place of rewards. The app can compute all these times backwards from the destination, which is the idea of value iteration.</p></div><p>Bellman observed that values satisfy a recursive relation: The value of a state equals the expected reward of the next step plus the discounted value of the state that follows <span class="cite" tabindex="0" data-refs="4">[4]</span>. For a given policy \(\pi\) this relation is the Bellman expectation equation:</p><div class="eq">\[V^{\pi}(s) = \sum_{a} \pi(a \mid s) \sum_{s&#x27;} P(s&#x27; \mid s, a)\,\left[ r(s, a, s&#x27;) + \gamma V^{\pi}(s&#x27;) \right]\]</div><p>The two sums average over the action that the policy chooses and over the next state that follows. For the best possible policy, whose values are written \(V^*\), the average over the actions is replaced by the best action, which gives the Bellman optimality equation:</p><div class="eq">\[V^*(s) = \max_a \sum_{s&#x27;} P(s&#x27; \mid s, a)\,\left[ r(s, a, s&#x27;) + \gamma V^*(s&#x27;) \right]\]</div><p>The formula is read from the inside. For one action \(a\), every possible next state \(s&#x27;\) contributes its reward plus its discounted value, weighted by its probability. The sum over \(s&#x27;\) is therefore the expected outcome of the action, called its action value \(Q^*(s, a)\). The max over \(a\) then picks the best action, and the best policy \(\pi^*\) takes that action:</p><div class="eq">\[\begin{aligned} Q^*(s, a) &amp;= \sum_{s&#x27;} P(s&#x27; \mid s, a)\,\left[ r(s, a, s&#x27;) + \gamma V^*(s&#x27;) \right] \\[4pt] V^*(s) &amp;= \max_a\, Q^*(s, a) \\[4pt] \pi^*(s) &amp;= \operatorname*{arg\,max}_{a}\; Q^*(s, a) \end{aligned}\]</div><div class="callout"><b class="t">Worked example: one Bellman backup</b><p>One application of the right-hand side to one state is called a backup. A state has two actions, every step costs 1, and \(\gamma = 0.9\). The action <em>left</em> leads with certainty to a state of value 4, so its value is \(-1 + 0.9 \times 4\)​\({} = -1 + 3.6\)​\({} = 2.6\). The action <em>right</em> leads with probability 0.7 to a state of value 10 and with probability 0.3 to a state of value \(-5\). The first outcome is worth \(-1 + 0.9 \times 10\)​\({} = -1 + 9\)​\({} = 8\) and the second \(-1 + 0.9 \times (-5)\)​\({} = -1 - 4.5\)​\({} = -5.5\). Weighted by their probabilities, the value of <em>right</em> is \(0.7 \times 8 + 0.3 \times (-5.5)\)​\({} = 5.6 - 1.65\)​\({} = 3.95\).</p><p>The value of the state is the larger of the two, 3.95, and the best action is <em>right</em>.</p></div><div class="labbox"><a class="btn" href="lab.html#pc" target="_blank" rel="noopener">Open lab Part C</a><p><b>Interactive lab, Part C.</b> Two calculations by hand with the formulas of this section, a discounted return and a Bellman backup. The lab checks each value.</p></div><p>When the transitions are known, the equation can be solved by repeating it until the values stop changing, which is value iteration, a form of dynamic programming. All values start at zero. One sweep visits every state and replaces its value by the backup computed from the current values:</p><div class="eq">\[V_{k+1}(s) = \max_a \sum_{s&#x27;} P(s&#x27; \mid s, a)\,\left[ r(s, a, s&#x27;) + \gamma V_k(s&#x27;) \right]\]</div><p>The index \(k\) counts the sweeps. They stop when the largest change of a value in one sweep, \(\max_s |V_{k+1}(s) - V_k(s)|\), falls below a small tolerance. Policy iteration is a second method for the same task. It reaches the same values along another route: It computes the values of the current policy by repeating the expectation equation, switches every state to the action with the highest action value, and repeats both steps until the policy no longer changes.</p><div class="callout"><b class="t">Worked example: value iteration by hand</b><p>A corridor has two cells, A and B, and a goal behind B. The action <em>forward</em> moves the agent one cell on with probability 0.8 and leaves it where it is with probability 0.2. Every step has a reward of \(-1\), except the step that reaches the goal, which has a reward of 0, and \(\gamma = 0.9\). The goal has the value 0, and both cells start with the value 0. Each sweep computes the two new values from the values of the previous sweep, rounded to three decimals.</p><p>Sweep 1 uses the starting values. For B: \(0.8 \times (0 + 0.9 \times 0)\)​\({} + 0.2 \times (-1 + 0.9 \times 0)\)​\({} = 0 - 0.2\)​\({} = -0.2\). For A: \(0.8 \times (-1 + 0.9 \times 0)\)​\({} + 0.2 \times (-1 + 0.9 \times 0)\)​\({} = -0.8 - 0.2\)​\({} = -1\).</p><p>Sweep 2 uses the values of sweep 1, \(-0.2\) for B and \(-1\) for A. For B: \(0.8 \times 0\)​\({} + 0.2 \times (-1 + 0.9 \times (-0.2))\)​\({} = 0.2 \times (-1.18)\)​\({} = -0.236\). For A: \(0.8 \times (-1 + 0.9 \times (-0.2))\)​\({} + 0.2 \times (-1 + 0.9 \times (-1))\), which is \(0.8 \times (-1.18)\)​\({} + 0.2 \times (-1.9)\)​\({} = -0.944 - 0.380\)​\({} = -1.324\).</p><p>Sweep 3 uses \(-0.236\) for B and \(-1.324\) for A. For B: \(0.2 \times (-1 + 0.9 \times (-0.236))\)​\({} = 0.2 \times (-1.212)\)​\({} = -0.242\). For A: \(0.8 \times (-1.212)\)​\({} + 0.2 \times (-1 + 0.9 \times (-1.324))\), which is \(-0.970\)​\({} + 0.2 \times (-2.192)\)​\({} = -0.970 - 0.438\)​\({} = -1.408\). The table below continues in the same way until no value changes any more. A second action, <em>wait</em>, would have the value \(-1 + 0.9\, V(s)\), which is lower in every sweep. In sweep 2, for example, it is \(-1 + 0.9 \times (-0.2)\)​\({} = -1.18\) for B, less than \(-0.236\), so the max chooses <em>forward</em>.</p></div><div class="tablewrap"><table><thead><tr><th>Sweep</th><th>\(V(B)\)</th><th>\(V(A)\)</th><th>Largest change of the sweep</th></tr></thead><tbody><tr><td>1</td><td>\(-0.200\)</td><td>\(-1.000\)</td><td>1.000</td></tr><tr><td>2</td><td>\(-0.236\)</td><td>\(-1.324\)</td><td>0.324</td></tr><tr><td>3</td><td>\(-0.242\)</td><td>\(-1.408\)</td><td>0.084</td></tr><tr><td>4</td><td>\(-0.244\)</td><td>\(-1.427\)</td><td>0.019</td></tr><tr><td>5</td><td>\(-0.244\)</td><td>\(-1.433\)</td><td>0.006</td></tr><tr><td>6</td><td>\(-0.244\)</td><td>\(-1.434\)</td><td>0.001</td></tr><tr><td>7</td><td>\(-0.244\)</td><td>\(-1.434\)</td><td>0.000</td></tr></tbody></table></div><p>The largest change shrinks by a factor of three to four from one sweep to the next. With a tolerance of 0.001, a change below 0.001, the sweeps stop after sweep 7, at \(V(A) = -1.434\) and \(V(B) = -0.244\). Without rounding, the values approach \(-1.4337\) and \(-0.2439\), the exact solution of the two Bellman equations.</p><div class="labbox"><a class="btn" href="lab.html#pe" target="_blank" rel="noopener">Open lab Part E</a><p><b>Interactive lab, Part E.</b> Value iteration on this corridor, sweep by sweep, with sliders for the probability of moving forward, the discount factor and the reward of a step. A figure follows the two values until they settle.</p></div><p>The Windy Cliff is a grid of 4 rows and 8 columns. The agent starts in the bottom left corner and has to reach the goal in the bottom right corner, and the cells between them are a cliff. The four actions are up, down, left and right. Every step has a reward of \(-1\), except the step that reaches the goal, which has a reward of 0. A step into the cliff has a reward of \(-100\) and puts the agent back at the start. The wind is described by the slip probability, 0.15 in this example: With this probability the wind replaces the chosen action by a push to the left or to the right, each with half of it, 0.075. The discount factor is 0.99. The optimal policy walks along the row next to the cliff, the shortest route: A sideways push cannot move the agent down into the cliff from that row. The wind changes the values and not the route. The value of the start falls from \(-7.7\) without wind to \(-17.9\) with a slip probability of 0.15, because at the start a push to the right ends in the cliff. Value iteration computes the values of all 32 cells with the update above and stops when no value changes by more than \(10^{-9}\), here after 26 sweeps. Policy iteration ends with the same values after 4 changes of the policy.</p><div class="callout"><b class="t">Worked example: the two values of the start</b><p>Without wind the shortest route has nine steps: one up, seven to the right and one down into the goal. The first eight have a reward of \(-1\) and the last one a reward of 0. The value of the start is their discounted sum, \(-(1 + 0.99 + 0.99^2 + \cdots + 0.99^7)\). A sum of this kind, a geometric sum, equals \((1 - 0.99^8) / (1 - 0.99)\). With \(0.99^8 = 0.9227\) this is \(0.0773 / 0.01 = 7.73\), so the value of the start is \(-7.73\).</p><p>With a slip probability of 0.15, the action <em>up</em> at the start has three outcomes. With probability 0.85 the agent moves up, to a cell whose value is \(-8.09\). With probability 0.075 the wind pushes it to the right, into the cliff: a reward of \(-100\) and a return to the start. With probability 0.075 the wind pushes it to the left, against the edge of the grid: a reward of \(-1\), and the agent stays at the start.</p><p>The Bellman equation of the start, with \(V\) for its own value, is therefore \(V\)​\({} = 0.85 \times (-1 + 0.99 \times (-8.09))\)​\({} + 0.075 \times (-100 + 0.99\, V)\)​\({} + 0.075 \times (-1 + 0.99\, V)\). The first term is \(0.85 \times (-1 - 8.009)\)​\({} = 0.85 \times (-9.009)\)​\({} = -7.658\). The second is \(-7.5 + 0.07425\, V\), and the third is \(-0.075 + 0.07425\, V\). Collecting the terms gives \(V = -15.233 + 0.1485\, V\). Subtracting \(0.1485\, V\) from both sides gives \(0.8515\, V = -15.233\), so \(V\)​\({} = -15.233 / 0.8515\)​\({} = -17.89\). The risk of the cliff alone accounts for \(0.075 \times 100 / 0.8515\)​\({} = 7.5 / 0.8515\)​\({} = 8.8\) of this value.</p></div><div class="anim" id="a2"><p class="small"><strong>Animation.</strong> Value iteration on the Windy Cliff, sweep by sweep. Change the slip probability and run again: The arrows of the greedy policy keep their route, and the value of the start falls as the wind grows.</p><div class="row" id="v-sl"></div><canvas class="paper" id="v-cv" aria-label="Value iteration on the Windy Cliff"></canvas><div id="v-ro"></div></div><figure><img src="figures/d01_fig2.png" alt="The optimal policy and the state values of the Windy Cliff with a slip probability of 0.15." style="max-width:100%"><figcaption>The optimal policy and the state values of the Windy Cliff with a slip probability of 0.15.</figcaption></figure><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 3.</b> Open Section 3 of the Colab notebook and run its cells. The function <code>grid_transitions</code> builds the transition probabilities, and the loop under the comment <code>value iteration</code> is the update above. The cells print the value of the start, \(-17.89\), and draw the figure shown here. Then change <code>slip=0.15</code> to <code>slip=0.0</code> where <code>grid_transitions</code> is called and run the cells again: The route stays, and the value of the start becomes \(-7.73\).</p></div><div class="kc" data-answer="1" data-why="One more step explains a difference of about one. The rest is the risk of the start: Each attempt to leave it ends in the cliff with a probability of 7.5 percent."><p class="q">Check your understanding. With a slip probability of 0.15, the start of the Windy Cliff has a value of about minus 18 and the cell above it about minus 8. Why is the start so much worse?</p><label><input type="radio" name="KC4" value="0"> It is one step further from the goal</label><label><input type="radio" name="KC4" value="1"> At the start, a push to the right moves the agent into the cliff, which costs 100 and returns it to the start</label><label><input type="radio" name="KC4" value="2"> Value iteration has not converged there</label><label><input type="radio" name="KC4" value="3"> The discount factor is smaller at the start</label><button class="btn" type="button">Check</button><div class="fb" aria-live="polite"></div></div><h2 id="tokenworld-stage-1-an-exact-optimum-as-a-yardstick">TokenWorld, stage 1: an exact optimum as a yardstick</h2><p>The methods of this day now come back to the project. TokenWorld is a Markov decision process with known transitions and rewards, so value iteration can solve it exactly, and this solution is the first result of the project. The best sentence is <code>the cat sat &lt;eos&gt;</code> with a return of 2.75, and value iteration finds the same number as the value of the empty sentence, the state in which every episode starts. The best policy writes this sentence token by token.</p><figure><img src="figures/d01_tw_stage.png" alt="The stage of the project reached today. Every later method is scored against the optimum of 2.75 found here." style="max-width:100%"><figcaption>The stage of the project reached today. Every later method is scored against the optimum of 2.75 found here.</figcaption></figure><p>The table shows how the best policy decides. For the sentence written so far, each column gives the action value \(Q^*\) of writing that token next and continuing in the best way. The best policy takes the largest value of each row.</p><div class="tablewrap"><table><thead><tr><th>Sentence so far</th><th><code>the</code></th><th><code>cat</code></th><th><code>sat</code></th><th><code>&lt;eos&gt;</code></th><th>Best next token</th></tr></thead><tbody><tr><td>(empty)</td><td>\(2.75\)</td><td>\(1.50\)</td><td>\(0.50\)</td><td>\(-1.00\)</td><td><code>the</code></td></tr><tr><td><code>the</code></td><td>\(2.50\)</td><td>\(2.75\)</td><td>\(1.75\)</td><td>\(0.25\)</td><td><code>cat</code></td></tr><tr><td><code>the cat</code></td><td>\(2.50\)</td><td>\(0.20\)</td><td>\(2.75\)</td><td>\(2.00\)</td><td><code>sat</code></td></tr><tr><td><code>the cat sat</code></td><td>\(2.50\)</td><td>\(0.20\)</td><td>\(2.50\)</td><td>\(2.75\)</td><td><code>&lt;eos&gt;</code></td></tr></tbody></table></div><div class="callout"><b class="t">Worked example: the last two rows of the table</b><p>The values are computed from the end of the sentence backwards. After <code>the cat sat</code> every action ends the episode, so each action value is the reward of the finished sentence. Writing <code>&lt;eos&gt;</code> gives \(1.0 + 1.5 + 1.0 - 3 \times 0.25\)​\({} = 2.75\). Writing <code>the</code> or <code>sat</code> gives a sentence of four words with one <code>cat</code>, \(1.0 + 1.5 + 1.0 - 4 \times 0.25\)​\({} = 2.50\). Writing <code>cat</code> gives <code>the cat sat cat</code>, in which <code>cat</code> is repeated: \(1.0 - 0.8 + 1.0 - 4 \times 0.25\)​\({} = 0.20\). The value of the state <code>the cat sat</code> is the largest of these, 2.75.</p><p>One step earlier, after <code>the cat</code>, the action <code>sat</code> leads to that state, so its action value is 2.75. The action <code>&lt;eos&gt;</code> ends with <code>the cat &lt;eos&gt;</code>, which earns \(1.0 + 1.5 - 2 \times 0.25\)​\({} = 2.00\). The other two actions lead to states whose values, 2.50 and 0.20, are found in the same way. The largest value is again 2.75, and the best token is <code>sat</code>.</p></div><p>A policy that picks each token at random, with probability \(1/4\), writes the best sentence with probability \((1/4)^4 = 1/256\), less than once in two hundred tries. Its expected return is the reward of every finished sentence \(x\), weighted by the probability of writing it:</p><div class="eq">\[\mathbb{E}\left[ G \right] = \sum_{x} \left( \tfrac{1}{4} \right)^{|x|} R(x) = -0.49\]</div><p>Here \(|x|\) is the number of tokens of the sentence, the end token included, and \(R(x)\) is its reward.</p><p>The sum has 121 terms and can be followed by the length of the sentences. The single sentence of one token, <code>&lt;eos&gt;</code> alone, has the probability \(1/4\) and the reward \(-1\), a contribution of \(-0.250\). The 3 finished sentences of two tokens have the probability \(1/16\) each and rewards that add up to \(-0.25\), a contribution of \(-0.016\). The 9 of three tokens, with \(1/64\) each, contribute \(-0.005\). The 108 of four tokens, with \(1/256\) each and rewards that add up to \(-57.05\), contribute \(-0.223\). The total is \(-0.493\).</p><p>A simulation estimates the same number: 4000 episodes played with the random policy have a mean return of \(-0.526\). The difference from the exact value is due to chance. One random episode has a standard deviation of 1.20, so the mean of 4000 episodes is uncertain by about \(1.20 / \sqrt{4000}\)​\({} = 1.20 / 63.2\)​\({} = 0.019\). This quantity, the standard deviation divided by the square root of the number of episodes, is called the standard error of the mean. Of the 4000 episodes, 0.35 percent reached the optimum, close to the exact share of \(1 / 256\), which is 0.39 percent.</p><p>Every learning method of the week is measured against the exact optimum of 2.75, which turns a vague claim that a method works into a number.</p><figure><img src="figures/d01_fig3.png" alt="Returns of 4000 rollouts of the random policy, with its mean and the exact optimum." style="max-width:100%"><figcaption>Returns of 4000 rollouts of the random policy, with its mean and the exact optimum.</figcaption></figure><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-4" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 4.</b> Open Section 4 of the Colab notebook and run it. The function <code>value_iteration_tokenworld</code> computes the action values, and the cell prints the table above row by row. The next cell plays the 4000 random episodes, prints their mean return and draws the histogram shown here.</p></div><h2 id="your-field">Your field</h2><p>Bandits appear wherever options are tested on the fly: doses in a clinical trial, subject lines of an email campaign, tariffs offered to drivers, irrigation schedules or hint styles in a tutoring system. The application of the day poses such a problem for five fields. For medicine, the four arms are four doses to which a patient responds with the probabilities 0.20, 0.35, 0.50 and 0.45. The four strategies of the day run on these arms for 1000 pulls and over 20 seeds. Epsilon-greedy and Thompson sampling end with mean regrets of about 25 and 26, greedy with 58 and UCB with \(c = 2\) with 69.</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 5.</b> Open Section 5 of the Colab notebook. Its first line is a switch, <code>FIELD = &quot;medicine&quot;</code>. Replace the word by <code>marketing</code>, <code>energy</code>, <code>agriculture</code> or <code>education</code> and run the section. The printed table shows which strategy has the lowest mean regret in that field and which has the smallest spread.</p></div><h2 id="going-further-optional">Going further (optional)</h2><p>Results in reinforcement learning vary strongly from one random seed to the next, so a single run proves little <span class="cite" tabindex="0" data-refs="6">[6]</span>. The rest of the week therefore follows three habits: Every method is run over many seeds, the spread is reported next to the mean, and an estimate is checked against an exact value wherever one exists.</p><p>TokenWorld puts these habits to work. The best policy writes a random token with probability \(\varepsilon\), and each such policy is evaluated with 15 seeds of 400 episodes each:</p><div class="tablewrap"><table><thead><tr><th>Share of random tokens \(\varepsilon\)</th><th>Mean return over 15 seeds</th><th>Standard deviation of the seeds</th></tr></thead><tbody><tr><td>0</td><td>\(2.750\)</td><td>0.000</td></tr><tr><td>0.1</td><td>\(2.320\)</td><td>0.035</td></tr><tr><td>0.3</td><td>\(1.534\)</td><td>0.050</td></tr><tr><td>0.6</td><td>\(0.606\)</td><td>0.053</td></tr><tr><td>1</td><td>\(-0.478\)</td><td>0.052</td></tr></tbody></table></div><p>With \(\varepsilon = 1\) the policy is the random policy, whose exact expected return is \(-0.493\). The measured \(-0.478\) agrees with it within the uncertainty. One seed averages 400 episodes, so its mean varies from seed to seed by about \(1.20 / \sqrt{400}\)​\({} = 1.20 / 20\)​\({} = 0.060\), close to the measured 0.052. The mean of 15 seeds is uncertain by about \(0.060 / \sqrt{15}\)​\({} = 0.060 / 3.87\)​\({} = 0.016\), and the two numbers differ by \(0.493 - 0.478 = 0.015\).</p><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, Section 6.</b> Open Section 6 of the Colab notebook and run it. The function <code>study</code> evaluates one policy over 15 seeds and returns the mean, the standard deviation and the best and the worst seed, and the cell prints the table above. The last cell shows three sliders, for \(\varepsilon\), for \(c\) and for the number of seeds: Move them and watch the regret curves of the bandit change.</p></div><h2 id="python-step">Python step 1: Values, variables, lists and decisions</h2><div class="colabbox"><a class="colabbtn" href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=python-step" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"></a><p><b>Python code in the Colab notebook, right after Section 0 (setup).</b> Open the notebook and run this step cell by cell: It consists of short pieces of Python code with their explanations, a quick check and three exercises. Topics: Values, lists and variables · A decision: explore or exploit · A loop of 300 pulls · A function for the regret · A dictionary of results.</p></div><p>Students who have never programmed start with the <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/start-here/NB00_start_here.ipynb">start-here notebook</a> of the course.</p><p>The <a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb">notebook</a> continues with the hands-on sections, and the <a href="lab.html">interactive lab</a> holds three practice parts and the self-assessment. The study path, the daily task and the research assignment are on the <a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-01">day overview</a>.</p><h2 id="review-cards">Review cards</h2><p class="small">Select a card to turn it over.</p><div class="cards"><div class="card" tabindex="0" role="button"><div class="f">Agent and environment</div><div class="b">The agent acts; the environment returns a reward and the next state <span class="cite" tabindex="0" data-refs="1">[1]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Policy</div><div class="b">The rule that maps states to actions.</div></div><div class="card" tabindex="0" role="button"><div class="f">Return</div><div class="b">The total, usually discounted, reward collected from now on.</div></div><div class="card" tabindex="0" role="button"><div class="f">Arm and pull</div><div class="b">An arm is one of the actions of a bandit, and a pull is one play of it.</div></div><div class="card" tabindex="0" role="button"><div class="f">Exploration</div><div class="b">Trying actions that may be better, at the cost of reward now.</div></div><div class="card" tabindex="0" role="button"><div class="f">Upper confidence bound (UCB)</div><div class="b">The estimate of an arm plus a bonus that is large while the arm has been pulled rarely <span class="cite" tabindex="0" data-refs="2">[2]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Thompson sampling</div><div class="b">Draw a number from the belief about every arm and pull the arm with the largest draw <span class="cite" tabindex="0" data-refs="3">[3]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Regret</div><div class="b">Reward lost compared with always choosing the best action.</div></div><div class="card" tabindex="0" role="button"><div class="f">Markov decision process (MDP)</div><div class="b">States, actions, transitions, rewards and a discount factor <span class="cite" tabindex="0" data-refs="1">[1]</span>.</div></div><div class="card" tabindex="0" role="button"><div class="f">Value</div><div class="b">The expected return from a state when following a policy.</div></div><div class="card" tabindex="0" role="button"><div class="f">Bellman equation</div><div class="b">A value equals the expected next reward plus the discounted value of what follows <span class="cite" tabindex="0" data-refs="4">[4]</span>.</div></div></div><h2 id="references">References</h2><p class="small" id="ref-1">[1] Sutton, R. S., &amp; Barto, A. G. (2018). Reinforcement Learning: An Introduction (2nd ed.). MIT Press.</p><p class="small" id="ref-2">[2] Auer, P., Cesa-Bianchi, N., &amp; Fischer, P. (2002). Finite-time analysis of the multiarmed bandit problem. Machine Learning, 47(2-3), 235-256.</p><p class="small" id="ref-3">[3] Thompson, W. R. (1933). On the likelihood that one unknown probability exceeds another in view of the evidence of two samples. Biometrika, 25(3-4), 285-294.</p><p class="small" id="ref-4">[4] Bellman, R. (1957). A Markovian decision process. Journal of Mathematics and Mechanics, 6(5), 679-684.</p><p class="small" id="ref-5">[5] Van Rossum, G., &amp; Drake, F. L. (2009). Python 3 Reference Manual. CreateSpace.</p><p class="small" id="ref-6">[6] Henderson, P., Islam, R., Bachman, P., Pineau, J., Precup, D., &amp; Meger, D. (2018). Deep reinforcement learning that matters. In Proceedings of the AAAI Conference on Artificial Intelligence, 32(1), 3207-3214.</p><p class="small" id="ref-7">[7] Kluyver, T., Ragan-Kelley, B., Pérez, F., Granger, B., Bussonnier, M., Frederic, J., Kelley, K., Hamrick, J., Grout, J., Corlay, S., et al. (2016). Jupyter Notebooks: A publishing format for reproducible computational workflows. In Positioning and Power in Academic Publishing: Players, Agents and Agendas (pp. 87-90). IOS Press.</p></article>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<script type="application/json" id="refdata">{"1": "Sutton, R. S., &amp; Barto, A. G. (2018). Reinforcement Learning: An Introduction (2nd ed.). MIT Press.", "2": "Auer, P., Cesa-Bianchi, N., &amp; Fischer, P. (2002). Finite-time analysis of the multiarmed bandit problem. Machine Learning, 47(2-3), 235-256.", "3": "Thompson, W. R. (1933). On the likelihood that one unknown probability exceeds another in view of the evidence of two samples. Biometrika, 25(3-4), 285-294.", "4": "Bellman, R. (1957). A Markovian decision process. Journal of Mathematics and Mechanics, 6(5), 679-684.", "5": "Van Rossum, G., &amp; Drake, F. L. (2009). Python 3 Reference Manual. CreateSpace.", "6": "Henderson, P., Islam, R., Bachman, P., Pineau, J., Precup, D., &amp; Meger, D. (2018). Deep reinforcement learning that matters. In Proceedings of the AAAI Conference on Artificial Intelligence, 32(1), 3207-3214.", "7": "Kluyver, T., Ragan-Kelley, B., P\u00e9rez, F., Granger, B., Bussonnier, M., Frederic, J., Kelley, K., Hamrick, J., Grout, J., Corlay, S., et al. (2016). Jupyter Notebooks: A publishing format for reproducible computational workflows. In Positioning and Power in Academic Publishing: Players, Agents and Agendas (pp. 87-90). IOS Press."}</script>
+<script>window.COURSE_PREFIX="vtrl";</script>
+<script>"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "html") e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COL = () => ({ink: cssv("--ink"), steel: cssv("--steel"), line: cssv("--line"), grid: cssv("--grid"),
+  panel: cssv("--panel"), accent: cssv("--accent"), ok: cssv("--ok"), bad: cssv("--bad"),
+  c: [cssv("--c1"), cssv("--c2"), cssv("--c3"), cssv("--c4"), cssv("--c5")]});
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+function RNG(seed) {
+  let s = seed >>> 0;
+  const r = () => { s += 0x6D2B79F5; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  r.normal = () => { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  r.int = n => Math.floor(r() * n);
+  r.uniform = (a, b) => a + (b - a) * r();
+  return r;
+}
+const store = {
+  key: k => (window.COURSE_PREFIX || "vt") + ":" + k,
+  get(k, d) { try { const v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} }
+};
+/* Canvas with device-pixel scaling. draw(ctx, w, h) is called on setup and on resize. */
+function stage(cv, aspect, draw) {
+  const ctx = cv.getContext("2d");
+  const fit = () => {
+    const w = cv.clientWidth || 600, hgt = Math.round(w * aspect), d = window.devicePixelRatio || 1;
+    cv.style.height = hgt + "px"; cv.width = Math.round(w * d); cv.height = Math.round(hgt * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0); cv._w = w; cv._h = hgt; draw && draw(ctx, w, hgt);
+  };
+  new ResizeObserver(() => fit()).observe(cv);
+  fit();
+  return {ctx, redraw: () => draw && draw(ctx, cv._w, cv._h), size: () => [cv._w, cv._h]};
+}
+/* Axes frame: returns mapping helpers. */
+function frame(ctx, w, hgt, o) {
+  const C = COL(), p = Object.assign({l: 48, r: 12, t: 12, b: 34}, o.pad || {});
+  const X = x => p.l + (x - o.x0) / (o.x1 - o.x0) * (w - p.l - p.r);
+  const Y = y => hgt - p.b - (y - o.y0) / (o.y1 - o.y0) * (hgt - p.t - p.b);
+  ctx.save(); ctx.strokeStyle = C.line; ctx.fillStyle = C.steel; ctx.lineWidth = 1; ctx.font = "11px " + cssv("--sans");
+  const nt = o.ticks || 5;
+  for (let i = 0; i <= nt; i++) {
+    const xv = o.x0 + (o.x1 - o.x0) * i / nt, yv = o.y0 + (o.y1 - o.y0) * i / nt;
+    ctx.beginPath(); ctx.moveTo(X(xv), hgt - p.b); ctx.lineTo(X(xv), hgt - p.b + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.l - 4, Y(yv)); ctx.lineTo(p.l, Y(yv)); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(fmt(xv), X(xv), hgt - p.b + 16);
+    ctx.textAlign = "right"; ctx.fillText(fmt(yv), p.l - 7, Y(yv) + 4);
+  }
+  ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, hgt - p.b); ctx.lineTo(w - p.r, hgt - p.b); ctx.stroke();
+  ctx.fillStyle = C.ink; ctx.textAlign = "center";
+  if (o.xlabel) ctx.fillText(o.xlabel, (p.l + w - p.r) / 2, hgt - 4);
+  if (o.ylabel) { ctx.save(); ctx.translate(12, (p.t + hgt - p.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylabel, 0, 0); ctx.restore(); }
+  ctx.restore();
+  return {X, Y, p};
+}
+function fmt(v) { if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v)); const a = Math.abs(v); if (a >= 1000) return v.toFixed(0); if (a >= 10) return v.toFixed(0); if (a >= 1) return v.toFixed(1); if (a === 0) return "0"; return v.toFixed(2); }
+function polyline(ctx, pts, color, width, dash) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width || 2; if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.restore();
+}
+function dot(ctx, x, y, r, color, stroke) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+/* Labelled slider bound to a value. */
+function slider(parent, o, on) {
+  const out = h("output", {}, o.fmt ? o.fmt(o.value) : o.value);
+  const inp = h("input", {type: "range", min: o.min, max: o.max, step: o.step || 1, value: o.value, "aria-label": o.label});
+  inp.addEventListener("input", () => { const v = parseFloat(inp.value); out.textContent = o.fmt ? o.fmt(v) : v; on && on(v); });
+  parent.append(h("div", {class: "ctl"}, h("label", {}, o.label, " ", out), inp));
+  return inp;
+}
+function readout(parent, names) {
+  const box = h("div", {class: "readout"}), cells = {};
+  names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; box.append(h("div", {}, n, b)); });
+  parent.append(box);
+  return (n, v) => { cells[n].textContent = v; };
+}
+function legend(parent, items) {
+  const C = COL();
+  parent.append(h("div", {class: "legend"}, items.map(([t, i]) => h("span", {}, h("i", {style: "background:" + (typeof i === "number" ? C.c[i] : i)}), t))));
+}
+/* Animation loop that pauses when off screen or when reduced motion is requested. */
+function loop(step, ms) {
+  let on = false, raf = 0, last = 0, acc = 0;
+  const f = t => { if (!on) return; const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t; acc += dt * 1000; if (!ms || acc >= ms) { acc = 0; step(dt); } raf = requestAnimationFrame(f); };
+  return {start() { if (!on) { on = true; last = 0; raf = requestAnimationFrame(f); } }, stop() { on = false; cancelAnimationFrame(raf); }, get running() { return on; }};
+}
+const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Knowledge checks, citation popups, flashcards and reading progress on lecture pages. */
+function initLecture(day) {
+  const kcs = $$(".kc"), key = "d" + day + ":kc", st = store.get(key, {});
+  const bar = $(".lec-bar i"), txt = $(".lec-txt");
+  const upd = () => {
+    const n = kcs.length, d = Object.values(st).filter(Boolean).length;
+    if (bar) bar.style.width = (n ? 100 * d / n : 0) + "%";
+    if (txt) txt.textContent = n ? `Knowledge checks answered correctly: ${d} of ${n}` : "";
+    store.set(key, st); store.set("d" + day + ":progress", n ? d / n : 0);
+  };
+  kcs.forEach((k, i) => {
+    const ans = +k.dataset.answer, fb = $(".fb", k);
+    $(".btn", k).addEventListener("click", () => {
+      const sel = $("input:checked", k);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === ans;
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + k.dataset.why;
+      st[i] = ok || st[i] || false; upd();
+    });
+    if (st[i]) { const r = $$("input", k)[ans]; if (r) r.checked = true; }
+  });
+  upd();
+  const refs = JSON.parse(($("#refdata") || {textContent: "{}"}).textContent || "{}");
+  let pop = null;
+  document.addEventListener("click", e => {
+    const c = e.target.closest(".cite");
+    if (pop) { pop.remove(); pop = null; }
+    if (!c) return;
+    pop = h("div", {class: "pop", role: "note"});
+    c.dataset.refs.split(",").forEach(n => pop.append(h("p", {html: "[" + n + "] " + (refs[n] || "")})));
+    document.body.append(pop);
+    const r = c.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 440)) + "px";
+    pop.style.top = (window.scrollY + r.bottom + 6) + "px";
+  });
+  $$(".card").forEach(c => { const t = () => c.classList.toggle("flip"); c.addEventListener("click", t); c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t(); } }); });
+}
+
+/* Lab shell: tabs, self-assessment with confidence ratings, reflection and learning-log export. */
+function initLab(day, title, SELF, REFLECT) {
+  const tabs = $$(".tabs button"), panels = $$(".tabpanel");
+  tabs.forEach((b, i) => b.addEventListener("click", () => {
+    tabs.forEach((x, j) => { x.setAttribute("aria-selected", i === j); panels[j].hidden = i !== j; });
+    window.dispatchEvent(new Event("resize"));
+  }));
+  const qbox = $("#quiz"), res = store.get("d" + day + ":quiz", {});
+  SELF.forEach((q, i) => {
+    const fb = h("div", {class: "fb"}), name = "q" + i;
+    const opts = q.options.map((o, j) => h("label", {}, h("input", {type: "radio", name, value: j}), " ", o));
+    const conf = h("div", {class: "conf"}, "Confidence:", ["sure", "unsure", "guess"].map(c => h("label", {}, h("input", {type: "radio", name: name + "c", value: c}), " " + c)));
+    const btn = h("button", {class: "btn", type: "button"}, "Check answer");
+    const box = h("div", {class: "kc"}, h("p", {class: "q"}, (i + 1) + ". " + q.q), opts, conf, btn, fb);
+    btn.addEventListener("click", () => {
+      const sel = $(`input[name=${name}]:checked`, box), cf = $(`input[name=${name}c]:checked`, box);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === q.answer, c = cf ? cf.value : "not rated";
+      res[i] = {ok, conf: c}; store.set("d" + day + ":quiz", res);
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + q.why + (!ok && c === "sure" ? " A confident error marks a topic to revisit first." : "");
+      summary();
+    });
+    qbox.append(box);
+  });
+  const sum = h("p", {class: "small"}); qbox.append(sum);
+  function summary() {
+    const v = Object.values(res), ok = v.filter(r => r.ok).length, conf = v.filter(r => !r.ok && r.conf === "sure").length;
+    sum.textContent = `Answered: ${v.length} of ${SELF.length}. Correct: ${ok}. Confident errors: ${conf}.`;
+  }
+  summary();
+  const rbox = $("#reflect"), refl = store.get("d" + day + ":reflect", {});
+  REFLECT.forEach((p, i) => {
+    const ta = h("textarea", {rows: 4, style: "width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)"});
+    ta.value = refl[i] || "";
+    ta.addEventListener("input", () => { refl[i] = ta.value; store.set("d" + day + ":reflect", refl); });
+    rbox.append(h("p", {}, h("b", {}, (i + 1) + ". "), p), ta);
+  });
+  const ex = h("button", {class: "btn", type: "button"}, "Export learning log");
+  ex.addEventListener("click", () => {
+    const lines = [`# Learning log, day ${day}: ${title}`, "", `Exported: ${new Date().toISOString()}`, "", "## Self-assessment", ""];
+    SELF.forEach((q, i) => { const r = res[i]; lines.push(`${i + 1}. ${q.q}`, `   Result: ${r ? (r.ok ? "correct" : "incorrect") + ", confidence " + r.conf : "not answered"}`); });
+    lines.push("", "## Reflection", "");
+    REFLECT.forEach((p, i) => lines.push(`**${i + 1}. ${p}**`, "", refl[i] || "(no answer)", ""));
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown"}));
+    const a = h("a", {href: url, download: `learning_log_day${String(day).padStart(2, "0")}.md`}); document.body.append(a); a.click(); a.remove();
+  });
+  rbox.append(h("p", {}, ex));
+}
+
+/* Course home: progress per day from local storage. */
+function initHome(n, nq) {
+  for (let d = 1; d <= n; d++) {
+    const el = $("#dy" + d + " .done"); if (!el) continue;
+    const p = store.get("d" + d + ":progress", 0), q = Object.values(store.get("d" + d + ":quiz", {})).filter(r => r.ok).length;
+    el.textContent = (p > 0 || q > 0) ? `Reading checks ${Math.round(100 * p)}%, self-assessment ${q} of ${nq || 8} correct` : "";
+  }
+}
+
+/* Opaque blend of a palette colour with a background colour, used for heat maps without seams. */
+function mix(c1, c2, a) {
+  const hx = c => { c = (c || "#ffffff").trim(); if (c[0] === "#") { if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    return [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16)); } const m = c.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : [255, 255, 255]; };
+  const A = hx(c1), B = hx(c2); return "rgb(" + A.map((v, i) => Math.round(a * v + (1 - a) * B[i])).join(",") + ")";
+}
+
+/* Interactive scenes of the lecture pages. sv() builds an SVG element; scene() returns the parts of one scene:
+   its drawing, rows of buttons, a line that tells what happened and a row of readouts. SCENE_SHOT holds, for each
+   scene, a function that sets the state shown in the screenshot of the course README. */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (k === "text") e.textContent = v; else if (v != null) e.setAttribute(k, v); }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+window.SCENE_SHOT = window.SCENE_SHOT || {};
+function scene(id, w, hgt, label) {
+  const root = document.getElementById(id);
+  if (!root) return null;
+  const box = h("div", {class: "sn-box"}), svg = sv("svg", {class: "sn-svg", viewBox: `0 0 ${w} ${hgt}`, role: "img", "aria-label": label});
+  box.append(svg); root.append(box);
+  const say = h("p", {class: "sn-say", "aria-live": "polite"});
+  return {root, box, svg, say,
+    row(label) { const r = h("div", {class: "sn-btns"}); if (label) r.append(h("span", {class: "sn-lab"}, label)); box.append(r); return r; },
+    btn(row, text, fn, ghost) {
+      const b = h("button", {class: ghost ? "btn ghost" : "btn", type: "button"}, text);
+      b.addEventListener("click", fn); row.append(b); return b; },
+    toggle(row, text, on, fn) {
+      const b = h("button", {class: "btn ghost", type: "button", "aria-pressed": String(!!on)}, text);
+      b.addEventListener("click", () => { const v = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(v)); fn(v); });
+      row.append(b); return b; },
+    tellAt() { box.append(say); },
+    tell(html) { say.innerHTML = html; },
+    ro(names) {
+      const r = h("div", {class: "sn-ro"}), cells = {};
+      names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; r.append(h("span", {}, n + ": ", b)); });
+      box.append(r); return (n, v) => { cells[n].textContent = v; }; }};
+}
+/* Colours of a scene, read from the theme: fill and stroke styles for SVG elements. */
+const fillc = c => `fill:var(${c})`, strokec = (c, w) => `fill:none;stroke:var(${c});stroke-width:${w || 2}`;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"neutral"});</script>
+<script>initLecture(1);
+
+(function(){
+const S = scene("scene", 480, 330, "A robot in a grid world of four rows and six columns with a charger, three pits and fog over the cells not yet visited");
+if (!S) return;
+const NR = 4, NC = 6, CW = 80, Y0 = 5, GOAL = "0,5", PITS = ["1,1", "1,4", "2,3"], START = [3, 0];
+const DIRS = {up: [-1, 0], left: [0, -1], down: [1, 0], right: [0, 1]};
+const kind = k => k === GOAL ? "goal" : PITS.includes(k) ? "pit" : "floor";
+const cx = c => c * CW + CW / 2, cy = r => Y0 + r * CW + CW / 2;
+const sgn = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v), num = v => (v < 0 ? "−" : "") + Math.abs(v);
+let rng = RNG(11), seen, fog = true, pos, t, G, ep = 0, over, best = null, trail, busy = false, last = null;
+const gCells = sv("g"), gTrail = sv("g"), gBot = sv("g", {class: "sn-t"}), gPop = sv("g");
+S.svg.append(gCells, gTrail, gBot, gPop);
+const DARK = "#1c2333";
+gBot.append(
+  sv("line", {x1: 0, y1: -21, x2: 0, y2: -29, style: "stroke:var(--steel);stroke-width:2.5"}),
+  sv("circle", {cx: 0, cy: -31, r: 4, style: "fill:var(--c2)"}),
+  sv("rect", {x: -19, y: -22, width: 38, height: 29, rx: 8, style: "fill:var(--c1)"}),
+  sv("circle", {cx: -7, cy: -9, r: 5, style: "fill:#fff"}), sv("circle", {cx: 7, cy: -9, r: 5, style: "fill:#fff"}),
+  sv("circle", {cx: -6, cy: -9, r: 2.3, style: "fill:" + DARK}), sv("circle", {cx: 8, cy: -9, r: 2.3, style: "fill:" + DARK}),
+  sv("rect", {x: -14, y: 8, width: 28, height: 10, rx: 4, style: "fill:var(--c1);opacity:.7"}),
+  sv("circle", {cx: -10, cy: 22, r: 5, style: "fill:" + DARK}), sv("circle", {cx: 10, cy: 22, r: 5, style: "fill:" + DARK}));
+
+function drawCells() {
+  gCells.replaceChildren();
+  for (let r = 0; r < NR; r++) for (let c = 0; c < NC; c++) {
+    const k = r + "," + c, x = c * CW, y = Y0 + r * CW, show = !fog || seen.has(k), kd = kind(k);
+    gCells.append(sv("rect", {x: x + 3, y: y + 3, width: CW - 6, height: CW - 6, rx: 10,
+      style: show ? "fill:var(--paper);stroke:var(--line);stroke-width:1.5" : "fill:var(--grid);stroke:var(--line);stroke-width:1.5"}));
+    if (!show) { gCells.append(sv("text", {x: x + 40, y: y + 50, "text-anchor": "middle", "font-size": 26, style: "fill:var(--steel);opacity:.7", text: "?"})); continue; }
+    if (kd === "goal") gCells.append(
+      sv("circle", {cx: x + 40, cy: y + 36, r: 22, style: "fill:var(--c3)"}),
+      sv("path", {d: `M${x + 43} ${y + 20} L${x + 31} ${y + 39} L${x + 40} ${y + 39} L${x + 36} ${y + 53} L${x + 49} ${y + 33} L${x + 40} ${y + 33} Z`, style: "fill:#fff"}),
+      sv("text", {x: x + 40, y: y + 73, "text-anchor": "middle", "font-size": 15, "font-weight": 700, text: "+10"}));
+    if (kd === "pit") gCells.append(
+      sv("ellipse", {cx: x + 40, cy: y + 38, rx: 27, ry: 17, style: "fill:" + DARK}),
+      sv("ellipse", {cx: x + 40, cy: y + 38, rx: 27, ry: 17, style: "fill:none;stroke:var(--c5);stroke-width:3.5"}),
+      sv("text", {x: x + 40, y: y + 73, "text-anchor": "middle", "font-size": 15, "font-weight": 700, text: "−10"}));
+  }
+}
+function drawTrail() {
+  const pts = trail.map(k => { const [r, c] = k.split(",").map(Number); return cx(c) + "," + cy(r); }).join(" ");
+  gTrail.replaceChildren(sv("polyline", {points: pts, style: "fill:none;stroke:var(--accent);stroke-width:4;stroke-dasharray:3 7;stroke-linecap:round;opacity:.7"}));
+}
+function place() { gBot.style.transform = `translate(${cx(pos[1])}px, ${cy(pos[0]) - 4}px)`; }
+function pop(v) {
+  const el = sv("text", {x: cx(pos[1]), y: cy(pos[0]) - 36, "text-anchor": "middle", "font-size": 22, "font-weight": 700,
+    class: "sn-pop", style: "fill:var(" + (v > 0 ? "--ok" : "--bad") + ")", text: sgn(v)});
+  gPop.append(el); setTimeout(() => el.remove(), 1200);
+}
+
+// the loop of agent and environment, as a strip of text
+const act = h("b", {}, "–"), back = h("b", {}, "–");
+const nA = h("span", {class: "sn-node"}, "You, the agent"), nE = h("span", {class: "sn-node"}, "Environment");
+S.box.append(h("div", {class: "sn-loop"}, nA, h("span", {}, "action: ", act, " →"), nE, h("span", {}, "→ next state and reward: ", back)));
+const pulse = el => { el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 450); };
+
+const row = S.row();
+const pad = h("div", {class: "sn-pad"});
+const arrow = (lab, d, aria) => { const b = h("button", {class: "btn", type: "button", "aria-label": aria}, lab); b.addEventListener("click", () => { if (!busy) step(d); }); return b; };
+pad.append(h("span"), arrow("↑", "up", "Up"), h("span"), arrow("←", "left", "Left"), arrow("↓", "down", "Down"), arrow("→", "right", "Right"));
+row.append(pad);
+S.btn(row, "New episode", () => { if (!busy) { newEpisode(); S.tell("A new episode starts at the bottom left. The cells found so far stay on the map, as an agent keeps what it has learned."); } }, true);
+S.btn(row, "Random agent", () => randomEpisode(), true);
+S.toggle(row, "Show the map", false, v => { fog = !v; drawCells(); });
+S.tellAt();
+const ro = S.ro(["episode", "step t", "last reward", "return G", "best return"]);
+
+function show() {
+  ro("episode", ep); ro("step t", t); ro("last reward", last === null ? "–" : sgn(last)); ro("return G", num(G));
+  ro("best return", best === null ? "–" : num(best));
+  drawTrail(); place();
+}
+function newEpisode() { ep += 1; pos = START.slice(); t = 0; G = 0; over = false; last = null; trail = ["3,0"]; act.textContent = "–"; back.textContent = "–"; show(); }
+function step(a, script) {
+  if (over) { S.tell("The episode has ended. Press <b>New episode</b> to start again from the bottom left."); return null; }
+  let d = a, slip = false;
+  if (!script && rng() < 0.1) { const o = Object.keys(DIRS).filter(x => x !== a); d = o[Math.floor(rng() * 3)]; slip = true; }
+  const r2 = pos[0] + DIRS[d][0], c2 = pos[1] + DIRS[d][1], wall = r2 < 0 || r2 >= NR || c2 < 0 || c2 >= NC;
+  if (!wall) pos = [r2, c2];
+  const k = pos[0] + "," + pos[1], kd = kind(k), rew = kd === "goal" ? 10 : kd === "pit" ? -10 : -1;
+  t += 1; G += rew; last = rew; seen.add(k); trail.push(k);
+  act.textContent = a; back.textContent = `row ${pos[0] + 1}, column ${pos[1] + 1}; ${sgn(rew)}`;
+  pulse(nA); setTimeout(() => pulse(nE), 200);
+  if (kd !== "floor") { over = true; best = best === null ? G : Math.max(best, G); }
+  drawCells(); show(); pop(rew);
+  let msg = `Step ${t}: You chose <b>${a}</b>. `;
+  if (slip) msg += `The floor was slippery and the robot moved ${d}: The agent picks the action, the environment decides what happens. `;
+  if (wall) msg += "The robot bumped into the wall and stayed in its cell. ";
+  if (kd === "goal") msg += `The robot reached the charger: reward +10. The episode ends with the return G = ${num(G)}, the sum of all its rewards.`;
+  else if (kd === "pit") msg += `The robot fell into a pit: reward −10. The episode ends with the return G = ${num(G)}. A new episode starts from the same place.`;
+  else msg += `The environment returned the next state, row ${pos[0] + 1} and column ${pos[1] + 1}, and the reward −1. Return so far: G = ${num(G)}.`;
+  S.tell(msg);
+  return kd;
+}
+function randomEpisode() {
+  if (busy) return;
+  newEpisode(); busy = true;
+  const tick = () => {
+    if (over || t >= 40) {
+      busy = false;
+      S.tell(`A random agent chose every action by chance. Its episode ended after ${t} steps ` +
+        (over ? (kind(trail[trail.length - 1]) === "goal" ? "at the charger" : "in a pit") : "while it was still wandering") +
+        `, with the return G = ${num(G)}. A policy that uses what was learned about the map does better.`);
+      if (!over) { over = true; best = best === null ? G : Math.max(best, G); show(); }
+      return;
+    }
+    step(["up", "left", "down", "right"][Math.floor(rng() * 4)]);
+    setTimeout(tick, reduced() ? 0 : 170);
+  };
+  tick();
+}
+function reset() { rng = RNG(11); seen = new Set(["3,0"]); ep = 0; best = null; newEpisode(); drawCells(); }
+S.box.setAttribute("tabindex", "0");
+S.box.addEventListener("keydown", e => {
+  const m = {ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right"}[e.key];
+  if (m && !busy && e.target === S.box) { e.preventDefault(); step(m); }
+});
+reset();
+S.tell("Press an arrow to make the first move. Nobody tells the robot where the charger is: It finds out from the rewards that its moves earn.");
+window.SCENE_SHOT.scene = () => {
+  reset();
+  ["up", "up", "right"].forEach(a => step(a, true));
+  newEpisode();
+  ["up", "up", "up", "right", "right", "right", "right", "right"].forEach(a => step(a, true));
+  gPop.replaceChildren();
+};
+})();
+
+
+function gammaS(r,k){ if(k<1){ return gammaS(r,k+1)*Math.pow(r(),1/k); } const d=k-1/3, c=1/Math.sqrt(9*d);
+  while(true){ let x,v; do{ x=r.normal(); v=1+c*x; }while(v<=0); v=v*v*v; const u=r(); if(u<1-0.0331*x*x*x*x||Math.log(u)<0.5*x*x+d*(1-v+Math.log(v))) return d*v; } }
+function betaS(r,a,b){ const x=gammaS(r,a), y=gammaS(r,b); return x/(x+y); }
+function banditRun(strategy,mus,T,seed,eps,c){ const r=RNG(seed), K=mus.length, N=Array(K).fill(0), S=Array(K).fill(0), best=Math.max(...mus); let reg=0; const out=[];
+  for(let t=0;t<T;t++){ let a;
+    if(strategy==='egreedy'){ if(r()<eps||Math.min(...N)===0) a=Math.floor(r()*K); else { let m=-1; for(let i=0;i<K;i++){ const e=S[i]/N[i]; if(e>m){m=e;a=i;} } } }
+    else if(strategy==='ucb'){ const z=N.indexOf(0); if(z>=0) a=z; else { let m=-1; for(let i=0;i<K;i++){ const e=S[i]/N[i]+c*Math.sqrt(Math.log(t+1)/N[i]); if(e>m){m=e;a=i;} } } }
+    else { let m=-1; for(let i=0;i<K;i++){ const e=betaS(r,1+S[i],1+N[i]-S[i]); if(e>m){m=e;a=i;} } }
+    const w=r()<mus[a]?1:0; N[a]++; S[a]+=w; reg+=best-mus[a]; out.push(reg); }
+  return out; }
+
+(function(){ const root=document.getElementById('a1'); if(!root) return;
+const MUS=[0.30,0.35,0.38,0.40,0.42,0.45], T=1500, SEEDS=20; let eps=0.1, c=2.0;
+legend(root.querySelector('#b-leg'),[['epsilon-greedy',3],['UCB',1],['Thompson sampling',2]]);
+const ro=readout(root.querySelector('#b-ro'),['epsilon-greedy','UCB','Thompson sampling']);
+const sl=root.querySelector('#b-sl');
+slider(sl,{label:'Exploration rate epsilon',min:0,max:0.5,step:0.01,value:eps,fmt:v=>v.toFixed(2)},v=>{eps=v;st.redraw();});
+slider(sl,{label:'UCB constant c',min:0.1,max:4,step:0.1,value:c,fmt:v=>v.toFixed(1)},v=>{c=v;st.redraw();});
+const mean=s=>{ const acc=Array(T).fill(0); for(let k=0;k<SEEDS;k++){ const o=banditRun(s,MUS,T,100+k,eps,c); for(let t=0;t<T;t++) acc[t]+=o[t]/SEEDS; } return acc; };
+const st=stage(root.querySelector('#b-cv'),0.45,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const R={egreedy:mean('egreedy'),ucb:mean('ucb'),ts:mean('ts')}; const ymax=Math.max(20,...Object.values(R).map(a=>a[T-1]))*1.1;
+  const F=frame(ctx,w,hh,{x0:0,x1:T,y0:0,y1:ymax,xlabel:'pulls',ylabel:'mean cumulative regret'});
+  [['egreedy',3],['ucb',1],['ts',2]].forEach(([k,i])=>polyline(ctx,R[k].filter((_,t)=>t%10===0).map((v,j)=>[F.X(j*10),F.Y(v)]),C.c[i],2.2));
+  ro('epsilon-greedy',R.egreedy[T-1].toFixed(1)); ro('UCB',R.ucb[T-1].toFixed(1)); ro('Thompson sampling',R.ts[T-1].toFixed(1)); });
+})();
+
+
+(function(){ const root=document.getElementById('a2'); if(!root) return;
+const R=4, Cn=8, start=[3,0], goal=[3,7], cliff=c=>c[0]===3&&c[1]>=1&&c[1]<=6, A=[[-1,0],[1,0],[0,-1],[0,1]], arrow=['↑','↓','←','→'];
+let slip=0.15, V=null, sweeps=0, timer=null;
+function outcomes(s,a){ const res=[]; [[a,1-slip],[2,slip/2],[3,slip/2]].forEach(([b,p])=>{ let r=clamp(s[0]+A[b][0],0,R-1), c=clamp(s[1]+A[b][1],0,Cn-1), rw=-1, s2=[r,c];
+    if(cliff(s2)){ s2=start; rw=-100; } else if(r===goal[0]&&c===goal[1]) rw=0; res.push([p,s2,rw]); }); return res; }
+function q(s,a){ return outcomes(s,a).reduce((t,[p,s2,rw])=>t+p*(rw+0.99*((s2[0]===goal[0]&&s2[1]===goal[1])?0:V[s2[0]][s2[1]])),0); }
+function sweep(){ let d=0; for(let r=0;r<R;r++) for(let c=0;c<Cn;c++){ if(r===goal[0]&&c===goal[1]) continue; if(cliff([r,c])) continue;
+    const b=Math.max(...[0,1,2,3].map(a=>q([r,c],a))); d=Math.max(d,Math.abs(b-V[r][c])); V[r][c]=b; } sweeps++; return d; }
+function reset(){ V=Array.from({length:R},()=>Array(Cn).fill(0)); sweeps=0; }
+const ro=readout(root.querySelector('#v-ro'),['sweeps','value of the start','largest change in the last sweep']);
+const sl=root.querySelector('#v-sl');
+slider(sl,{label:'Slip probability',min:0,max:0.4,step:0.01,value:slip,fmt:v=>v.toFixed(2)},v=>{slip=v;reset();st.redraw();});
+const btn=h('button',{class:'btn',type:'button'},'Run sweeps'); sl.append(btn); let lastD=0;
+btn.addEventListener('click',()=>{ if(timer) return; reset(); timer=setInterval(()=>{ lastD=sweep(); st.redraw(); if(lastD<1e-3||sweeps>400){ clearInterval(timer); timer=null; } }, reduced()?1:40); });
+reset();
+const st=stage(root.querySelector('#v-cv'),0.42,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh); const cw=w/Cn, ch=hh/R;
+  let mn=0; for(let r=0;r<R;r++) for(let c=0;c<Cn;c++) mn=Math.min(mn,V[r][c]);
+  for(let r=0;r<R;r++) for(let c=0;c<Cn;c++){ const x=c*cw, y=r*ch;
+    if(cliff([r,c])){ ctx.fillStyle=C.ink; ctx.fillRect(x,y,cw,ch); continue; }
+    const t=mn<0?V[r][c]/mn:0; ctx.fillStyle=mix(C.c[3],cssv('--panel'),0.15+0.6*t); ctx.fillRect(x,y,cw,ch); ctx.strokeStyle=C.line; ctx.strokeRect(x,y,cw,ch);
+    ctx.fillStyle=C.ink; ctx.textAlign='center'; ctx.font='12px sans-serif';
+    if(r===goal[0]&&c===goal[1]){ ctx.fillText('GOAL',x+cw/2,y+ch/2+4); continue; }
+    const b=[0,1,2,3].reduce((m,a)=>q([r,c],a)>q([r,c],m)?a:m,0);
+    ctx.font='bold 18px sans-serif'; ctx.fillText(arrow[b],x+cw/2,y+ch/2); ctx.font='11px sans-serif'; ctx.fillText(V[r][c].toFixed(1),x+cw/2,y+ch/2+16);
+    if(r===start[0]&&c===start[1]) ctx.fillText('START',x+cw/2,y+12); }
+  ro('sweeps',sweeps); ro('value of the start',V[start[0]][start[1]].toFixed(2)); ro('largest change in the last sweep',lastD.toFixed(4)); });
+})();
+</script>
+</div></body></html>
