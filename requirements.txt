@@ -1,7 +1,0 @@
-numpy>=1.26
-pandas>=2.0
-matplotlib>=3.7
-ipywidgets>=8.0
-jupyterlab>=4.0
-# Optional, only for section 8 of Day 4 (a pretrained language model): torch and transformers
-# pip install torch transformers
