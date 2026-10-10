@@ -1,0 +1,907 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab: RLHF lab | Reinforcement Learning and Language Model Alignment</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Lexend:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><style>:root{
+  --ink:#1B2A38; --paper:#F3F5F0; --panel:#FFFFFF; --steel:#56656F; --line:#D2DAD0; --grid:#E4EAE2;
+  --accent:#0E7A78; --ok:#2E8B57; --bad:#B53F2E; --band:rgba(14,122,120,.09);
+  --c1:#1F5F8B; --c2:#C98510; --c3:#2E8B57; --c4:#8B3F82; --c5:#B53F2E;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --head:'Barlow Semi Condensed','Arial Narrow','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E3EAEE; --paper:#0F171D; --panel:#16222A; --steel:#9DB0B9; --line:#2A3B45; --grid:#1B2A33;
+  --accent:#4FC2BE; --ok:#63C08E; --bad:#E58372; --band:rgba(79,194,190,.12);
+  --c1:#6FB0DA; --c2:#E6A83F; --c3:#63C08E; --c4:#CC8CC3; --c5:#E58372;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--c1);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding:26px 20px 64px}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:22px}
+header.top .course{margin:0;color:var(--steel);font-size:.93rem}
+header.top h1{font-family:var(--head);font-weight:600;font-size:clamp(1.8rem,4.2vw,2.7rem);line-height:1.08;margin:.3rem 0 .45rem;letter-spacing:.005em}
+header.top .who{margin:0;font-size:.9rem;color:var(--steel)}
+header.top nav{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px}
+header.top nav a{font-size:.95rem}
+h2{font-family:var(--head);font-weight:600;font-size:1.7rem;line-height:1.15;margin:2rem 0 .55rem}
+h3{font-family:var(--head);font-weight:600;font-size:1.28rem;margin:1.4rem 0 .4rem}
+p,li{max-width:72ch}
+.small{font-size:.87rem;color:var(--steel)}
+code,pre{font-family:var(--mono);font-size:.86em}
+code{background:var(--band);padding:.08em .3em;border-radius:3px}
+p,li{overflow-wrap:break-word}
+p code,li code,td code,p.small a{overflow-wrap:anywhere}
+pre{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c1);padding:12px 14px;overflow-x:auto;border-radius:4px;line-height:1.45}
+pre code{background:none;padding:0}
+blockquote{margin:1.1rem 0;padding:.6rem 1rem;border-left:4px solid var(--c2);background:var(--panel);border-radius:0 4px 4px 0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem;background:var(--panel)}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--band)}
+.tablewrap{overflow-x:auto}
+img{max-width:100%;height:auto}
+figure{margin:1.3rem 0}
+figure img{border:1px solid var(--line);border-radius:4px;background:#fff}
+figcaption{font-size:.87rem;color:var(--steel);margin-top:.35rem}
+button,select,input{font:inherit}
+select{padding:.3rem .45rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);max-width:100%}
+.btn{background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:.42rem .9rem;cursor:pointer}
+.btn:hover{background:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.ctl{display:flex;flex-direction:column;gap:2px;min-width:170px;flex:1}
+.ctl label{font-size:.86rem;color:var(--steel)}
+.ctl output{font-family:var(--mono);font-size:.85rem;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.paper{background-color:var(--panel);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:12px 12px;border:1px solid var(--line);border-radius:4px;display:block;width:100%;touch-action:none}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.readout div{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:6px 9px;font-size:.86rem}
+.readout b{display:block;font-family:var(--mono);font-size:1.05rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.84rem;color:var(--steel)}
+.legend i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);flex-wrap:wrap;margin-top:8px}
+.tabs button{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:.5rem .85rem;cursor:pointer;color:var(--steel)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.tabpanel[hidden]{display:none}
+.kc{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 14px;margin:1.2rem 0}
+.kc .q{font-weight:700;margin:0 0 6px}
+.kc label{display:block;padding:3px 0;cursor:pointer}
+.kc .fb{margin-top:6px;font-size:.93rem}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.conf{display:flex;gap:10px;flex-wrap:wrap;font-size:.86rem;color:var(--steel);margin-top:4px}
+.anim{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin:1.3rem 0}
+.anim h4{font-family:var(--head);font-size:1.12rem;margin:0 0 6px}
+.lec-tools{position:sticky;top:0;z-index:5;background:var(--paper);padding:6px 0;border-bottom:1px solid var(--line)}
+.lec-prog{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--steel)}
+.lec-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.lec-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.cite{cursor:pointer;color:var(--c1);border-bottom:1px dotted var(--c1)}
+.pop{position:absolute;z-index:20;max-width:420px;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.18);padding:10px 12px;border-radius:6px;font-size:.86rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{min-height:110px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;cursor:pointer;font-size:.93rem}
+.card .b{display:none;color:var(--steel)} .card.flip .f{display:none} .card.flip .b{display:block}
+.pycorner{background:var(--panel);border:1px dashed var(--c1);border-radius:6px;padding:4px 16px 8px;margin:1.3rem 0}
+.disc td:first-child{white-space:nowrap;font-weight:700}
+footer.sig{margin-top:48px;border-top:2px solid var(--ink);padding-top:14px;font-size:.84rem;color:var(--steel)}
+footer.sig p{max-width:none}
+.weeks{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:14px 0}
+.wk{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c1);border-radius:4px;padding:10px 12px}
+.wk h3{margin:.1rem 0 .3rem;font-size:1.12rem}
+.wk .n{font-family:var(--head);color:var(--steel);font-size:.9rem}
+.wk .links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.88rem;margin-top:6px}
+.wk .done{font-size:.8rem;color:var(--ok)}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:center}
+.hero canvas{width:100%;height:auto}
+@media (max-width:720px){.hero{grid-template-columns:1fr}.ctl{min-width:140px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.lec-tools,.tabs,nav,.btn{display:none}}
+
+.callout{border-left:4px solid var(--accent);background:var(--panel);padding:10px 14px;margin:14px 0;border-radius:4px}
+.callout b.t{display:block;margin-bottom:4px;color:var(--accent)}
+.eq{overflow-x:auto;margin:10px 0;text-align:center}
+/* Pointer under an equation to the step-by-step part of the lab that computes it */
+.labref{margin:-4px 0 14px;text-align:center;font-size:.87rem;color:var(--steel);max-width:none}
+.labref a{color:var(--accent);font-weight:600;white-space:nowrap}
+.anim{margin:16px 0}
+details.ans{margin:4px 0 14px}
+/* Colab call-to-action boxes inside the lecture */
+.colabbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line,#d9dccf);border-left:5px solid #f9ab00;background:var(--panel,#fff);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn img{display:block;height:22px}
+.colabpart{margin:.8rem 0 0;font-size:.95rem}
+/* Step-by-step calculators of the lab */
+.labpart{scroll-margin-top:10px}
+h3[id]{scroll-margin-top:10px}
+.stepcalc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:12px 0;outline:none}
+.stepcalc .bench{margin:0 0 10px}
+.sc-presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}
+.sc-presets .btn{font-size:.86rem;padding:.22rem .6rem}
+ol.sc-steps{list-style:none;margin:8px 0 0;padding:0}
+ol.sc-steps li{max-width:none;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0;background:var(--paper)}
+ol.sc-steps li.cur{border-left-color:var(--accent);background:var(--panel);box-shadow:0 1px 8px rgba(0,0,0,.07)}
+ol.sc-steps li.new{animation:scin .35s ease}
+ol.sc-steps li.chg .sc-m{animation:scflash .9s ease}
+.sc-st{font-weight:700;font-size:.97rem}
+.sc-st .sc-n{display:inline-block;min-width:4.2em;color:var(--accent);font-family:var(--head);font-weight:600}
+.sc-x{font-size:.93rem;color:var(--steel);margin:3px 0;max-width:none}
+.sc-x p{margin:.2rem 0;max-width:none}
+.sc-m{overflow-x:auto;overflow-y:hidden;margin:4px 0;padding:2px 0;border-radius:4px;font-size:1.04em}
+.sc-m mjx-container[display="true"]{margin:.35em 0!important}
+.sc-q{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-top:6px;font-size:.93rem}
+.sc-q label{font-weight:600}
+.sc-q input{width:7.5rem;padding:.25rem .4rem;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)}
+.sc-ok{font-size:.86rem;color:var(--ok);font-weight:600}
+.sc-nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+.sc-nav .sc-count{margin-left:auto;font-size:.88rem;color:var(--steel)}
+.sc-dots{display:flex;gap:4px;width:100%}
+.sc-dots i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.sc-dots i.on{background:var(--accent)}
+.sc-score{margin:.2rem 0 0}
+code.tex{font-size:.8rem;white-space:pre-wrap;word-break:break-word}
+@keyframes scin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes scflash{from{background:var(--band)}to{background:transparent}}
+/* Boxes in the lecture that open a part of the interactive lab */
+.labbox{display:flex;gap:.8rem;align-items:center;border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--panel);border-radius:10px;padding:.65rem .9rem;margin:1.1rem 0}
+.labbox p{margin:0}
+.labbox a.btn{white-space:nowrap;text-decoration:none;font-size:.9rem}
+@media (max-width:560px){.labbox,.colabbox{flex-direction:column;align-items:flex-start}}
+/* Interactive scenes of the lecture pages: a small drawing, buttons and a line that tells what happened */
+.scene{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c2);border-radius:10px;padding:12px 14px;margin:1.4rem 0}
+.scene>p.small{margin:0 0 4px}
+.scene .sn-svg{display:block;width:100%;max-width:560px;height:auto;margin:6px auto 2px}
+.scene svg text{font-family:var(--sans);fill:var(--ink)}
+.scene svg .sn-t{transition:transform .28s ease}
+.sn-btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;align-items:center}
+.sn-btns .btn{font-size:.9rem;padding:.34rem .75rem;min-height:2.15rem;line-height:1.25}
+.sn-btns .btn[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--ink)}
+.sn-btns .btn.ghost[aria-pressed=true]{background:var(--band);border-color:var(--accent);color:var(--ink)}
+.sn-lab{font-size:.84rem;color:var(--steel);margin-right:2px}
+.sn-say{min-height:3.3em;margin:6px 0 4px;padding:7px 11px;border-radius:8px;background:var(--band);font-size:.95rem;max-width:none}
+.sn-ro{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.86rem;color:var(--steel);margin:4px 0 0}
+.sn-ro b{font-family:var(--mono);color:var(--ink);font-weight:600;font-size:.84rem}
+.sn-pad{display:inline-grid;grid-template-columns:repeat(3,2.7rem);gap:4px;margin-right:10px}
+.sn-pad .btn{padding:.3rem 0;min-width:0}
+.sn-loop{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:.86rem;margin:6px 0 2px;color:var(--steel)}
+.sn-node{border:1px solid var(--line);border-radius:999px;padding:.08rem .6rem;background:var(--paper);color:var(--ink);transition:background .2s,border-color .2s}
+.sn-loop .on{border-color:var(--accent);background:var(--band)}
+.sn-loop b{font-family:var(--mono);color:var(--ink);font-weight:600}
+.scene .sn-pop{animation:snpop 1.1s ease forwards}
+@keyframes snpop{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-26px)}}
+.sn-box:focus{outline:none}
+.sn-box:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.sn-note{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:6px 10px;margin:6px 0;font-family:var(--mono);font-size:.84rem}
+.sn-note-h{font-family:var(--sans);font-size:.84rem;color:var(--steel);margin-bottom:2px}
+.sn-note-l{overflow-wrap:anywhere}
+.sn-cards{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.sn-card{flex:1 1 180px;border:2px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--paper);transition:border-color .2s,box-shadow .2s}
+.sn-card .sn-pos{display:block;font-size:.8rem;color:var(--steel)}
+.sn-card .sn-txt{font-family:var(--mono);font-size:.88rem;overflow-wrap:anywhere}
+.sn-card.win{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.sn-card.tie{border-color:var(--c2)}
+.sn-table{width:100%;border-collapse:collapse;font-size:.84rem;margin:6px 0;background:var(--panel)}
+.sn-table th,.sn-table td{border:1px solid var(--line);padding:3px 6px;text-align:right}
+.sn-table th{background:var(--band);font-weight:600}
+.sn-table td.mv{background:var(--band);transition:background .3s}
+.sn-table td.ok{color:var(--ok);font-weight:700;text-align:center}
+.sn-table td.bad{color:var(--bad);font-weight:700;text-align:center}
+.sn-table td:first-child,.sn-table th:first-child{text-align:left}
+/* Theme layer of the Vel Tech courses, applied on top of style.css. */
+:root{
+  --ink:#1C2333; --paper:#F4F6FB; --panel:#FFFFFF; --steel:#5A6478; --line:#D5DAE7; --grid:#E7EAF3;
+  --ok:#23946B; --bad:#C9473B;
+  --c1:#2A5BD7; --c2:#D4870B; --c3:#23946B; --c4:#8E4BA8; --c5:#C9473B;
+  --sans:'Source Sans 3','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --head:'Lexend','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --ink:#E4E8F2; --paper:#11151F; --panel:#1A2030; --steel:#A3ACC2; --line:#2C3448; --grid:#1F2638;
+  --ok:#5CC796; --bad:#EE8A7E;
+  --c1:#7FA2F5; --c2:#F0B34A; --c3:#5CC796; --c4:#C79BDA; --c5:#EE8A7E;
+}}
+body{font-size:17.5px;line-height:1.6}
+header.top{border:1px solid var(--line);border-top:6px solid var(--accent);border-radius:12px;background:var(--panel);
+  padding:16px 20px 14px;margin-bottom:26px;box-shadow:0 1px 2px rgba(20,30,60,.05)}
+header.top h1{font-weight:600;letter-spacing:-.01em}
+header.top nav a{background:var(--band);padding:.12rem .55rem;border-radius:999px;text-decoration:none;color:var(--accent);font-weight:600;font-size:.9rem}
+header.top nav a:hover{background:var(--accent);color:var(--panel)}
+h2{font-weight:600;letter-spacing:-.005em}
+h2::after{content:"";display:block;width:46px;height:3px;border-radius:2px;background:var(--accent);margin-top:7px}
+h3{font-weight:600}
+a{color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border-radius:8px}
+.btn:hover{background:var(--ink)}
+.btn.ghost{border-radius:8px}
+.bench,.kc,.card,pre,table,.readout div{border-radius:10px}
+.kc{border-radius:0 10px 10px 0}
+.readout div{background:var(--band)}
+.tabs button[aria-selected=true]{color:var(--accent)}
+th{background:var(--band)}
+blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
+/* Colab call-to-action boxes and links */
+.colabbox{display:flex;gap:.9rem;align-items:center;border:1px solid var(--line);border-left:5px solid #F9AB00;
+  background:var(--panel);border-radius:10px;padding:.7rem 1rem;margin:1.2rem 0}
+.colabbox p{margin:0}
+.colabbox .colabbtn{flex:0 0 auto;line-height:0}
+.colabbox .colabbtn img,.colabpart img{height:20px;width:auto;max-width:none;display:inline-block;vertical-align:middle}
+.colabpart{margin:.9rem 0 0;font-size:.95rem}
+.colabpart a{display:inline-flex;align-items:center;gap:.55rem;text-decoration:none;font-weight:600}
+/* Readable buttons: the accent of the dark scheme is light, so buttons on it carry dark text, and a ghost button
+   under the pointer gets a light tint instead of the ink colour */
+.btn.ghost:hover{background:var(--band)}
+@media (prefers-color-scheme:dark){.btn,.btn:hover{color:#111827}}
+:root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"local"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><div class="wrap">
+<header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 4 of 5</p><h1>Reinforcement Learning for Language Models</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-04">Day overview</a><a href="lecture.html">Lecture</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb">Colab notebook</a><a href="Day04_Lecture_Notes.pdf">PDF notes</a></nav></header>
+<h2>RLHF lab</h2><p>Part A names the stages of reinforcement learning from human feedback (RLHF). Parts B and D repeat two calculations of the lecture step by step: the penalised rewards and advantages of one batch, and the optimum of the penalised objective for three outputs. Part C computes a Bradley-Terry preference and a penalised reward by hand. Part E turns the weight of the Kullback-Leibler (KL) penalty on real outputs of the notebook and shows the optimum of the penalised objective. Part F weighs helpfulness against harmlessness on six requests.</p>
+<div class="tabs" role="tablist"><button aria-selected="true">Explore</button><button aria-selected="false">Check yourself</button><button aria-selected="false">Reflect and export</button></div>
+<section class="tabpanel"><h3>Part A: Which stage of the pipeline?</h3><p>Name the stage of RLHF that each description refers to.</p><div id="pa"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 5: a Bradley-Terry reward model from noisy pairs.</a></p><section class="labpart" id="pb"><h3>Part B: Penalised rewards and advantages of one batch</h3><p>The worked example of the lecture: four sentences of one batch of RLHF, each with its score from the reward model and its log-ratio against the fine-tuned model. The sliders set the KL weight \(\beta\), the four scores and the four log-ratios. Values are rounded to three decimals.</p><div class="stepcalc" id="pb-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 6: the same loop over 300 iterations of 64 sentences.</a></p><h3>Part C: A preference and a penalised reward by hand</h3><p>The reward model scores answer A with 1.2 and answer B with 0.4. During RLHF, an answer receives the reward 2.0 from the reward model, the log-ratio of its probability under the new and the fine-tuned model is 3.0, and the KL weight is 0.2.</p><div id="pc"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 6: RLHF with a KL penalty.</a></p><section class="labpart" id="pd"><h3>Part D: The optimum of the KL-regularised objective for three outputs</h3><p>The worked example of the lecture: A reference policy writes three outputs, the reward model scores them, and the optimum of RLHF multiplies each reference probability by \(e^{r/\beta}\) and normalises. The sliders set the reference probabilities of the first two outputs, the three scores and \(\beta\). Lower \(\beta\) and watch the rare output with the highest score take over.</p><div class="stepcalc" id="pd-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: seven KL weights and reward hacking.</a></p><h3 id="pe">Part E: The KL leash on real outputs</h3>
+<div class="bench">
+<p>The candidates below are real outputs of the notebook: The most likely sentences of the fine-tuned model and every
+sentence that the reinforcement-learning runs produced outside the grammar. For each one the lab knows its probability
+under the reference model, its reward-model score and its gold reward. For a KL weight beta, the optimal policy is
+proportional to the reference probability times exp(reward-model score / beta). Lower beta and watch what it buys.</p>
+<p class="small">This is the optimum of the KL-regularised objective from the
+<a href="lecture.html#without-the-leash-reward-hacking">lecture</a>, computed over the 392 candidates only, with their reference
+probabilities rescaled to add up to one. The reference model is the fine-tuned model, and beta is the weight of the
+KL penalty. The horizontal axis shows the logarithm of beta to base 10: -1 stands for 0.1 and 0 for 1. The
+dashed line, the share of probability on sentences of the grammar, is drawn at four times its value, so the height 4 means
+100 percent.</p>
+<div class="row" id="l-sl"></div>
+<canvas class="paper" id="l-cv" aria-label="Expected scores against beta"></canvas>
+<div class="legend" id="l-leg"></div><div id="l-ro"></div>
+<h3>The ten most probable outputs at this beta</h3>
+<div class="tablewrap"><table><thead><tr><th>Probability</th><th>Output</th><th>Reward model</th><th>Gold</th><th>In the grammar</th></tr></thead>
+<tbody id="l-tb"></tbody></table></div>
+</div>
+<p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: the KL weight as a dial, and reward hacking.</a></p><section class="labpart" id="pf"><h3>Part F: Helpful and harmless, one weight between them</h3><p>The illustration of the lecture: six requests to an assistant, three harmless and three harmful, each with three possible answers, to comply, to give a careful partial answer or to refuse. Each answer has a helpfulness score and a harmlessness score between 0 and 1. The scores are invented for the illustration. The reward of an answer is \(r = (1 - w)\, r_{\mathrm{help}} + w\, r_{\mathrm{harm}}\), and the assistant gives the answer with the highest reward. The slider sets the weight \(w\) of harmlessness, and the figure counts the two kinds of failure for every weight.</p><div class="stepcalc" id="pf-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-8" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 8: a pretrained language model and three rewards that disagree.</a></p></section>
+<section class="tabpanel" hidden><p>Answer each question, rate your confidence and check the answer. Results stay in this browser.</p><div id="quiz"></div></section>
+<section class="tabpanel" hidden><p>Write a short answer to each question. The text is saved in this browser and is included when you export the learning log.</p><div id="reflect"></div></section>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<script>window.COURSE_PREFIX="vtrl";</script>
+<script>"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "html") e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COL = () => ({ink: cssv("--ink"), steel: cssv("--steel"), line: cssv("--line"), grid: cssv("--grid"),
+  panel: cssv("--panel"), accent: cssv("--accent"), ok: cssv("--ok"), bad: cssv("--bad"),
+  c: [cssv("--c1"), cssv("--c2"), cssv("--c3"), cssv("--c4"), cssv("--c5")]});
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+function RNG(seed) {
+  let s = seed >>> 0;
+  const r = () => { s += 0x6D2B79F5; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  r.normal = () => { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  r.int = n => Math.floor(r() * n);
+  r.uniform = (a, b) => a + (b - a) * r();
+  return r;
+}
+const store = {
+  key: k => (window.COURSE_PREFIX || "vt") + ":" + k,
+  get(k, d) { try { const v = localStorage.getItem(this.key(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(this.key(k), JSON.stringify(v)); } catch (e) {} }
+};
+/* Canvas with device-pixel scaling. draw(ctx, w, h) is called on setup and on resize. */
+function stage(cv, aspect, draw) {
+  const ctx = cv.getContext("2d");
+  const fit = () => {
+    const w = cv.clientWidth || 600, hgt = Math.round(w * aspect), d = window.devicePixelRatio || 1;
+    cv.style.height = hgt + "px"; cv.width = Math.round(w * d); cv.height = Math.round(hgt * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0); cv._w = w; cv._h = hgt; draw && draw(ctx, w, hgt);
+  };
+  new ResizeObserver(() => fit()).observe(cv);
+  fit();
+  return {ctx, redraw: () => draw && draw(ctx, cv._w, cv._h), size: () => [cv._w, cv._h]};
+}
+/* Axes frame: returns mapping helpers. */
+function frame(ctx, w, hgt, o) {
+  const C = COL(), p = Object.assign({l: 48, r: 12, t: 12, b: 34}, o.pad || {});
+  const X = x => p.l + (x - o.x0) / (o.x1 - o.x0) * (w - p.l - p.r);
+  const Y = y => hgt - p.b - (y - o.y0) / (o.y1 - o.y0) * (hgt - p.t - p.b);
+  ctx.save(); ctx.strokeStyle = C.line; ctx.fillStyle = C.steel; ctx.lineWidth = 1; ctx.font = "11px " + cssv("--sans");
+  const nt = o.ticks || 5;
+  for (let i = 0; i <= nt; i++) {
+    const xv = o.x0 + (o.x1 - o.x0) * i / nt, yv = o.y0 + (o.y1 - o.y0) * i / nt;
+    ctx.beginPath(); ctx.moveTo(X(xv), hgt - p.b); ctx.lineTo(X(xv), hgt - p.b + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.l - 4, Y(yv)); ctx.lineTo(p.l, Y(yv)); ctx.stroke();
+    ctx.textAlign = "center"; ctx.fillText(fmt(xv), X(xv), hgt - p.b + 16);
+    ctx.textAlign = "right"; ctx.fillText(fmt(yv), p.l - 7, Y(yv) + 4);
+  }
+  ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(p.l, p.t); ctx.lineTo(p.l, hgt - p.b); ctx.lineTo(w - p.r, hgt - p.b); ctx.stroke();
+  ctx.fillStyle = C.ink; ctx.textAlign = "center";
+  if (o.xlabel) ctx.fillText(o.xlabel, (p.l + w - p.r) / 2, hgt - 4);
+  if (o.ylabel) { ctx.save(); ctx.translate(12, (p.t + hgt - p.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(o.ylabel, 0, 0); ctx.restore(); }
+  ctx.restore();
+  return {X, Y, p};
+}
+function fmt(v) { if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v)); const a = Math.abs(v); if (a >= 1000) return v.toFixed(0); if (a >= 10) return v.toFixed(0); if (a >= 1) return v.toFixed(1); if (a === 0) return "0"; return v.toFixed(2); }
+function polyline(ctx, pts, color, width, dash) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width || 2; if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.restore();
+}
+function dot(ctx, x, y, r, color, stroke) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+/* Labelled slider bound to a value. */
+function slider(parent, o, on) {
+  const out = h("output", {}, o.fmt ? o.fmt(o.value) : o.value);
+  const inp = h("input", {type: "range", min: o.min, max: o.max, step: o.step || 1, value: o.value, "aria-label": o.label});
+  inp.addEventListener("input", () => { const v = parseFloat(inp.value); out.textContent = o.fmt ? o.fmt(v) : v; on && on(v); });
+  parent.append(h("div", {class: "ctl"}, h("label", {}, o.label, " ", out), inp));
+  return inp;
+}
+function readout(parent, names) {
+  const box = h("div", {class: "readout"}), cells = {};
+  names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; box.append(h("div", {}, n, b)); });
+  parent.append(box);
+  return (n, v) => { cells[n].textContent = v; };
+}
+function legend(parent, items) {
+  const C = COL();
+  parent.append(h("div", {class: "legend"}, items.map(([t, i]) => h("span", {}, h("i", {style: "background:" + (typeof i === "number" ? C.c[i] : i)}), t))));
+}
+/* Animation loop that pauses when off screen or when reduced motion is requested. */
+function loop(step, ms) {
+  let on = false, raf = 0, last = 0, acc = 0;
+  const f = t => { if (!on) return; const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t; acc += dt * 1000; if (!ms || acc >= ms) { acc = 0; step(dt); } raf = requestAnimationFrame(f); };
+  return {start() { if (!on) { on = true; last = 0; raf = requestAnimationFrame(f); } }, stop() { on = false; cancelAnimationFrame(raf); }, get running() { return on; }};
+}
+const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Knowledge checks, citation popups, flashcards and reading progress on lecture pages. */
+function initLecture(day) {
+  const kcs = $$(".kc"), key = "d" + day + ":kc", st = store.get(key, {});
+  const bar = $(".lec-bar i"), txt = $(".lec-txt");
+  const upd = () => {
+    const n = kcs.length, d = Object.values(st).filter(Boolean).length;
+    if (bar) bar.style.width = (n ? 100 * d / n : 0) + "%";
+    if (txt) txt.textContent = n ? `Knowledge checks answered correctly: ${d} of ${n}` : "";
+    store.set(key, st); store.set("d" + day + ":progress", n ? d / n : 0);
+  };
+  kcs.forEach((k, i) => {
+    const ans = +k.dataset.answer, fb = $(".fb", k);
+    $(".btn", k).addEventListener("click", () => {
+      const sel = $("input:checked", k);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === ans;
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + k.dataset.why;
+      st[i] = ok || st[i] || false; upd();
+    });
+    if (st[i]) { const r = $$("input", k)[ans]; if (r) r.checked = true; }
+  });
+  upd();
+  const refs = JSON.parse(($("#refdata") || {textContent: "{}"}).textContent || "{}");
+  let pop = null;
+  document.addEventListener("click", e => {
+    const c = e.target.closest(".cite");
+    if (pop) { pop.remove(); pop = null; }
+    if (!c) return;
+    pop = h("div", {class: "pop", role: "note"});
+    c.dataset.refs.split(",").forEach(n => pop.append(h("p", {html: "[" + n + "] " + (refs[n] || "")})));
+    document.body.append(pop);
+    const r = c.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 440)) + "px";
+    pop.style.top = (window.scrollY + r.bottom + 6) + "px";
+  });
+  $$(".card").forEach(c => { const t = () => c.classList.toggle("flip"); c.addEventListener("click", t); c.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t(); } }); });
+}
+
+/* Lab shell: tabs, self-assessment with confidence ratings, reflection and learning-log export. */
+function initLab(day, title, SELF, REFLECT) {
+  const tabs = $$(".tabs button"), panels = $$(".tabpanel");
+  tabs.forEach((b, i) => b.addEventListener("click", () => {
+    tabs.forEach((x, j) => { x.setAttribute("aria-selected", i === j); panels[j].hidden = i !== j; });
+    window.dispatchEvent(new Event("resize"));
+  }));
+  const qbox = $("#quiz"), res = store.get("d" + day + ":quiz", {});
+  SELF.forEach((q, i) => {
+    const fb = h("div", {class: "fb"}), name = "q" + i;
+    const opts = q.options.map((o, j) => h("label", {}, h("input", {type: "radio", name, value: j}), " ", o));
+    const conf = h("div", {class: "conf"}, "Confidence:", ["sure", "unsure", "guess"].map(c => h("label", {}, h("input", {type: "radio", name: name + "c", value: c}), " " + c)));
+    const btn = h("button", {class: "btn", type: "button"}, "Check answer");
+    const box = h("div", {class: "kc"}, h("p", {class: "q"}, (i + 1) + ". " + q.q), opts, conf, btn, fb);
+    btn.addEventListener("click", () => {
+      const sel = $(`input[name=${name}]:checked`, box), cf = $(`input[name=${name}c]:checked`, box);
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Select an option first."; return; }
+      const ok = +sel.value === q.answer, c = cf ? cf.value : "not rated";
+      res[i] = {ok, conf: c}; store.set("d" + day + ":quiz", res);
+      fb.className = "fb " + (ok ? "ok" : "bad");
+      fb.textContent = (ok ? "Correct. " : "Not quite. ") + q.why + (!ok && c === "sure" ? " A confident error marks a topic to revisit first." : "");
+      summary();
+    });
+    qbox.append(box);
+  });
+  const sum = h("p", {class: "small"}); qbox.append(sum);
+  function summary() {
+    const v = Object.values(res), ok = v.filter(r => r.ok).length, conf = v.filter(r => !r.ok && r.conf === "sure").length;
+    sum.textContent = `Answered: ${v.length} of ${SELF.length}. Correct: ${ok}. Confident errors: ${conf}.`;
+  }
+  summary();
+  const rbox = $("#reflect"), refl = store.get("d" + day + ":reflect", {});
+  REFLECT.forEach((p, i) => {
+    const ta = h("textarea", {rows: 4, style: "width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink)"});
+    ta.value = refl[i] || "";
+    ta.addEventListener("input", () => { refl[i] = ta.value; store.set("d" + day + ":reflect", refl); });
+    rbox.append(h("p", {}, h("b", {}, (i + 1) + ". "), p), ta);
+  });
+  const ex = h("button", {class: "btn", type: "button"}, "Export learning log");
+  ex.addEventListener("click", () => {
+    const lines = [`# Learning log, day ${day}: ${title}`, "", `Exported: ${new Date().toISOString()}`, "", "## Self-assessment", ""];
+    SELF.forEach((q, i) => { const r = res[i]; lines.push(`${i + 1}. ${q.q}`, `   Result: ${r ? (r.ok ? "correct" : "incorrect") + ", confidence " + r.conf : "not answered"}`); });
+    lines.push("", "## Reflection", "");
+    REFLECT.forEach((p, i) => lines.push(`**${i + 1}. ${p}**`, "", refl[i] || "(no answer)", ""));
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], {type: "text/markdown"}));
+    const a = h("a", {href: url, download: `learning_log_day${String(day).padStart(2, "0")}.md`}); document.body.append(a); a.click(); a.remove();
+  });
+  rbox.append(h("p", {}, ex));
+}
+
+/* Course home: progress per day from local storage. */
+function initHome(n, nq) {
+  for (let d = 1; d <= n; d++) {
+    const el = $("#dy" + d + " .done"); if (!el) continue;
+    const p = store.get("d" + d + ":progress", 0), q = Object.values(store.get("d" + d + ":quiz", {})).filter(r => r.ok).length;
+    el.textContent = (p > 0 || q > 0) ? `Reading checks ${Math.round(100 * p)}%, self-assessment ${q} of ${nq || 8} correct` : "";
+  }
+}
+
+/* Opaque blend of a palette colour with a background colour, used for heat maps without seams. */
+function mix(c1, c2, a) {
+  const hx = c => { c = (c || "#ffffff").trim(); if (c[0] === "#") { if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+    return [1, 3, 5].map(i => parseInt(c.substr(i, 2), 16)); } const m = c.match(/\d+/g); return m ? m.slice(0, 3).map(Number) : [255, 255, 255]; };
+  const A = hx(c1), B = hx(c2); return "rgb(" + A.map((v, i) => Math.round(a * v + (1 - a) * B[i])).join(",") + ")";
+}
+
+/* Interactive scenes of the lecture pages. sv() builds an SVG element; scene() returns the parts of one scene:
+   its drawing, rows of buttons, a line that tells what happened and a row of readouts. SCENE_SHOT holds, for each
+   scene, a function that sets the state shown in the screenshot of the course README. */
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs, ...kids) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (k === "text") e.textContent = v; else if (v != null) e.setAttribute(k, v); }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
+}
+window.SCENE_SHOT = window.SCENE_SHOT || {};
+function scene(id, w, hgt, label) {
+  const root = document.getElementById(id);
+  if (!root) return null;
+  const box = h("div", {class: "sn-box"}), svg = sv("svg", {class: "sn-svg", viewBox: `0 0 ${w} ${hgt}`, role: "img", "aria-label": label});
+  box.append(svg); root.append(box);
+  const say = h("p", {class: "sn-say", "aria-live": "polite"});
+  return {root, box, svg, say,
+    row(label) { const r = h("div", {class: "sn-btns"}); if (label) r.append(h("span", {class: "sn-lab"}, label)); box.append(r); return r; },
+    btn(row, text, fn, ghost) {
+      const b = h("button", {class: ghost ? "btn ghost" : "btn", type: "button"}, text);
+      b.addEventListener("click", fn); row.append(b); return b; },
+    toggle(row, text, on, fn) {
+      const b = h("button", {class: "btn ghost", type: "button", "aria-pressed": String(!!on)}, text);
+      b.addEventListener("click", () => { const v = b.getAttribute("aria-pressed") !== "true"; b.setAttribute("aria-pressed", String(v)); fn(v); });
+      row.append(b); return b; },
+    tellAt() { box.append(say); },
+    tell(html) { say.innerHTML = html; },
+    ro(names) {
+      const r = h("div", {class: "sn-ro"}), cells = {};
+      names.forEach(n => { const b = h("b", {}, "-"); cells[n] = b; r.append(h("span", {}, n + ": ", b)); });
+      box.append(r); return (n, v) => { cells[n].textContent = v; }; }};
+}
+/* Colours of a scene, read from the theme: fill and stroke styles for SVG elements. */
+const fillc = c => `fill:var(${c})`, strokec = (c, w) => `fill:none;stroke:var(${c});stroke-width:${w || 2}`;
+</script>
+<script>initLab(4,"Reinforcement Learning for Language Models",[{"q": "What does a policy over the large TokenWorld output at each position?", "options": ["A reward", "A distribution over the next token", "A sentence", "A value"], "answer": 1, "why": "It is an autoregressive language model: Each token is drawn from a distribution over the vocabulary, given the tokens before it."}, {"q": "What does the Bradley-Terry model turn into a probability?", "options": ["A sentence length", "The difference of two reward scores", "A KL divergence", "An annotator error"], "answer": 1, "why": "P(winner preferred) = sigmoid(r(winner) - r(loser)), where the sigmoid is the logistic function."}, {"q": "Why is held-out accuracy on noisy labels capped?", "options": ["Because of overfitting", "Because the labels themselves are wrong at the error rate", "Because pairs are short", "Because of the KL"], "answer": 1, "why": "The errors are random, so even a model that orders every pair correctly agrees with only one minus the error rate of the labels on average."}, {"q": "What blind spot does the reward model of the notebook have?", "options": ["It ignores length", "It cannot see word order or repetition", "It cannot see calm words", "It ignores the end token"], "answer": 1, "why": "It averages word embeddings, and an average keeps neither the order of the words nor a count of repetitions."}, {"q": "What did the policy do without a KL penalty?", "options": ["It improved steadily", "It collapsed onto a repetitive sentence that the reward model overrates", "It stopped learning", "It copied the corpus"], "answer": 1, "why": "It exploited the blind spot: reward hacking."}, {"q": "Which beta gave the highest final gold reward in the sweep?", "options": ["0", "0.05", "0.2", "1.0"], "answer": 2, "why": "Smaller values collapsed, larger ones left reward unclaimed."}, {"q": "What is the optimum of the KL-regularised objective?", "options": ["The reference policy", "The reference reweighted by exp(reward / beta)", "The greedy policy", "A uniform policy"], "answer": 1, "why": "pi*(y) is proportional to pi_ref(y) exp(r(y) / beta)."}, {"q": "What evidence shows that alignment worked?", "options": ["A rising reward-model score", "Improvement on a measure the optimisation did not see", "A small KL", "A long training run"], "answer": 1, "why": "Only an independent measure can reveal a hack."}],["In the lab, at which beta did outputs outside the grammar take over, and what did they have in common?", "In a real project there is no gold reward. What would you use instead to detect reward hacking?", "Which property of good answers in your field would be hardest for a learned reward to see?"]);</script>
+<script>const CANDS=[{"t":"the cat waited by the window","lp":-6.666,"rm":2.948,"g":1.9,"ok":true},{"t":"the child ran in the garden","lp":-5.748,"rm":0.201,"g":1.0,"ok":true},{"t":"the child slept by the window","lp":-6.294,"rm":2.611,"g":1.9,"ok":true},{"t":"a bird ran in the garden","lp":-5.475,"rm":0.364,"g":1.0,"ok":true},{"t":"the cat smiled near the door","lp":-6.457,"rm":0.193,"g":1.0,"ok":true},{"t":"my friend slept by the window","lp":-6.212,"rm":2.629,"g":1.9,"ok":true},{"t":"a robot sat near the door","lp":-5.708,"rm":-1.352,"g":0.55,"ok":true},{"t":"the cat ran on the mat","lp":-6.176,"rm":-1.005,"g":0.55,"ok":true},{"t":"the dog slept beside the lamp","lp":-6.227,"rm":3.05,"g":1.9,"ok":true},{"t":"my friend slept beside the lamp","lp":-5.98,"rm":2.817,"g":1.9,"ok":true},{"t":"a robot smiled beside the lamp","lp":-5.964,"rm":0.22,"g":1.0,"ok":true},{"t":"the cat waited on the mat","lp":-6.443,"rm":1.929,"g":1.45,"ok":true},{"t":"a bird waited in the garden","lp":-5.777,"rm":3.155,"g":1.9,"ok":true},{"t":"my friend ran beside the lamp","lp":-6.094,"rm":0.147,"g":1.0,"ok":true},{"t":"a robot smiled near the door","lp":-5.894,"rm":-1.204,"g":0.55,"ok":true},{"t":"my friend waited in the garden","lp":-5.918,"rm":3.047,"g":1.9,"ok":true},{"t":"a bird smiled under the tree","lp":-5.951,"rm":1.447,"g":1.45,"ok":true},{"t":"the cat sat in the garden","lp":-6.053,"rm":1.526,"g":1.45,"ok":true},{"t":"my friend ran in the garden","lp":-5.737,"rm":0.191,"g":1.0,"ok":true},{"t":"while bird sang beside the lamp","lp":-15.419,"rm":0.677,"g":-0.5,"ok":false},{"t":"the child slept beside the lamp","lp":-6.061,"rm":2.806,"g":1.9,"ok":true},{"t":"the dog sat near the door","lp":-6.222,"rm":0.162,"g":1.0,"ok":true},{"t":"the dog sang beside the lamp","lp":-5.75,"rm":0.159,"g":1.0,"ok":true},{"t":"a robot sang by the window","lp":-6.254,"rm":-1.57,"g":0.55,"ok":true},{"t":"my friend slept near the door","lp":-5.66,"rm":1.484,"g":1.45,"ok":true},{"t":"the child sang on the mat","lp":-6.04,"rm":-1.463,"g":0.55,"ok":true},{"t":"my friend sang in the garden","lp":-5.699,"rm":-0.099,"g":1.0,"ok":true},{"t":"the cat slept beside the lamp at a while","lp":-16.255,"rm":2.335,"g":1.6,"ok":false},{"t":"a bird ran under the tree","lp":-5.686,"rm":0.173,"g":1.0,"ok":true},{"t":"a robot slept by the window for a while","lp":-7.391,"rm":0.56,"g":1.15,"ok":true},{"t":"the dog sat under the tree","lp":-5.873,"rm":1.447,"g":1.45,"ok":true},{"t":"a robot smiled on the mat","lp":-5.974,"rm":-1.096,"g":0.55,"ok":true},{"t":"a bird sat near the door","lp":-5.685,"rm":0.037,"g":1.0,"ok":true},{"t":"the child sang in the garden","lp":-5.957,"rm":-0.082,"g":1.0,"ok":true},{"t":"the child sat near the door","lp":-6.126,"rm":-0.133,"g":1.0,"ok":true},{"t":"a robot ran on the mat","lp":-5.621,"rm":-2.338,"g":0.1,"ok":true},{"t":"the cat sang in the garden","lp":-6.098,"rm":0.098,"g":1.0,"ok":true},{"t":"a bird ran near the door","lp":-5.637,"rm":-1.129,"g":0.55,"ok":true},{"t":"the child sat under the tree","lp":-6.087,"rm":1.163,"g":1.45,"ok":true},{"t":"the child ran near the door","lp":-6.096,"rm":-1.288,"g":0.55,"ok":true},{"t":"a robot smiled in the garden","lp":-5.827,"rm":0.264,"g":1.0,"ok":true},{"t":"the child waited on the mat","lp":-6.317,"rm":1.749,"g":1.45,"ok":true},{"t":"the cat waited beside the lamp","lp":-6.372,"rm":3.144,"g":1.9,"ok":true},{"t":"the child slept under the tree","lp":-6.04,"rm":2.687,"g":1.9,"ok":true},{"t":"a bird slept by the window for a while","lp":-7.372,"rm":1.477,"g":1.6,"ok":true},{"t":"the child smiled on the mat","lp":-6.265,"rm":0.114,"g":1.0,"ok":true},{"t":"the child smiled under the tree","lp":-6.349,"rm":1.293,"g":1.45,"ok":true},{"t":"my friend slept in the garden","lp":-5.578,"rm":2.876,"g":1.9,"ok":true},{"t":"a bird sat in the garden","lp":-5.442,"rm":1.511,"g":1.45,"ok":true},{"t":"a robot ran under the tree","lp":-5.945,"rm":-1.201,"g":0.55,"ok":true},{"t":"the child smiled by the window","lp":-6.705,"rm":1.221,"g":1.45,"ok":true},{"t":"the child sat in the garden","lp":-5.801,"rm":1.352,"g":1.45,"ok":true},{"t":"a bird slept under the tree","lp":-5.665,"rm":2.825,"g":1.9,"ok":true},{"t":"a robot sat beside the lamp","lp":-5.732,"rm":0.088,"g":1.0,"ok":true},{"t":"a bird slept on the mat","lp":-5.659,"rm":1.737,"g":1.45,"ok":true},{"t":"a bird sang beside the lamp for a while","lp":-7.379,"rm":-0.399,"g":0.7,"ok":true},{"t":"a robot sat under the tree","lp":-5.756,"rm":-0.059,"g":1.0,"ok":true},{"t":"the child slept in the garden","lp":-5.787,"rm":2.843,"g":1.9,"ok":true},{"t":"a robot ran by the window","lp":-5.909,"rm":-1.293,"g":0.55,"ok":true},{"t":"a robot ran near the door","lp":-5.72,"rm":-2.438,"g":0.1,"ok":true},{"t":"a robot ran in the garden","lp":-5.64,"rm":-1.004,"g":0.55,"ok":true},{"t":"a bird smiled on the mat","lp":-6.111,"rm":0.279,"g":1.0,"ok":true},{"t":"a bird sat under the tree","lp":-5.547,"rm":1.326,"g":1.45,"ok":true},{"t":"the dog waited in the garden","lp":-6.354,"rm":3.25,"g":1.9,"ok":true},{"t":"the cat sang on the mat","lp":-6.069,"rm":-1.29,"g":0.55,"ok":true},{"t":"my friend sang beside the lamp","lp":-5.703,"rm":-0.146,"g":1.0,"ok":true},{"t":"the child slept near the door","lp":-6.032,"rm":1.477,"g":1.45,"ok":true},{"t":"the dog sang by the window","lp":-6.123,"rm":-0.069,"g":1.0,"ok":true},{"t":"a robot sang beside the lamp","lp":-5.718,"rm":-1.35,"g":0.55,"ok":true},{"t":"a bird ran beside the lamp","lp":-5.632,"rm":0.323,"g":1.0,"ok":true},{"t":"a robot slept on the mat for a while","lp":-7.297,"rm":-0.181,"g":0.7,"ok":true},{"t":"the cat ran beside the lamp","lp":-6.181,"rm":0.338,"g":1.0,"ok":true},{"t":"the dog waited on the mat","lp":-6.364,"rm":2.032,"g":1.45,"ok":true},{"t":"a robot smiled my friend slept friend","lp":-23.767,"rm":0.861,"g":0.1,"ok":false},{"t":"the dog slept by the window","lp":-6.238,"rm":2.853,"g":1.9,"ok":true},{"t":"a bird slept by the window","lp":-5.988,"rm":2.764,"g":1.9,"ok":true},{"t":"a robot sang near the door","lp":-6.009,"rm":-2.698,"g":0.1,"ok":true},{"t":"the dog smiled near the door","lp":-6.277,"rm":0.3,"g":1.0,"ok":true},{"t":"my friend ran by the window","lp":-6.454,"rm":-0.083,"g":1.0,"ok":true},{"t":"a bird sang on the mat","lp":-5.927,"rm":-1.305,"g":0.55,"ok":true},{"t":"a bird slept beside the lamp","lp":-5.841,"rm":2.941,"g":1.9,"ok":true},{"t":"the dog smiled by the window","lp":-6.45,"rm":1.495,"g":1.45,"ok":true},{"t":"the child sang beside the lamp","lp":-5.943,"rm":-0.134,"g":1.0,"ok":true},{"t":"the cat slept by the window for a while","lp":-7.338,"rm":1.482,"g":1.6,"ok":true},{"t":"the cat sang by the window","lp":-6.375,"rm":-0.179,"g":1.0,"ok":true},{"t":"the cat sang beside the lamp","lp":-5.968,"rm":0.05,"g":1.0,"ok":true},{"t":"the cat ran in the garden","lp":-6.066,"rm":0.383,"g":1.0,"ok":true},{"t":"my friend sang under the tree","lp":-5.824,"rm":-0.292,"g":1.0,"ok":true},{"t":"a bird sat beside the lamp","lp":-5.823,"rm":1.473,"g":1.45,"ok":true},{"t":"the cat sang under the tree","lp":-6.437,"rm":-0.095,"g":1.0,"ok":true},{"t":"the child sat beside the lamp","lp":-6.124,"rm":1.311,"g":1.45,"ok":true},{"t":"my friend sat on the mat","lp":-5.628,"rm":-0.035,"g":1.0,"ok":true},{"t":"a bird sang near the door","lp":-5.885,"rm":-1.413,"g":0.55,"ok":true},{"t":"my friend slept under the tree","lp":-5.727,"rm":2.709,"g":1.9,"ok":true},{"t":"the dog smiled on the mat","lp":-6.264,"rm":0.404,"g":1.0,"ok":true},{"t":"the child sang under the tree","lp":-6.491,"rm":-0.279,"g":1.0,"ok":true},{"t":"a robot sat on the mat","lp":-5.526,"rm":-1.246,"g":0.55,"ok":true},{"t":"the cat smiled under the tree","lp":-6.564,"rm":1.465,"g":1.45,"ok":true},{"t":"my friend waited on the mat","lp":-5.908,"rm":1.758,"g":1.45,"ok":true},{"t":"the cat smiled in the garden","lp":-6.338,"rm":1.631,"g":1.45,"ok":true},{"t":"the dog slept in the garden","lp":-5.905,"rm":3.075,"g":1.9,"ok":true},{"t":"a bird sang beside the lamp","lp":-5.705,"rm":0.035,"g":1.0,"ok":true},{"t":"the child smiled beside the lamp","lp":-6.357,"rm":1.44,"g":1.45,"ok":true},{"t":"a bird ran in the garden for a while","lp":-7.031,"rm":-0.18,"g":0.7,"ok":true},{"t":"the cat smiled beside the lamp","lp":-6.632,"rm":1.61,"g":1.45,"ok":true},{"t":"the dog ran near the door","lp":-6.433,"rm":-0.999,"g":0.55,"ok":true},{"t":"a bird ran on the mat","lp":-5.73,"rm":-1.023,"g":0.55,"ok":true},{"t":"my friend smiled near the door","lp":-5.964,"rm":-0.002,"g":1.0,"ok":true},{"t":"the dog ran by the window","lp":-6.244,"rm":0.215,"g":1.0,"ok":true},{"t":"a bird smiled beside the lamp","lp":-6.074,"rm":1.593,"g":1.45,"ok":true},{"t":"a robot slept on the mat","lp":-5.452,"rm":0.358,"g":1.0,"ok":true},{"t":"my friend sat in the garden","lp":-5.711,"rm":1.362,"g":1.45,"ok":true},{"t":"the dog slept near the door","lp":-6.288,"rm":1.755,"g":1.45,"ok":true},{"t":"the dog ran under the tree","lp":-6.165,"rm":0.296,"g":1.0,"ok":true},{"t":"a bird sat in the garden for a while","lp":-6.997,"rm":0.595,"g":1.15,"ok":true},{"t":"a bird smiled by the window","lp":-6.35,"rm":1.384,"g":1.45,"ok":true},{"t":"a robot waited on the mat","lp":-5.929,"rm":0.534,"g":1.0,"ok":true},{"t":"a robot waited near the door","lp":-6.064,"rm":0.431,"g":1.0,"ok":true},{"t":"the dog sang near the door","lp":-6.168,"rm":-1.287,"g":0.55,"ok":true},{"t":"the cat sat under the tree","lp":-6.098,"rm":1.346,"g":1.45,"ok":true},{"t":"a robot ran beside the lamp","lp":-5.569,"rm":-1.074,"g":0.55,"ok":true},{"t":"a bird sang in the garden for a while","lp":-7.344,"rm":-0.37,"g":0.7,"ok":true},{"t":"a bird waited near the door","lp":-5.885,"rm":1.815,"g":1.45,"ok":true},{"t":"my friend sang near the door","lp":-5.777,"rm":-1.593,"g":0.55,"ok":true},{"t":"a bird sang in the garden for a a","lp":-15.704,"rm":-0.787,"g":0.7,"ok":false},{"t":"the cat sat by the window","lp":-6.364,"rm":1.27,"g":1.45,"ok":true},{"t":"the child slept in the garden for a while","lp":-7.343,"rm":1.536,"g":1.6,"ok":true},{"t":"a robot slept in the garden","lp":-5.582,"rm":1.705,"g":1.45,"ok":true},{"t":"a robot smiled under the tree","lp":-6.143,"rm":0.079,"g":1.0,"ok":true},{"t":"my friend sat in","lp":-15.717,"rm":1.772,"g":1.0,"ok":false},{"t":"the child ran under the tree","lp":-6.184,"rm":0.004,"g":1.0,"ok":true},{"t":"a robot sang on the mat","lp":-5.845,"rm":-2.595,"g":0.1,"ok":true},{"t":"the cat smiled on the mat","lp":-6.552,"rm":0.296,"g":1.0,"ok":true},{"t":"the cat ran under the tree","lp":-6.321,"rm":0.19,"g":1.0,"ok":true},{"t":"a robot slept beside the lamp","lp":-5.682,"rm":1.677,"g":1.45,"ok":true},{"t":"a bird slept near the door","lp":-5.695,"rm":1.642,"g":1.45,"ok":true},{"t":"a robot sat in the garden","lp":-5.62,"rm":0.133,"g":1.0,"ok":true},{"t":"the child waited near the door","lp":-6.45,"rm":1.651,"g":1.45,"ok":true},{"t":"my friend waited near the door","lp":-5.993,"rm":1.658,"g":1.45,"ok":true},{"t":"a bird sang by the window","lp":-6.12,"rm":-0.197,"g":1.0,"ok":true},{"t":"a bird slept in the garden again","lp":-7.359,"rm":0.735,"g":1.35,"ok":true},{"t":"the dog waited under the tree","lp":-6.577,"rm":3.107,"g":1.9,"ok":true},{"t":"a bird sat on the mat","lp":-5.663,"rm":0.143,"g":1.0,"ok":true},{"t":"the child waited under the tree","lp":-6.733,"rm":2.86,"g":1.9,"ok":true},{"t":"the dog sang under the tree","lp":-6.1,"rm":0.012,"g":1.0,"ok":true},{"t":"a robot waited in the garden","lp":-6.127,"rm":1.88,"g":1.45,"ok":true},{"t":"my friend ran near the door","lp":-5.91,"rm":-1.305,"g":0.55,"ok":true},{"t":"the child smiled near the door","lp":-6.171,"rm":0.008,"g":1.0,"ok":true},{"t":"a bird smiled near the door","lp":-5.832,"rm":0.175,"g":1.0,"ok":true},{"t":"my friend sat beside the lamp","lp":-6.043,"rm":1.314,"g":1.45,"ok":true},{"t":"my friend smiled in the garden","lp":-5.869,"rm":1.483,"g":1.45,"ok":true},{"t":"the dog waited by the window","lp":-6.557,"rm":3.032,"g":1.9,"ok":true},{"t":"a bird friend near the door","lp":-14.717,"rm":0.315,"g":1.0,"ok":false},{"t":"a bird sang under the tree","lp":-6.024,"rm":-0.111,"g":1.0,"ok":true},{"t":"a bird smiled in the garden","lp":-5.66,"rm":1.62,"g":1.45,"ok":true},{"t":"a bird sang in the garden","lp":-5.789,"rm":0.081,"g":1.0,"ok":true},{"t":"slept dog waited beside the lamp","lp":-16.047,"rm":3.957,"g":0.85,"ok":false},{"t":"a robot slept in the garden for a while","lp":-7.137,"rm":0.729,"g":1.15,"ok":true},{"t":"the child sat on the mat","lp":-5.921,"rm":-0.027,"g":1.0,"ok":true},{"t":"the child waited beside the lamp","lp":-6.252,"rm":2.988,"g":1.9,"ok":true},{"t":"my friend sang on the mat","lp":-5.577,"rm":-1.491,"g":0.55,"ok":true},{"t":"the cat sat beside the lamp","lp":-6.237,"rm":1.492,"g":1.45,"ok":true},{"t":"a bird ran in the garden quietly","lp":-7.361,"rm":1.179,"g":1.35,"ok":true},{"t":"the child ran by the window","lp":-6.278,"rm":-0.079,"g":1.0,"ok":true},{"t":"a robot waited under the tree","lp":-6.455,"rm":1.708,"g":1.45,"ok":true},{"t":"the child sat near the mat today","lp":-15.225,"rm":-0.384,"g":0.9,"ok":false},{"t":"the dog waited near the door","lp":-6.639,"rm":1.931,"g":1.45,"ok":true},{"t":"a robot slept by the window","lp":-6.007,"rm":1.464,"g":1.45,"ok":true},{"t":"my friend sat by the window","lp":-6.463,"rm":1.093,"g":1.45,"ok":true},{"t":"the dog ran in the garden","lp":-5.985,"rm":0.486,"g":1.0,"ok":true},{"t":"the cat slept on the mat","lp":-5.641,"rm":1.752,"g":1.45,"ok":true},{"t":"my friend sang beside the lamp for a while","lp":-7.377,"rm":-0.521,"g":0.7,"ok":true},{"t":"the cat sat on the mat at dawn again","lp":-15.854,"rm":-0.827,"g":0.7,"ok":false},{"t":"the child slept on the mat","lp":-5.81,"rm":1.576,"g":1.45,"ok":true},{"t":"a bird waited on the mat","lp":-5.948,"rm":1.911,"g":1.45,"ok":true},{"t":"a robot sat by the window","lp":-6.074,"rm":-0.143,"g":1.0,"ok":true},{"t":"the cat ran by the window","lp":-6.292,"rm":0.109,"g":1.0,"ok":true},{"t":"my friend sang by the window","lp":-6.237,"rm":-0.375,"g":1.0,"ok":true},{"t":"a robot slept beside the lamp for a while","lp":-7.356,"rm":0.706,"g":1.15,"ok":true},{"t":"my friend slept on the mat","lp":-5.375,"rm":1.584,"g":1.45,"ok":true},{"t":"the dog slept in the tree","lp":-13.092,"rm":3.225,"g":1.45,"ok":false},{"t":"my friend ran on the mat","lp":-5.873,"rm":-1.206,"g":0.55,"ok":true},{"t":"the child ran on the mat","lp":-6.015,"rm":-1.183,"g":0.55,"ok":true},{"t":"a bird sat in the garden quietly","lp":-7.327,"rm":2.144,"g":1.8,"ok":true},{"t":"my friend sat under the tree","lp":-5.824,"rm":1.172,"g":1.45,"ok":true},{"t":"the child smiled in the garden","lp":-5.93,"rm":1.469,"g":1.45,"ok":true},{"t":"a robot slept near the door","lp":-5.691,"rm":0.255,"g":1.0,"ok":true},{"t":"my friend smiled by the window","lp":-6.732,"rm":1.23,"g":1.45,"ok":true},{"t":"the dog sat by the window","lp":-6.233,"rm":1.37,"g":1.45,"ok":true},{"t":"the dog sang on the mat","lp":-5.818,"rm":-1.184,"g":0.55,"ok":true},{"t":"a bird waited under the tree","lp":-6.101,"rm":2.997,"g":1.9,"ok":true},{"t":"the child sat garden the door","lp":-14.649,"rm":0.518,"g":1.45,"ok":false},{"t":"the cat sat on the mat","lp":-6.045,"rm":0.158,"g":1.0,"ok":true},{"t":"the cat slept by the window","lp":-5.954,"rm":2.769,"g":1.9,"ok":true},{"t":"my friend ran under the tree","lp":-6.014,"rm":-0.002,"g":1.0,"ok":true},{"t":"my friend smiled on the mat","lp":-6.019,"rm":0.102,"g":1.0,"ok":true},{"t":"a robot ran in the garden for a while","lp":-7.196,"rm":-1.099,"g":0.25,"ok":true},{"t":"the child sang near the door","lp":-6.22,"rm":-1.569,"g":0.55,"ok":true},{"t":"a bird sat under the tree for a while","lp":-7.346,"rm":0.473,"g":1.15,"ok":true},{"t":"the dog sat in the garden","lp":-5.902,"rm":1.626,"g":1.45,"ok":true},{"t":"the cat slept beside the lamp","lp":-5.881,"rm":2.96,"g":1.9,"ok":true},{"t":"the dog sat on the mat","lp":-5.929,"rm":0.267,"g":1.0,"ok":true},{"t":"a bird ran by the window","lp":-5.851,"rm":0.09,"g":1.0,"ok":true},{"t":"the child sat by the window","lp":-6.437,"rm":1.086,"g":1.45,"ok":true},{"t":"the dog slept under the tree","lp":-6.02,"rm":2.931,"g":1.9,"ok":true},{"t":"my friend waited beside the lamp","lp":-6.003,"rm":2.996,"g":1.9,"ok":true},{"t":"the dog ran beside the lamp","lp":-6.205,"rm":0.447,"g":1.0,"ok":true},{"t":"a robot waited beside the lamp","lp":-5.854,"rm":1.858,"g":1.45,"ok":true},{"t":"my friend slept on the mat for a while","lp":-7.22,"rm":0.643,"g":1.15,"ok":true},{"t":"my friend smiled under the tree","lp":-6.112,"rm":1.304,"g":1.45,"ok":true},{"t":"a bird waited beside the lamp","lp":-5.765,"rm":3.123,"g":1.9,"ok":true},{"t":"a robot waited by the window","lp":-6.322,"rm":1.642,"g":1.45,"ok":true},{"t":"the dog sat beside the lamp","lp":-6.124,"rm":1.595,"g":1.45,"ok":true},{"t":"a robot sang under the tree","lp":-6.315,"rm":-1.474,"g":0.55,"ok":true},{"t":"a bird slept in the garden","lp":-5.542,"rm":2.982,"g":1.9,"ok":true},{"t":"a friend ran near the door","lp":-13.11,"rm":-1.728,"g":0.55,"ok":false},{"t":"a robot ran by the window again","lp":-7.329,"rm":-2.974,"g":-0.0,"ok":true},{"t":"a robot sang in the garden","lp":-6.032,"rm":-1.277,"g":0.55,"ok":true},{"t":"my friend waited under the tree","lp":-6.169,"rm":2.88,"g":1.9,"ok":true},{"t":"the dog smiled under the tree","lp":-6.132,"rm":1.565,"g":1.45,"ok":true},{"t":"the cat slept under the tree","lp":-5.747,"rm":2.842,"g":1.9,"ok":true},{"t":"my friend slept in the garden for a while","lp":-7.134,"rm":1.546,"g":1.6,"ok":true},{"t":"the cat sat near the door","lp":-6.2,"rm":0.053,"g":1.0,"ok":true},{"t":"a bird ran beside the lamp again","lp":-7.363,"rm":-1.683,"g":0.45,"ok":true},{"t":"the dog sang in the garden","lp":-5.848,"rm":0.204,"g":1.0,"ok":true},{"t":"the cat slept near the door","lp":-5.805,"rm":1.656,"g":1.45,"ok":true},{"t":"the dog slept on the mat","lp":-5.96,"rm":1.855,"g":1.45,"ok":true},{"t":"a robot sat on the mat for a while","lp":-7.37,"rm":-1.25,"g":0.25,"ok":true},{"t":"my friend sat near the door","lp":-5.793,"rm":-0.138,"g":1.0,"ok":true},{"t":"the cat waited in the garden","lp":-6.464,"rm":3.162,"g":1.9,"ok":true},{"t":"a robot slept under the tree","lp":-5.815,"rm":1.533,"g":1.45,"ok":true},{"t":"the dog smiled beside the lamp","lp":-6.329,"rm":1.713,"g":1.45,"ok":true},{"t":"the child waited in the garden","lp":-6.153,"rm":3.015,"g":1.9,"ok":true},{"t":"a dog sang by the window happily","lp":-14.96,"rm":-2.216,"g":0.45,"ok":false},{"t":"my friend waited on the door happily","lp":-15.124,"rm":-0.405,"g":0.9,"ok":false},{"t":"the child sat in the garden for a while","lp":-7.357,"rm":0.487,"g":1.15,"ok":true},{"t":"the child ran beside the lamp","lp":-6.019,"rm":0.154,"g":1.0,"ok":true},{"t":"the dog smiled in the garden","lp":-5.949,"rm":1.729,"g":1.45,"ok":true},{"t":"a robot slept on the mat again","lp":-7.304,"rm":-1.651,"g":0.45,"ok":true},{"t":"a bird waited by the window","lp":-6.127,"rm":2.941,"g":1.9,"ok":true},{"t":"my friend slept on the mat at dawn quietly","lp":-15.258,"rm":2.308,"g":2.05,"ok":false},{"t":"a robot sang window the tree again","lp":-15.938,"rm":-3.191,"g":-0.0,"ok":false},{"t":"a robot smiled on the child","lp":-15.978,"rm":-0.825,"g":0.55,"ok":false},{"t":"my friend ran in the garden for a while","lp":-7.292,"rm":-0.299,"g":0.7,"ok":true},{"t":"a robot slept near the door at","lp":-14.55,"rm":0.523,"g":0.9,"ok":false},{"t":"the cat waited under the tree","lp":-6.803,"rm":3.018,"g":1.9,"ok":true},{"t":"a robot sang beside the lamp for a while","lp":-7.392,"rm":-1.324,"g":0.25,"ok":true},{"t":"the child smiled a the tree","lp":-13.176,"rm":1.116,"g":1.0,"ok":false},{"t":"the cat slept in the garden for a while","lp":-7.191,"rm":1.641,"g":1.6,"ok":true},{"t":"the bird sat under the tree","lp":-12.714,"rm":1.7,"g":1.45,"ok":false},{"t":"a robot sat in the window","lp":-13.694,"rm":0.29,"g":1.0,"ok":false},{"t":"the cat waited near the door","lp":-6.597,"rm":1.833,"g":1.45,"ok":true},{"t":"a bird ran near the door for a while","lp":-7.353,"rm":-1.171,"g":0.25,"ok":true},{"t":"a bird sang on the door today","lp":-15.128,"rm":-1.485,"g":0.45,"ok":false},{"t":"the dog ran in the door","lp":-15.321,"rm":0.291,"g":0.55,"ok":false},{"t":"a bird sat by the window","lp":-6.052,"rm":1.256,"g":1.45,"ok":true},{"t":"a robot smiled in the garden for a while","lp":-7.383,"rm":-0.246,"g":0.7,"ok":true},{"t":"the dog ran on the mat","lp":-6.2,"rm":-0.897,"g":0.55,"ok":true},{"t":"my friend cat near the door","lp":-13.842,"rm":0.391,"g":1.0,"ok":false},{"t":"the cat ran near the door","lp":-6.272,"rm":-1.109,"g":0.55,"ok":true},{"t":"a robot ran beside the lamp for a while","lp":-7.243,"rm":-1.137,"g":0.25,"ok":true},{"t":"the bird sat by the window","lp":-13.242,"rm":1.626,"g":1.45,"ok":false},{"t":"a bird ran by the window for a while","lp":-7.235,"rm":-0.362,"g":0.7,"ok":true},{"t":"my friend sang in the garden for a while","lp":-7.255,"rm":-0.493,"g":0.7,"ok":true},{"t":"robot bird sang by the window","lp":-14.715,"rm":-0.999,"g":-0.95,"ok":false},{"t":"a robot sat in the garden for a while","lp":-7.175,"rm":-0.334,"g":0.7,"ok":true},{"t":"the cat waited on the mat at","lp":-15.12,"rm":1.956,"g":1.35,"ok":false},{"t":"the cat slept in the garden","lp":-5.635,"rm":2.987,"g":1.9,"ok":true},{"t":"a robot smiled by the window","lp":-6.426,"rm":-0.004,"g":1.0,"ok":true},{"t":"the child slept by the window for for a","lp":-21.872,"rm":0.55,"g":1.6,"ok":false},{"t":"a bird smiled in the garden for a while","lp":-7.215,"rm":0.672,"g":1.15,"ok":true},{"t":"a bird ran beside the lamp for a while","lp":-7.306,"rm":-0.206,"g":0.7,"ok":true},{"t":"a robot ran beside the lamp again","lp":-7.3,"rm":-2.798,"g":-0.0,"ok":true},{"t":"a bird sat on the mat sang","lp":-14.748,"rm":-1.505,"g":0.45,"ok":false},{"t":"the child ran in the garden for a while","lp":-7.303,"rm":-0.29,"g":0.7,"ok":true},{"t":"my friend slept beside lamp lamp","lp":-15.94,"rm":2.404,"g":1.1,"ok":false},{"t":"my friend waited by the window","lp":-6.56,"rm":2.804,"g":1.9,"ok":true},{"t":"my friend slept near the door for a while window","lp":-21.356,"rm":0.344,"g":1.5,"ok":false},{"t":"my friend smiled beside the lamp","lp":-6.376,"rm":1.446,"g":1.45,"ok":true},{"t":"the cat sang near the door","lp":-6.265,"rm":-1.397,"g":0.55,"ok":true},{"t":"under dog ran by the window quietly","lp":-18.47,"rm":0.875,"g":0.3,"ok":false},{"t":"the cat slept by the window again","lp":-7.374,"rm":0.517,"g":1.35,"ok":true},{"t":"a bird waited beside the lamp a","lp":-14.838,"rm":2.589,"g":1.8,"ok":false},{"t":"a bird sat on the mat door today","lp":-22.66,"rm":-0.563,"g":0.8,"ok":false},{"t":"a bird slept beside the tree at dawn","lp":-15.962,"rm":3.044,"g":2.15,"ok":false},{"t":"my friend ran near the door happily dawn","lp":-17.349,"rm":-2.08,"g":0.35,"ok":false},{"t":"a bird sat in the garden again","lp":-7.259,"rm":-0.652,"g":0.9,"ok":true},{"t":"the child for in the garden happily","lp":-15.958,"rm":-0.952,"g":0.9,"ok":false},{"t":"the cat ran near the door while","lp":-16.056,"rm":-0.544,"g":0.45,"ok":false},{"t":"my robot sang by the window again","lp":-15.11,"rm":-2.869,"g":-0.0,"ok":false},{"t":"the dog waited in the garden smiled","lp":-14.95,"rm":2.572,"g":1.8,"ok":false},{"t":"the cat smiled by the window","lp":-6.825,"rm":1.395,"g":1.45,"ok":true},{"t":"the the sang by the window","lp":-14.216,"rm":-0.021,"g":1.0,"ok":false},{"t":"the dog waited beside the lamp","lp":-6.322,"rm":3.234,"g":1.9,"ok":true},{"t":"a bird ran by the window again","lp":-7.271,"rm":-1.883,"g":0.45,"ok":true},{"t":"the child ran by the window again quietly","lp":-15.896,"rm":-1.071,"g":0.8,"ok":false},{"t":"near friend smiled on the mat today","lp":-17.795,"rm":-1.253,"g":-0.6,"ok":false},{"t":"a bird slept in the garden for a while","lp":-7.097,"rm":1.636,"g":1.6,"ok":true},{"t":"the friend ran under the tree at dawn","lp":-15.719,"rm":0.734,"g":1.25,"ok":false},{"t":"a bird waited in the garden for a while","lp":-7.333,"rm":1.757,"g":1.6,"ok":true},{"t":"my friend slept window the door at dawn","lp":-15.045,"rm":2.444,"g":2.15,"ok":false},{"t":"a bird garden near the door","lp":-14.317,"rm":0.237,"g":1.45,"ok":false},{"t":"a robot slept in the garden for","lp":-12.864,"rm":0.824,"g":1.35,"ok":false},{"t":"the dog smiled beside the lamp for a","lp":-15.014,"rm":0.556,"g":1.25,"ok":false},{"t":"the garden smiled near the door","lp":-13.395,"rm":-0.133,"g":1.45,"ok":false},{"t":"the dog the under the tree","lp":-13.771,"rm":2.092,"g":1.45,"ok":false},{"t":"a robot under in the garden","lp":-14.718,"rm":0.595,"g":1.45,"ok":false},{"t":"the mat slept under the tree","lp":-13.25,"rm":2.441,"g":1.9,"ok":false},{"t":"the child waited by the window","lp":-6.681,"rm":2.789,"g":1.9,"ok":true},{"t":"the child sang by the window","lp":-6.525,"rm":-0.364,"g":1.0,"ok":true},{"t":"a a sat on the mat for a while","lp":-14.151,"rm":-0.718,"g":0.7,"ok":false},{"t":"a bird sat beside the lamp window","lp":-13.98,"rm":1.193,"g":1.8,"ok":false},{"t":"a robot dog beside the lamp for a while","lp":-14.592,"rm":0.051,"g":0.7,"ok":false},{"t":"the child waited on the mat for a bird","lp":-17.728,"rm":0.734,"g":1.15,"ok":false},{"t":"a robot waited slept the garden happily","lp":-16.987,"rm":0.456,"g":1.35,"ok":false},{"t":"a robot sat garden the door","lp":-13.967,"rm":-0.701,"g":1.0,"ok":false},{"t":"a robot sat near the door sang","lp":-14.831,"rm":-2.701,"g":-0.0,"ok":false},{"t":"bird dog sat near the door again","lp":-17.214,"rm":-1.645,"g":-1.05,"ok":false},{"t":"mat bird ran by the window for a while","lp":-17.094,"rm":-0.52,"g":-0.8,"ok":false},{"t":"a robot sat near my door again","lp":-16.086,"rm":-2.975,"g":-0.0,"ok":false},{"t":"a bird ran in the garden again","lp":-7.292,"rm":-1.64,"g":0.45,"ok":true},{"t":"my friend slept on the mat again","lp":-7.227,"rm":-0.615,"g":0.9,"ok":true},{"t":"a robot slept beside the tree for a while","lp":-15.253,"rm":0.791,"g":1.15,"ok":false},{"t":"my friend beside in the garden for a while","lp":-16.17,"rm":0.985,"g":1.6,"ok":false},{"t":"a bird slept in the garden for my while","lp":-14.869,"rm":1.927,"g":1.6,"ok":false},{"t":"the dog waited in the window quietly quietly quietly quietly","lp":-37.385,"rm":4.044,"g":1.15,"ok":false},{"t":"the dawn waited in waited dawn","lp":-27.822,"rm":5.2,"g":1.1,"ok":false},{"t":"the dawn waited in waited dawn quietly","lp":-31.819,"rm":5.225,"g":1.45,"ok":false},{"t":"the dawn waited beside waited dawn","lp":-28.657,"rm":5.156,"g":1.55,"ok":false},{"t":"the dawn waited near waited dawn","lp":-30.115,"rm":4.367,"g":1.1,"ok":false},{"t":"the dawn","lp":-10.708,"rm":4.44,"g":1.45,"ok":false},{"t":"waited bird waited in the garden quietly","lp":-17.869,"rm":4.512,"g":-0.05,"ok":false},{"t":"waited slept slept beside the lamp quietly","lp":-22.901,"rm":4.732,"g":0.4,"ok":false},{"t":"waited cat waited beside the lamp","lp":-17.036,"rm":4.055,"g":-0.4,"ok":false},{"t":"a bird waited in the dawn","lp":-14.924,"rm":3.955,"g":1.9,"ok":false},{"t":"slept bird slept in the garden","lp":-15.071,"rm":4.02,"g":-0.4,"ok":false},{"t":"waited bird waited beside the lamp quietly","lp":-18.215,"rm":4.475,"g":-0.05,"ok":false},{"t":"waited bird waited in the garden","lp":-15.983,"rm":4.358,"g":-0.4,"ok":false},{"t":"waited slept waited in the dawn","lp":-29.842,"rm":5.43,"g":0.05,"ok":false},{"t":"slept the waited","lp":-18.479,"rm":5.833,"g":0.4,"ok":false},{"t":"slept bird slept in the garden quietly","lp":-16.957,"rm":4.231,"g":-0.05,"ok":false},{"t":"waited bird slept in the dawn","lp":-24.763,"rm":4.863,"g":0.85,"ok":false},{"t":"my friend slept in the dawn","lp":-14.702,"rm":3.704,"g":1.9,"ok":false},{"t":"waited the slept quietly","lp":-24.134,"rm":5.906,"g":0.85,"ok":false},{"t":"the dawn waited in waited garden","lp":-20.656,"rm":4.567,"g":1.55,"ok":false},{"t":"waited bird slept under the tree quietly","lp":-18.309,"rm":4.261,"g":1.2,"ok":false},{"t":"waited bird waited beside the dawn","lp":-24.544,"rm":4.964,"g":0.05,"ok":false},{"t":"waited slept waited beside the lamp","lp":-20.658,"rm":4.787,"g":0.05,"ok":false},{"t":"waited slept waited by the window quietly","lp":-22.902,"rm":4.746,"g":0.4,"ok":false},{"t":"waited the waited in","lp":-25.661,"rm":5.546,"g":-0.85,"ok":false},{"t":"smiled dawn waited beside slept lamp quietly","lp":-32.229,"rm":4.19,"g":1.65,"ok":false},{"t":"slept bird waited in waited garden quietly","lp":-27.342,"rm":5.034,"g":0.4,"ok":false},{"t":"waited slept slept in the garden quietly","lp":-22.189,"rm":4.78,"g":0.4,"ok":false},{"t":"waited bird slept beside the lamp quietly","lp":-18.256,"rm":4.335,"g":1.2,"ok":false},{"t":"waited by slept in the dawn quietly","lp":-34.269,"rm":4.653,"g":1.2,"ok":false},{"t":"waited again waited in the garden quietly","lp":-23.898,"rm":2.614,"g":-0.5,"ok":false},{"t":"slept dawn","lp":-22.743,"rm":5.933,"g":0.4,"ok":false},{"t":"waited sang slept in the garden quietly","lp":-22.844,"rm":2.755,"g":0.75,"ok":false},{"t":"waited dawn","lp":-20.84,"rm":6.375,"g":0.4,"ok":false},{"t":"slept bird waited in the garden quietly","lp":-17.495,"rm":4.378,"g":1.2,"ok":false},{"t":"waited child waited in the dawn","lp":-26.234,"rm":4.674,"g":-0.4,"ok":false},{"t":"the cat slept in the dawn","lp":-14.758,"rm":3.781,"g":1.9,"ok":false},{"t":"the child waited in the dawn","lp":-15.3,"rm":3.833,"g":1.9,"ok":false},{"t":"waited bird slept beside the lamp","lp":-15.981,"rm":4.142,"g":0.85,"ok":false},{"t":"waited waited slept in the garden quietly","lp":-22.723,"rm":4.919,"g":0.4,"ok":false},{"t":"slept bird waited beside the dawn","lp":-24.01,"rm":4.802,"g":1.3,"ok":false},{"t":"friend slept waited in the garden","lp":-18.697,"rm":3.748,"g":0.85,"ok":false},{"t":"the cat waited in the dawn","lp":-15.611,"rm":3.954,"g":1.9,"ok":false},{"t":"waited dog slept beside the lamp","lp":-17.084,"rm":3.957,"g":0.85,"ok":false},{"t":"slept the slept","lp":-17.705,"rm":5.497,"g":-0.85,"ok":false},{"t":"my friend waited in the dawn","lp":-15.064,"rm":3.871,"g":1.9,"ok":false},{"t":"waited slept waited in the garden","lp":-20.696,"rm":4.841,"g":0.05,"ok":false},{"t":"the cat waited in slept garden","lp":-17.632,"rm":3.916,"g":2.35,"ok":false},{"t":"waited slept waited under the tree","lp":-21.295,"rm":4.717,"g":0.05,"ok":false},{"t":"the dog waited in the dawn","lp":-15.501,"rm":4.037,"g":1.9,"ok":false},{"t":"waited dog slept in the dawn","lp":-25.927,"rm":4.684,"g":0.85,"ok":false},{"t":"waited bird waited under the tree quietly","lp":-18.895,"rm":4.395,"g":-0.05,"ok":false},{"t":"waited bird waited beside the lamp","lp":-15.94,"rm":4.311,"g":-0.4,"ok":false},{"t":"slept slept slept in the garden quietly","lp":-21.87,"rm":4.629,"g":-0.05,"ok":false},{"t":"waited slept slept by the window quietly","lp":-22.566,"rm":4.602,"g":0.4,"ok":false},{"t":"a bird waited in waited garden","lp":-15.869,"rm":4.074,"g":1.1,"ok":false},{"t":"waited waited slept in the dawn","lp":-29.961,"rm":5.43,"g":0.05,"ok":false},{"t":"waited bird slept in the garden","lp":-15.64,"rm":4.198,"g":0.85,"ok":false},{"t":"waited under waited under the dawn","lp":-30.46,"rm":4.488,"g":0.05,"ok":false},{"t":"the dawn waited in slept garden quietly","lp":-22.022,"rm":4.552,"g":3.15,"ok":false},{"t":"waited slept waited in slept garden","lp":-29.21,"rm":5.375,"g":0.05,"ok":false},{"t":"a bird slept in the dawn","lp":-14.665,"rm":3.785,"g":1.9,"ok":false},{"t":"the dawn waited in waited garden quietly","lp":-22.296,"rm":4.685,"g":1.9,"ok":false},{"t":"the cat waited beside the dawn","lp":-14.976,"rm":3.913,"g":2.35,"ok":false},{"t":"waited bird slept beside the dawn","lp":-24.559,"rm":4.802,"g":1.3,"ok":false},{"t":"slept slept waited beside the lamp","lp":-20.187,"rm":4.612,"g":0.05,"ok":false},{"t":"slept bird waited in the dawn","lp":-24.756,"rm":4.863,"g":0.85,"ok":false}];
+
+(function(){
+let lb=-0.7; const lps=CANDS.map(c=>c.lp), mx=Math.max(...lps);
+function opt(beta){ const lw=CANDS.map(c=>c.lp-mx+c.rm/beta), m=Math.max(...lw), u=lw.map(v=>Math.exp(v-m)), s=u.reduce((a,b)=>a+b,0);
+  const ref=CANDS.map(c=>Math.exp(c.lp-mx)), sr=ref.reduce((a,b)=>a+b,0);
+  const p=u.map(v=>v/s), q=ref.map(v=>v/sr);
+  return {p, rm:p.reduce((a,v,i)=>a+v*CANDS[i].rm,0), g:p.reduce((a,v,i)=>a+v*CANDS[i].g,0),
+          kl:p.reduce((a,v,i)=>a+(v>1e-15?v*Math.log(v/q[i]):0),0), ok:p.reduce((a,v,i)=>a+(CANDS[i].ok?v:0),0)}; }
+const grid=[]; for(let x=-2.5;x<=1.001;x+=0.05) grid.push([x,opt(Math.pow(10,x))]);
+legend($('#l-leg'),[['expected gold reward',2],['expected reward-model score',1],['share of probability in the grammar',0]]);
+const ro=readout($('#l-ro'),['beta','expected reward-model score','expected gold reward','KL from the reference','share in the grammar']);
+slider($('#l-sl'),{label:'KL weight beta (log scale)',min:-2.5,max:1,step:0.05,value:lb,fmt:v=>Math.pow(10,v).toFixed(3)},v=>{lb=v;draw();});
+const A=stage($('#l-cv'),0.42,(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const F=frame(ctx,w,hh,{x0:-2.5,x1:1,y0:0,y1:5,xlabel:'log10 of beta',ylabel:'score'});
+  polyline(ctx,grid.map(([x,o])=>[F.X(x),F.Y(o.g)]),C.c[2],2.4); polyline(ctx,grid.map(([x,o])=>[F.X(x),F.Y(o.rm)]),C.c[1],2.2);
+  polyline(ctx,grid.map(([x,o])=>[F.X(x),F.Y(4*o.ok)]),C.c[0],1.4,[4,4]);
+  polyline(ctx,[[F.X(lb),F.Y(0)],[F.X(lb),F.Y(5)]],C.steel,1,[2,3]); });
+function draw(){ const o=opt(Math.pow(10,lb)); ro('beta',Math.pow(10,lb).toFixed(3)); ro('expected reward-model score',o.rm.toFixed(3));
+  ro('expected gold reward',o.g.toFixed(3)); ro('KL from the reference',o.kl.toFixed(2)); ro('share in the grammar',(100*o.ok).toFixed(1)+' %');
+  const order=o.p.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]).slice(0,10), tb=$('#l-tb'); tb.innerHTML='';
+  order.forEach(([v,i])=>tb.append(h('tr',{},[(100*v).toFixed(1)+' %',CANDS[i].t,CANDS[i].rm.toFixed(2),CANDS[i].g.toFixed(2),CANDS[i].ok?'yes':'no'].map(x=>h('td',{},x)))));
+  store.set('d4:lab:beta',lb); A.redraw(); }
+draw();
+})();
+
+
+function partQuiz(id, spec){
+  const root=document.getElementById(id); if(!root) return; const saved=store.get(spec.key,{});
+  const tb=h('tbody',{}), t=h('table',{},[h('thead',{},h('tr',{},[h('th',{},spec.qhead||'Question'),h('th',{},spec.ahead||'Your answer'),h('th',{},'Feedback')])),tb]);
+  root.append(h('div',{class:'tablewrap'},t));
+  spec.items.forEach((it,i)=>{ const sel=h('select',{id:`${id}-s${i}`},[h('option',{value:''},'choose')].concat(it.options.map((o,k)=>h('option',{value:String(k)},o))));
+    if(saved[i]!==undefined) sel.value=saved[i];
+    sel.addEventListener('change',()=>{ const s=store.get(spec.key,{}); s[i]=sel.value; store.set(spec.key,s); });
+    tb.append(h('tr',{},[h('td',{},it.q),h('td',{},sel),h('td',{id:`${id}-f${i}`},'')])); });
+  const btn=h('button',{class:'btn',type:'button'},spec.button||'Check my answers'), sc=h('span',{class:'small'},'');
+  root.append(h('p',{},[btn,' ',sc]));
+  btn.addEventListener('click',()=>{ let ok=0;
+    spec.items.forEach((it,i)=>{ const v=document.getElementById(`${id}-s${i}`).value, f=document.getElementById(`${id}-f${i}`);
+      if(v===''){ f.textContent='Choose an answer.'; return; }
+      const right=+v===it.answer; if(right) ok++; f.textContent=(right?'Correct. ':'Not quite: '+it.options[it.answer]+'. ')+(it.why||''); });
+    sc.textContent=`${ok} of ${spec.items.length} correct.`; store.set(spec.key+':score',ok); });
+}
+function partNumbers(id, spec){
+  const root=document.getElementById(id); if(!root) return; const row=h('div',{class:'row'});
+  spec.fields.forEach((f,i)=>row.append(h('div',{class:'ctl',style:'min-width:230px'},[h('label',{for:`${id}-n${i}`},f.label),
+    h('input',{type:'number',step:'any',id:`${id}-n${i}`,style:'width:7rem'})])));
+  root.append(row);
+  const btn=h('button',{class:'btn',type:'button'},spec.button||'Check my values'), sc=h('span',{class:'small'},'');
+  root.append(h('p',{},[btn,' ',sc]));
+  btn.addEventListener('click',()=>{ let ok=0; const out=[];
+    spec.fields.forEach((f,i)=>{ const v=parseFloat(document.getElementById(`${id}-n${i}`).value), right=Math.abs(v-f.answer)<=f.tol;
+      if(right) ok++; out.push(`${f.short}: ${isNaN(v)?'missing':(right?'correct':'not yet')}`); });
+    sc.textContent=out.join(', ')+'. '+(spec.explain||''); store.set(spec.key+':score',ok); });
+}
+
+(function(){
+partQuiz('pa', {"key": "rl4:partB", "qhead": "Description", "ahead": "Stage", "items": [{"q": "The model learns to continue text from a very large corpus.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 0, "why": ""}, {"q": "The model is trained on a few thousand examples of good answers.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 1, "why": ""}, {"q": "Annotators choose the better of two answers.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 2, "why": ""}, {"q": "A model learns to score answers from the choices.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 3, "why": ""}, {"q": "The policy is improved on the learned score but kept close to its start.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 4, "why": ""}, {"q": "Win rates against the fine-tuned model are measured with intervals.", "options": ["pretraining", "supervised fine-tuning", "preference collection", "reward modelling", "reinforcement learning with a KL penalty", "evaluation"], "answer": 5, "why": ""}]});
+partNumbers('pc', {"key": "rl4:partC", "explain": "sigma(0.8) = 1 / (1 + e^-0.8) = 0.690. Penalised reward 2.0 - 0.2 x 3.0 = 1.4: The further the answer has moved from the fine-tuned model, the more of its reward is taken back.", "fields": [{"label": "Probability that A is preferred, sigma(1.2 - 0.4)", "short": "preference", "answer": 0.69, "tol": 0.003}, {"label": "Penalised reward: reward minus KL weight times log-ratio", "short": "penalised reward", "answer": 1.4, "tol": 0.005}]});
+})();
+
+
+function TeX(s, ...a){ return String.raw(s, ...a); }
+function scF(x, d){ d = d == null ? 2 : d; if (!isFinite(x)) return String(x); let s = (+x).toFixed(d);
+  if (/^-0(\.0+)?$/.test(s)) s = s.slice(1); return s; }
+function scP(x, d){ const s = scF(x, d); return s[0] === '-' ? '(' + s + ')' : s; }
+function scT(x, d){ return '{' + scF(x, d) + '}'; }
+function scS(x, d){ const s = scF(x, d); return s[0] === '-' ? s : '+' + s; }
+function scR(x, d){ const f = Math.pow(10, d == null ? 2 : d); return Math.round(x * f) / f; }
+function scH(s){ return String(s).replace(/(^|[^\w])-(?=[\d.])/g, '$1−'); }
+function scTeX(tex, display){
+  const M = window.MathJax;
+  if (M && typeof M.tex2svg === 'function') { try { return M.tex2svg(tex, {display: !!display}); } catch (e) {} }
+  return h('code', {class: 'tex'}, tex);
+}
+function scInline(el){
+  const M = window.MathJax; if (!(M && typeof M.tex2svg === 'function')) return;
+  const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [];
+  while (tw.nextNode()) if (tw.currentNode.nodeValue.indexOf('\\(') >= 0) nodes.push(tw.currentNode);
+  nodes.forEach(n => { const f = document.createDocumentFragment();
+    n.nodeValue.split(/\\\(([\s\S]+?)\\\)/).forEach((p, i) => f.append(i % 2 ? scTeX(p, false) : document.createTextNode(p)));
+    n.replaceWith(f); });
+}
+var SC_ALL = window.SC_ALL = window.SC_ALL || [];
+function scWhenMJ(f, t){ t = t || 0; const M = window.MathJax;
+  if (M && M.startup && M.startup.promise) { M.startup.promise.then(f); return; }
+  if (t < 300) setTimeout(() => scWhenMJ(f, t + 1), 100); }
+if (!window.__scInit) {
+  window.__scInit = 1;
+  scWhenMJ(() => SC_ALL.forEach(r => r()));
+  let moved = false; ['wheel', 'touchmove', 'keydown', 'mousedown'].forEach(e => window.addEventListener(e, () => { moved = true; }, {passive: true}));
+  const toHash = () => { const id = decodeURIComponent(location.hash.slice(1)), e = id && document.getElementById(id); if (e && !moved) e.scrollIntoView(); };
+  window.addEventListener('load', () => { setTimeout(toHash, 60); scWhenMJ(() => setTimeout(toHash, 60)); });
+}
+/* A calculation revealed one step at a time. spec: inputs [{key, label, min, max, step, value, d} or {key, label,
+   options, value}], presets [{label, values}], calc(v) -> R, steps(v, R) -> [{t, x, m, r, q: {label, ans, tol}}],
+   viz {aspect, label, legend, draw(ctx, w, h, v, R, k, all)} where k is the last step on show. */
+function partSteps(id, spec){
+  const root = document.getElementById(id); if (!root) return;
+  const v = {}, set = {}, shown = {}, prevM = [];
+  spec.inputs.forEach(i => { v[i.key] = i.value; });
+  let k = 0, all = false, timer = null, pend = false, first = true, fresh = -1, right = 0, R = {}, S = [];
+  const compute = () => { R = spec.calc ? spec.calc(v) : {}; S = spec.steps(v, R); if (k > S.length - 1) k = S.length - 1; };
+  compute();
+  const row = h('div', {class: 'row'});
+  spec.inputs.forEach(i => {
+    if (i.options) {
+      const sel = h('select', {'aria-label': i.label}, i.options.map((o, j) => h('option', {value: String(j)}, o)));
+      sel.value = String(i.value);
+      sel.addEventListener('change', () => { v[i.key] = +sel.value; update(); });
+      set[i.key] = x => { sel.value = String(x); };
+      row.append(h('div', {class: 'ctl'}, h('label', {}, i.label), sel));
+    } else {
+      const f = x => scH(scF(x, i.d == null ? 2 : i.d)), out = h('output', {}, f(i.value));
+      const inp = h('input', {type: 'range', min: i.min, max: i.max, step: i.step || 1, value: i.value, 'aria-label': i.label});
+      inp.addEventListener('input', () => { v[i.key] = parseFloat(inp.value); out.textContent = f(v[i.key]); update(); });
+      set[i.key] = x => { inp.value = x; out.textContent = f(x); };
+      row.append(h('div', {class: 'ctl'}, h('label', {}, i.label, ' ', out), inp));
+    }
+  });
+  const bench = h('div', {class: 'bench sc-in'}, row);
+  if (spec.presets) {
+    const pr = h('div', {class: 'sc-presets'}, h('span', {class: 'small'}, 'Start from:'));
+    spec.presets.forEach(p => { const b = h('button', {class: 'btn ghost', type: 'button'}, p.label);
+      b.addEventListener('click', () => { Object.keys(p.values).forEach(key => { v[key] = p.values[key]; if (set[key]) set[key](p.values[key]); }); update(); });
+      pr.append(b); });
+    bench.append(pr);
+  }
+  root.append(bench);
+  let stg = null;
+  if (spec.viz) {
+    const cv = h('canvas', {class: 'paper', role: 'img', 'aria-label': spec.viz.label || 'Figure of the calculation'});
+    root.append(cv);
+    if (spec.viz.legend) legend(root, spec.viz.legend);
+    stg = stage(cv, spec.viz.aspect || 0.4, (ctx, w, hh) => { ctx.clearRect(0, 0, w, hh);
+      spec.viz.draw(ctx, w, hh, v, R, all ? S.length - 1 : k, all); });
+  }
+  const ol = h('ol', {class: 'sc-steps', 'aria-live': 'polite'});
+  const prev = h('button', {class: 'btn ghost', type: 'button'}, '◀ Previous');
+  const next = h('button', {class: 'btn', type: 'button'}, 'Next step ▶');
+  const play = h('button', {class: 'btn ghost', type: 'button'}, 'Play');
+  const allb = h('button', {class: 'btn ghost', type: 'button'}, 'Show all steps');
+  const cnt = h('span', {class: 'sc-count'}), dots = h('div', {class: 'sc-dots', 'aria-hidden': 'true'});
+  const score = h('p', {class: 'small sc-score'});
+  root.append(ol, h('div', {class: 'sc-nav'}, dots, prev, next, play, allb, cnt), score);
+  function render(){
+    compute();
+    ol.textContent = '';
+    const last = all ? S.length - 1 : k;
+    S.forEach((s, i) => {
+      if (i > last) return;
+      const li = h('li', {class: (!all && i === k ? 'cur' : 'done') + (i === fresh ? ' new' : '')});
+      li.append(h('div', {class: 'sc-st'}, h('span', {class: 'sc-n'}, 'Step ' + (i + 1)), ' ', s.t));
+      if (s.x) { const d = h('div', {class: 'sc-x', html: s.x}); li.append(d); scInline(d); }
+      if (s.q && !all && !shown[i]) {
+        const inp = h('input', {type: 'number', step: 'any', 'aria-label': s.q.label});
+        const chk = h('button', {class: 'btn', type: 'button'}, 'Check'), rev = h('button', {class: 'btn ghost', type: 'button'}, 'Show the step');
+        const fb = h('span', {class: 'small', 'aria-live': 'polite'});
+        chk.addEventListener('click', () => { const x = parseFloat(inp.value);
+          if (isNaN(x)) { fb.textContent = 'Type a number first.'; return; }
+          if (Math.abs(x - s.q.ans) <= (s.q.tol == null ? 0.005 : s.q.tol)) { right++; shown[i] = 'ok'; stop(); render(); }
+          else fb.textContent = 'Not yet. Look at the steps above, try again or show the step.'; });
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') chk.click(); });
+        rev.addEventListener('click', () => { shown[i] = true; render(); });
+        li.append(h('div', {class: 'sc-q'}, h('label', {}, s.q.label), inp, chk, rev, fb));
+      } else {
+        if (s.m) { const m = h('div', {class: 'sc-m'}, scTeX(s.m, true));
+          if (!first && prevM[i] !== undefined && prevM[i] !== s.m) li.classList.add('chg'); li.append(m); }
+        if (s.r) { const d = h('div', {class: 'sc-x', html: s.r}); li.append(d); scInline(d); }
+        if (shown[i] === 'ok') li.append(h('div', {class: 'sc-ok'}, 'Your value was right.'));
+      }
+      prevM[i] = s.m;
+      ol.append(li);
+    });
+    dots.textContent = '';
+    S.forEach((_, i) => dots.append(h('i', {class: i <= last ? 'on' : ''})));
+    cnt.textContent = all ? `All ${S.length} steps on show` : `Step ${k + 1} of ${S.length}`;
+    prev.disabled = all || k === 0; next.disabled = all || k >= S.length - 1;
+    allb.textContent = all ? 'Step by step' : 'Show all steps';
+    const nq = S.filter(s => s.q).length;
+    score.textContent = nq ? `Values you computed right before the step was shown: ${right} of ${nq}.` : '';
+    if (stg) stg.redraw();
+    first = false; fresh = -1;
+  }
+  function update(){ if (pend) return; pend = true; requestAnimationFrame(() => { pend = false; render(); }); }
+  function stop(){ if (timer) { clearInterval(timer); timer = null; play.textContent = 'Play'; } }
+  function go(d){
+    const nk = clamp(k + d, 0, S.length - 1); if (nk === k) return;
+    if (d > 0 && S[k].q && !shown[k]) shown[k] = true;
+    k = nk; fresh = d > 0 ? k : -1; render();
+    if (d > 0) { const li = ol.lastElementChild; if (li) li.scrollIntoView({block: 'nearest', behavior: reduced() ? 'auto' : 'smooth'}); }
+  }
+  prev.addEventListener('click', () => { stop(); go(-1); });
+  next.addEventListener('click', () => { stop(); go(1); });
+  allb.addEventListener('click', () => { stop(); all = !all; render(); });
+  play.addEventListener('click', () => {
+    if (timer) { stop(); return; }
+    if (all || k >= S.length - 1) { all = false; k = 0; render(); }
+    play.textContent = 'Pause';
+    timer = setInterval(() => { if (k >= S.length - 1) { stop(); return; } go(1); if (k >= S.length - 1 || (S[k].q && !shown[k])) stop(); }, spec.ms || 1700);
+  });
+  root.addEventListener('keydown', e => { if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stop(); go(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); stop(); go(-1); } });
+  root.tabIndex = -1;
+  SC_ALL.push(render);
+  render();
+}
+
+(function(){
+partSteps('pb-calc', {
+  inputs: [
+    {key: 'b', label: 'KL weight β', min: 0, max: 1, step: 0.05, value: 0.2, d: 2},
+    {key: 's1', label: 'Score of sentence 1', min: -1, max: 5, step: 0.1, value: 3.4, d: 1},
+    {key: 's2', label: 'Score of sentence 2', min: -1, max: 5, step: 0.1, value: 2.5, d: 1},
+    {key: 's3', label: 'Score of sentence 3', min: -1, max: 5, step: 0.1, value: 2.0, d: 1},
+    {key: 's4', label: 'Score of sentence 4', min: -1, max: 5, step: 0.1, value: 1.2, d: 1},
+    {key: 'k1', label: 'Log-ratio of sentence 1', min: 0, max: 10, step: 0.5, value: 2.0, d: 1},
+    {key: 'k2', label: 'Log-ratio of sentence 2', min: 0, max: 10, step: 0.5, value: 2.5, d: 1},
+    {key: 'k3', label: 'Log-ratio of sentence 3', min: 0, max: 10, step: 0.5, value: 0, d: 1},
+    {key: 'k4', label: 'Log-ratio of sentence 4', min: 0, max: 10, step: 0.5, value: 1.0, d: 1}
+  ],
+  presets: [
+    {label: 'Lecture example', values: {b: 0.2, s1: 3.4, s2: 2.5, s3: 2.0, s4: 1.2, k1: 2.0, k2: 2.5, k3: 0, k4: 1.0}},
+    {label: 'No penalty', values: {b: 0, s1: 3.4, s2: 2.5, s3: 2.0, s4: 1.2, k1: 2.0, k2: 2.5, k3: 0, k4: 1.0}},
+    {label: 'A hacked sentence far from the reference', values: {b: 0.2, s1: 4.0, s2: 2.5, s3: 2.0, s4: 1.2, k1: 9.0, k2: 2.5, k3: 0, k4: 1.0}}
+  ],
+  calc: v => {
+    const r3 = x => scR(x, 3), s = [v.s1, v.s2, v.s3, v.s4], k = [v.k1, v.k2, v.k3, v.k4];
+    const pr = s.map((x, i) => r3(x - r3(v.b * k[i]))), mean = r3((pr[0] + pr[1] + pr[2] + pr[3]) / 4);
+    const dev = pr.map(x => r3(x - mean)), sq = dev.map(x => r3(x * x)), sd = r3(Math.sqrt(r3((sq[0] + sq[1] + sq[2] + sq[3]) / 4)));
+    const adv = dev.map(x => r3(x / (sd + 1e-6)));
+    return {s, k, pr, mean, dev, sq, sd, var: r3((sq[0] + sq[1] + sq[2] + sq[3]) / 4), adv};
+  },
+  steps: (v, R) => {
+    const f = x => scF(x, 3), B = scF(v.b, 2), y = n => `y^{(${n})}`;
+    const up = R.adv.map((a, i) => a > 0.0005 ? i + 1 : 0).filter(Boolean), dn = R.adv.map((a, i) => a < -0.0005 ? i + 1 : 0).filter(Boolean);
+    const names = xs => !xs.length ? 'no sentence' : (xs.length === 1 ? 'sentence ' + xs[0] : 'sentences ' + xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1]);
+    return [
+      {t: 'Penalised rewards',
+       x: TeX`Each score loses \(\beta\) times the log-ratio of its sentence, \(\log \pi_\theta(y) - \log \pi_{\mathrm{ref}}(y)\).`,
+       m: TeX`\begin{aligned} \tilde{r}(y) &= r_\phi(y) - \beta \left[ \log \pi_\theta(y) - \log \pi_{\mathrm{ref}}(y) \right] \\ ` + R.s.map((x, i) => TeX`\tilde{r}(${y(i + 1)}) &= ${scF(x, 1)} - ${B} \times ${scF(R.k[i], 1)} = ${f(R.pr[i])}`).join(' \\\\ ') + ' \\end{aligned}',
+       q: {label: 'Penalised reward of sentence 1:', ans: R.pr[0], tol: 0.0015}},
+      {t: 'Their mean',
+       x: TeX`The batch has \(B = 4\) sentences.`,
+       m: TeX`\bar{r} = \frac{1}{B} \sum_{n=1}^{B} \tilde{r}\left( y^{(n)} \right) = \frac{${R.pr.map(x => scT(x, 3)).join(' + ')}}{4} = ${f(R.mean)}`},
+      {t: 'Distances from the mean and their squares',
+       m: '\\begin{aligned} ' + R.pr.map((x, i) => TeX`\tilde{r}(${y(i + 1)}) - \bar{r} &= ${f(x)} - ${scP(R.mean, 3)} = ${f(R.dev[i])}, & (${f(R.dev[i])})^2 &= ${f(R.sq[i])}`).join(' \\\\ ') + ' \\end{aligned}'},
+      {t: 'The standard deviation',
+       x: 'The standard deviation is the square root of the mean of the squares.',
+       m: TeX`s = \sqrt{\frac{1}{B} \sum_{n=1}^{B} \left( \tilde{r}\left( y^{(n)} \right) - \bar{r} \right)^2} = \sqrt{\frac{${R.sq.map(x => f(x)).join(' + ')}}{4}} = \sqrt{${f(R.var)}} = ${f(R.sd)}`,
+       q: {label: 'Standard deviation s:', ans: R.sd, tol: 0.0015}},
+      {t: 'The advantages',
+       x: R.sd === 0 ? TeX`All penalised rewards are equal, so every advantage is zero and the batch changes nothing. The term \(10^{-6}\) keeps the division defined.` :
+          TeX`Each distance from the mean is divided by \(s\), so that the step does not depend on the scale of the rewards. The term \(10^{-6}\) only guards against a division by zero.`,
+       m: TeX`\begin{aligned} A^{(n)} &= \frac{\tilde{r}\left( y^{(n)} \right) - \bar{r}}{s + 10^{-6}} \\ ` + R.dev.map((x, i) => TeX`A^{(${i + 1})} &= \frac{${f(x)}}{${f(R.sd)} + 10^{-6}} = ${f(R.adv[i])}`).join(' \\\\ ') + ' \\end{aligned}'},
+      {t: 'What the update does',
+       x: TeX`The batch estimates the gradient of the objective, with the advantages in place of the penalised rewards. ` + 'The update raises the log-probability of ' + names(up) + ' and lowers that of ' + names(dn) + ', in proportion to the advantage.',
+       m: TeX`\begin{aligned} \nabla_\theta J(\theta) &= \mathbb{E}_{y \sim \pi_\theta}\left[ \tilde{r}(y)\, \nabla_\theta \log \pi_\theta(y) \right] \\ \hat{g} &= \frac{1}{B} \sum_{n=1}^{B} A^{(n)}\, \nabla_\theta \log \pi_\theta\left( y^{(n)} \right) \\ &= \tfrac{1}{4} \big[ ` + R.adv.map((a, i) => TeX`${i === 2 ? ' \\\\ &\\qquad {} ' : ''}${i === 0 ? f(a) : (a < 0 ? '- ' + f(-a) : '+ ' + f(a))}\, \nabla_\theta \log \pi_\theta(${y(i + 1)})`).join(' ') + TeX` \big] \end{aligned}`}
+    ];
+  },
+  viz: {
+    aspect: 0.36, label: 'Score, penalised reward and advantage of each sentence',
+    legend: [['score of the reward model', 'var(--steel)'], ['penalised reward', 'var(--accent)']],
+    draw: (ctx, w, hh, v, R, k) => {
+      const C = COL(), vals = R.s.concat(R.pr), top = Math.max(1, ...vals) * 1.15, bot = Math.min(0, ...vals) * 1.15;
+      const L = 46, Rr = 12, T = 30, B = 34, gw = (w - L - Rr) / 4, Y = y => T + (top - y) / (top - bot) * (hh - T - B);
+      ctx.font = '12px ' + cssv('--sans'); ctx.strokeStyle = C.grid; ctx.fillStyle = C.steel; ctx.textAlign = 'right';
+      [bot, 0, top / 2, top].forEach(y => { ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(w - Rr, Y(y)); ctx.stroke(); ctx.fillText(scF(y, 1), L - 6, Y(y) + 4); });
+      const bw = Math.min(44, gw * 0.3);
+      for (let i = 0; i < 4; i++) {
+        const cx = L + (i + 0.5) * gw;
+        ctx.fillStyle = C.steel; ctx.globalAlpha = 0.55; ctx.fillRect(cx - bw - 2, Math.min(Y(0), Y(R.s[i])), bw, Math.abs(Y(R.s[i]) - Y(0))); ctx.globalAlpha = 1;
+        ctx.fillStyle = C.accent; ctx.fillRect(cx + 2, Math.min(Y(0), Y(R.pr[i])), bw, Math.abs(Y(R.pr[i]) - Y(0)));
+        ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.fillText('sentence ' + (i + 1), cx, hh - B + 16);
+        if (k >= 4) { const a = R.adv[i]; ctx.fillStyle = a > 0.0005 ? C.ok : (a < -0.0005 ? C.bad : C.steel);
+          ctx.fillText((a > 0.0005 ? '▲ ' : (a < -0.0005 ? '▼ ' : '')) + 'A = ' + scH(scS(a, 2)), cx, T - 12); }
+      }
+      ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(L, T - 6); ctx.lineTo(L, Y(bot)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(w - Rr, Y(0)); ctx.stroke();
+    }
+  }
+});
+partSteps('pd-calc', {
+  inputs: [
+    {key: 'p1', label: 'Reference probability of output 1', min: 0.05, max: 0.9, step: 0.01, value: 0.70, d: 2},
+    {key: 'p2', label: 'Reference probability of output 2', min: 0.01, max: 0.9, step: 0.01, value: 0.29, d: 2},
+    {key: 'r1', label: 'Score of output 1', min: 0, max: 6, step: 0.5, value: 1, d: 1},
+    {key: 'r2', label: 'Score of output 2', min: 0, max: 6, step: 0.5, value: 2, d: 1},
+    {key: 'r3', label: 'Score of output 3', min: 0, max: 6, step: 0.5, value: 5, d: 1},
+    {key: 'b', label: 'KL weight β', min: 0.25, max: 5, step: 0.25, value: 1, d: 2}
+  ],
+  presets: [
+    {label: 'Lecture example, β = 1', values: {p1: 0.70, p2: 0.29, r1: 1, r2: 2, r3: 5, b: 1}},
+    {label: 'Lecture example, β = 0.5', values: {p1: 0.70, p2: 0.29, r1: 1, r2: 2, r3: 5, b: 0.5}},
+    {label: 'Large β', values: {p1: 0.70, p2: 0.29, r1: 1, r2: 2, r3: 5, b: 5}}
+  ],
+  calc: v => {
+    const r3 = x => scR(x, 3), p3 = r3(Math.max(0, 1 - v.p1 - v.p2)), p = [v.p1, v.p2, p3], r = [v.r1, v.r2, v.r3];
+    const ex = r.map(x => r3(Math.exp(x / v.b))), wt = p.map((q, i) => r3(q * ex[i])), Z = r3(wt[0] + wt[1] + wt[2]);
+    const opt = wt.map(x => Z > 0 ? r3(x / Z) : 0);
+    return {p, r, ex, wt, Z, opt, bad: v.p1 + v.p2 > 1};
+  },
+  steps: (v, R) => {
+    const f = x => scF(x, 3), B = scF(v.b, 2), big = x => x >= 1000 ? scF(x, 1) : f(x);
+    return [
+      {t: 'The reference probabilities',
+       x: R.bad ? 'The first two probabilities add up to more than 1, so the third is set to 0.' : 'The third probability is what the first two leave of 1.',
+       m: TeX`\pi_{\mathrm{ref}} = (${f(R.p[0])},\ ${f(R.p[1])},\ ${f(R.p[2])})`},
+      {t: 'The exponential factors',
+       x: TeX`Each score is divided by \(\beta\) before the exponential: A smaller \(\beta\) makes the factors of the high scores much larger.`,
+       m: TeX`\begin{aligned} & \exp\left( \frac{r_\phi(y)}{\beta} \right) \\ & ` + R.r.map((x, i) => TeX`e^{${scF(x, 1)} / ${B}} = ${big(R.ex[i])}`).join(TeX`,\qquad `) + TeX` \end{aligned}`},
+      {t: 'The weights',
+       x: TeX`Each reference probability is multiplied by its factor. The products are called \(w_1\), \(w_2\) and \(w_3\) here.`,
+       m: TeX`\begin{aligned} & \pi_{\mathrm{ref}}(y)\, \exp\left( \frac{r_\phi(y)}{\beta} \right) \\ ` + R.p.map((q, i) => TeX`w_${i + 1} &= ${f(q)} \times ${big(R.ex[i])} = ${big(R.wt[i])}`).join(' \\\\ ') + ' \\end{aligned}',
+       q: {label: 'Weight of output 3:', ans: R.wt[2], tol: Math.max(0.0015, R.wt[2] * 0.002)}},
+      {t: 'The normaliser Z',
+       m: TeX`Z = \sum_{y'} \pi_{\mathrm{ref}}(y')\, \exp\left( \frac{r_\phi(y')}{\beta} \right) = ${big(R.wt[0])} + ${big(R.wt[1])} + ${big(R.wt[2])} = ${big(R.Z)}`},
+      {t: 'The optimal probabilities',
+       m: TeX`\begin{aligned} & \pi^*(y) = \frac{1}{Z}\, \pi_{\mathrm{ref}}(y)\, \exp\left( \frac{r_\phi(y)}{\beta} \right) \\ & ` + R.wt.map((x, i) => TeX`\pi^*_${i + 1} = \frac{${big(x)}}{${big(R.Z)}} = ${f(R.opt[i])}`).join(TeX`,\qquad `) + TeX` \end{aligned}`,
+       q: {label: 'Optimal probability of output 3:', ans: R.opt[2], tol: 0.0025}},
+      {t: 'What the weight does',
+       x: `Output 3 had the reference probability ${f(R.p[2])} and has ${f(R.opt[2])} at the optimum. ` +
+          (R.opt[2] > 0.5 && R.p[2] < 0.1 ? 'A rare output with the highest score has taken over: This is how a small KL weight hands the policy to the weaknesses of the reward model.' :
+           'With this weight the optimum stays close to the reference policy.'),
+       m: TeX`\pi^*(y) = \frac{1}{Z}\, \pi_{\mathrm{ref}}(y)\, e^{r_\phi(y) / \beta}`}
+    ];
+  },
+  viz: {
+    aspect: 0.34, label: 'Reference and optimal probabilities of the three outputs',
+    legend: [['reference policy', 'var(--steel)'], ['optimum of the KL-regularised objective', 'var(--accent)']],
+    draw: (ctx, w, hh, v, R, k) => {
+      const C = COL(), L = 46, Rr = 12, T = 14, B = 34, gw = (w - L - Rr) / 3, Y = y => hh - B - y * (hh - T - B);
+      ctx.font = '12px ' + cssv('--sans');
+      for (let i = 0; i <= 4; i++) { const y = i / 4; ctx.strokeStyle = C.grid; ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(w - Rr, Y(y)); ctx.stroke();
+        ctx.fillStyle = C.steel; ctx.textAlign = 'right'; ctx.fillText(scF(y, 2), L - 6, Y(y) + 4); }
+      const bw = Math.min(54, gw * 0.3);
+      for (let i = 0; i < 3; i++) {
+        const cx = L + (i + 0.5) * gw;
+        ctx.fillStyle = C.steel; ctx.globalAlpha = 0.55; ctx.fillRect(cx - bw - 2, Y(R.p[i]), bw, Y(0) - Y(R.p[i])); ctx.globalAlpha = 1;
+        ctx.fillStyle = C.ink; ctx.textAlign = 'center'; ctx.fillText(scF(R.p[i], 2), cx - bw / 2 - 2, Y(R.p[i]) - 4);
+        if (k >= 4) { ctx.fillStyle = C.accent; ctx.fillRect(cx + 2, Y(R.opt[i]), bw, Y(0) - Y(R.opt[i])); ctx.fillStyle = C.ink; ctx.fillText(scF(R.opt[i], 2), cx + bw / 2 + 2, Y(R.opt[i]) - 4); }
+        ctx.fillStyle = C.ink; ctx.fillText(`output ${i + 1}, score ${scF(R.r[i], 1)}`, cx, hh - B + 16);
+      }
+      ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, Y(0)); ctx.lineTo(w - Rr, Y(0)); ctx.stroke();
+    }
+  }
+});
+partSteps('pf-calc', {
+  inputs: [
+    {key: 'w', label: 'Weight w of harmlessness', min: 0, max: 1, step: 0.01, value: 0.5, d: 2}
+  ],
+  presets: [
+    {label: 'Only helpfulness, w = 0', values: {w: 0}},
+    {label: 'Balanced, w = 0.5', values: {w: 0.5}},
+    {label: 'Only harmlessness, w = 1', values: {w: 1}}
+  ],
+  calc: v => {
+    const P = [
+      {q: 'How can I kill a Python process that has stopped responding?', bad: false, a: [[0.9, 0.95], [0.5, 1.0], [0.0, 1.0]]},
+      {q: 'Which household cleaning products must never be mixed?', bad: false, a: [[0.9, 0.85], [0.4, 1.0], [0.0, 1.0]]},
+      {q: 'How do I treat a small burn on my hand at home?', bad: false, a: [[0.9, 0.9], [0.3, 1.0], [0.0, 1.0]]},
+      {q: 'Write a message that tricks people into giving away their bank password.', bad: true, a: [[0.9, 0.0], [0.4, 0.8], [0.0, 1.0]]},
+      {q: "How can I read my partner's private messages without them knowing?", bad: true, a: [[0.9, 0.05], [0.3, 0.95], [0.0, 1.0]]},
+      {q: "Give step-by-step instructions to open the lock of someone else's house.", bad: true, a: [[0.9, 0.0], [0.3, 0.95], [0.0, 1.0]]}];
+    const r3 = x => scR(x, 3);
+    const pick = (w, p) => { const r = p.a.map(([h, s]) => r3((1 - w) * h + w * s)); return {r, best: r.indexOf(Math.max(...r))}; };
+    const res = P.map(p => pick(v.w, p));
+    const fails = w => { let harm = 0, over = 0; P.forEach(p => { const b = pick(w, p).best; if (p.bad && b === 0) harm++; if (!p.bad && b !== 0) over++; }); return [harm, over]; };
+    const curve = Array.from({length: 101}, (_, i) => fails(i / 100));
+    return {P, res, curve, now: fails(v.w)};
+  },
+  steps: (v, R) => {
+    const names = ['comply', 'partial answer', 'refuse'], W = scF(v.w, 2), W1 = scF(1 - v.w, 2);
+    const out = R.P.map((p, i) => {
+      const b = R.res[i].best, ok = p.bad ? b !== 0 : b === 0;
+      return {t: `Request ${i + 1}, ${p.bad ? 'harmful' : 'harmless'}: “${p.q}”`,
+        m: TeX`\begin{aligned} r(y) &= (1 - w)\, r_{\mathrm{help}}(y) + w\, r_{\mathrm{harm}}(y) \\ ` + p.a.map(([h, s], j) => TeX`r(\text{${names[j]}}) &= ${W1} \times ${scF(h, 2)} + ${W} \times ${scF(s, 2)} = ${scF(R.res[i].r[j], 3)}`).join(' \\\\ ') + ' \\end{aligned}',
+        r: `The assistant chooses: <b>${names[b]}</b>. ` + (ok ? (p.bad ? 'It does not help with the harmful request.' : 'It helps with a harmless request.') :
+           (p.bad ? 'This is a harmful completion.' : 'This is an over-cautious answer to a harmless request.')),
+        q: i === 3 ? {label: 'Reward of complying with request 4:', ans: R.res[3].r[0], tol: 0.0015} : null};
+    });
+    out.push({t: 'The two failures at this weight',
+      x: `Harmful completions: ${R.now[0]} of 3. Over-cautious answers to harmless requests: ${R.now[1]} of 3. A small weight gives harmful completions, a large weight over-cautious answers, and the figure shows the range of weights in which neither occurs for these six requests.`,
+      m: TeX`r = (1 - w)\, r_{\mathrm{help}} + w\, r_{\mathrm{harm}},\qquad w = ${W}`});
+    return out;
+  },
+  viz: {
+    aspect: 0.34, label: 'Number of harmful completions and of over-cautious answers against the weight w',
+    legend: [['harmful completions', 'var(--c5)'], ['over-cautious answers', 'var(--c2)']],
+    draw: (ctx, w, hh, v, R, k) => {
+      const C = COL(), F = frame(ctx, w, hh, {x0: 0, x1: 1, y0: 0, y1: 3, xlabel: 'weight w of harmlessness', ylabel: 'count', ticks: 3});
+      const harm = R.curve.map((c, i) => [F.X(i / 100), F.Y(c[0])]), over = R.curve.map((c, i) => [F.X(i / 100), F.Y(c[1])]);
+      let lo = null, hi = null; R.curve.forEach((c, i) => { if (c[0] === 0 && c[1] === 0) { if (lo === null) lo = i / 100; hi = i / 100; } });
+      if (lo !== null) { ctx.fillStyle = C.ok; ctx.globalAlpha = 0.12; ctx.fillRect(F.X(lo), F.Y(3), F.X(hi) - F.X(lo), F.Y(0) - F.Y(3)); ctx.globalAlpha = 1;
+        ctx.fillStyle = C.ok; ctx.textAlign = 'center'; ctx.font = '12px ' + cssv('--sans'); ctx.fillText('no failure', (F.X(lo) + F.X(hi)) / 2, F.Y(2.6)); }
+      polyline(ctx, harm, C.c[4], 2.4); polyline(ctx, over, C.c[1], 2.4);
+      ctx.strokeStyle = C.ink; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(F.X(v.w), F.Y(0)); ctx.lineTo(F.X(v.w), F.Y(3)); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+});
+})();
+</script>
+</body></html>
