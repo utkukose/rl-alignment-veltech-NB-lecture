@@ -112,6 +112,12 @@ details.ans{margin:4px 0 14px}
 .colabbox p{margin:0}
 .colabbox .colabbtn img{display:block;height:22px}
 .colabpart{margin:.8rem 0 0;font-size:.95rem}
+.mail{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.7rem .9rem;margin:.6rem 0;line-height:2.1;font-size:.98rem}
+.mailw{font:inherit;border:1.5px solid;border-radius:5px;padding:0 .3rem;margin:0 .05rem;cursor:pointer;color:var(--ink)}
+.mailw.off{text-decoration:line-through;opacity:.55}
+.backpart{margin:.9rem 0 0;font-size:.95rem;border-left:4px solid var(--accent);padding:.35rem .7rem;background:var(--panel);border-radius:6px}
+.backpart a{font-weight:600}
+.labbox{scroll-margin-top:12px}
 /* Step-by-step calculators of the lab */
 .labpart{scroll-margin-top:10px}
 h3[id]{scroll-margin-top:10px}
@@ -235,9 +241,9 @@ blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
 :root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"local"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
 <body><div class="wrap">
 <header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 3 of 5</p><h1>Policy Gradient Methods</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-03">Day overview</a><a href="lecture.html">Lecture</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb">Colab notebook</a><a href="Day03_Lecture_Notes.pdf">PDF notes</a></nav></header>
-<h2>Policy gradient lab</h2><p>Parts A and B repeat two calculations of the lecture step by step, one REINFORCE update and the advantages of generalised advantage estimation (GAE), with sliders for their numbers. Part C evaluates the clipped objective of proximal policy optimisation (PPO) by hand. Part D trains a policy with and without the clip of PPO and shows its mean reward and its entropy over the iterations. Part E matches the ingredients of policy gradient methods with their effects.</p>
+<h2>Policy gradient lab</h2><p>Parts A and B repeat two calculations of the lecture step by step, one REINFORCE update and the advantages of generalised advantage estimation (GAE), with sliders for their numbers. Part C evaluates the clipped objective of proximal policy optimisation (PPO) by hand. Part D trains a policy with and without the clip of PPO and shows its mean reward and its entropy over the iterations. Part E matches the ingredients of policy gradient methods with their effects. Part F lets you coach a free throw that is learned with REINFORCE and computes one update of its mean speed by hand.</p>
 <div class="tabs" role="tablist"><button aria-selected="true">Explore</button><button aria-selected="false">Check yourself</button><button aria-selected="false">Reflect and export</button></div>
-<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: One REINFORCE update, step by step</h3><p>The worked example of the lecture, one REINFORCE update in a state with three actions, with every intermediate value. The sliders set the three preferences, the action taken, the return and the learning rate, and every step is recomputed at once. A step with an input field asks for its value before it shows the calculation. The figure compares the probabilities before and after the update.</p><div class="stepcalc" id="pa-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 2: the same gradient estimated from batches of episodes, with its variance.</a></p><section class="labpart" id="pb"><h3>Part B: Advantages with generalised advantage estimation, step by step</h3><p>The worked example of the lecture: The agent writes <code>the cat sat &lt;eos&gt;</code>, the only reward comes with the last token, and a critic gives the four visited states a value. The sliders set the final reward, the four values of the critic and \(\lambda\); the discount factor is 1. The advantages are computed backwards from the last step. Values are rounded to four decimals.</p><div class="stepcalc" id="pb-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-4" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 4: the actor-critic with four values of lambda.</a></p><h3>Part C: The clipped objective by hand</h3><p>PPO maximises the smaller of two terms: the ratio times the advantage, and the clipped ratio times the advantage, with the ratio clipped to the range from 0.8 to 1.2. This is the clipped objective of the <a href="lecture.html#trust-regions-and-ppo">lecture</a> for a single step, with a clip range of 0.2. Compute it for three steps.</p><div id="pc"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 5: the clipped objective in the training loop of PPO.</a></p><h3 id="pd">Part D: The trust-region bench</h3>
+<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: One REINFORCE update, step by step</h3><p>The worked example of the lecture, one REINFORCE update in a state with three actions, with every intermediate value. The sliders set the three preferences, the action taken, the return and the learning rate, and every step is recomputed at once. A step with an input field asks for its value before it shows the calculation. The figure compares the probabilities before and after the update.</p><div class="stepcalc" id="pa-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pa">Back to the lecture: REINFORCE</a>, where the text continues after the box of this part.</p><section class="labpart" id="pb"><h3>Part B: Advantages with generalised advantage estimation, step by step</h3><p>The worked example of the lecture: The agent writes <code>the cat sat &lt;eos&gt;</code>, the only reward comes with the last token, and a critic gives the four visited states a value. The sliders set the final reward, the four values of the critic and \(\lambda\); the discount factor is 1. The advantages are computed backwards from the last step. Values are rounded to four decimals.</p><div class="stepcalc" id="pb-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pb">Back to the lecture: Actor-critic</a>. The lecture continues there with Section 4 of the Colab notebook: Open it from the next orange box.</p><h3>Part C: The clipped objective by hand</h3><p>PPO maximises the smaller of two terms: the ratio times the advantage, and the clipped ratio times the advantage, with the ratio clipped to the range from 0.8 to 1.2. This is the clipped objective of the <a href="lecture.html#trust-regions-and-ppo">lecture</a> for a single step, with a clip range of 0.2. Compute it for three steps.</p><div id="pc"></div><p class="backpart"><a href="lecture.html#lab-pc">Back to the lecture: Trust regions and PPO</a>, where the text continues after the box of this part.</p><h3 id="pd">Part D: The trust-region bench</h3>
 <div class="bench">
 <p>A softmax policy learns to choose among four arms with close win rates, 0.70, 0.74, 0.77 and 0.80. Each iteration
 collects a small batch of 8 pulls and reuses it for the chosen number of gradient passes. Compare plain policy gradient with the clipped objective
@@ -261,10 +267,32 @@ its entropy in nats, at most ln 4 = 1.386.</p>
 <div class="tablewrap"><table><thead><tr><th>Run</th><th>Objective</th><th>Learning rate</th><th>Passes</th><th>Entropy bonus</th>
 <th>Final reward</th><th>Worst seed</th><th>Final entropy</th></tr></thead><tbody id="t-tb"></tbody></table></div>
 </div>
-<p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 5: PPO against the plain gradient on TokenWorld.</a></p><h3>Part E: What does each ingredient do?</h3><p>Match each ingredient of a policy gradient method with its effect.</p><div id="pe"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-03/NB03_policy_gradient_methods.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: three policy gradient learners on the map of your field.</a></p></section>
+<p class="backpart"><a href="lecture.html#lab-pd">Back to the lecture: Trust regions and PPO</a>. The lecture continues there with Section 5 of the Colab notebook: Open it from the next orange box.</p><h3>Part E: What does each ingredient do?</h3><p>Match each ingredient of a policy gradient method with its effect.</p><div id="pe"></div><p class="backpart"><a href="lecture.html#lab-pe">Back to the lecture: Entropy</a>, where the text continues after the box of this part.</p><h3 id="pf">Part F: A free-throw coach</h3>
+<p>A player practises free throws. The ball leaves the hand 2.1 m above the floor at 52 degrees, and the centre of the
+hoop is 4.2 m away and 3.05 m above the floor. Only the speed changes from throw to throw, so the speed alone sets how far
+the ball carries. A training app gives 10 marks for a ball through the centre of the hoop and one mark less for every
+10 cm short or long, never fewer than 5. The ball goes in when it comes down less than 11 cm from the centre. The player draws the speed \(v\) of each throw from a normal
+distribution with the mean \(\mu\) and the spread \(\sigma\), starts at \(\mu = 6.9\) m/s and learns with
+REINFORCE: \(\mu \leftarrow \mu + \alpha\, (r - b)\, (v - \mu) / \sigma^2\), where \(r\) is the mark and the
+baseline \(b\) is the running average of the marks. Coach the player: Choose the spread, the step size and whether the
+marks are compared with the baseline. Every coaching plan uses the same random numbers for 200 throws, so two plans can
+be compared fairly. Find a plan with which the player scores at least 100 baskets. The controls start with the settings
+of the lecture. Then answer the questions below by hand.</p>
+<div class="bench"><div class="row" id="fc-sl"></div>
+<div class="row"><div class="ctl"><label for="fc-b">Marks compared with</label><select id="fc-b">
+<option value="1" selected>the baseline</option><option value="0">nothing, no baseline</option></select></div></div>
+<p><button class="btn" id="fc-run" type="button">Coach 200 throws</button></p>
+<canvas class="paper" id="fc-cv" aria-label="The speed of every throw and the mean speed over the throws"></canvas>
+<div class="legend" id="fc-leg"></div>
+<div id="fc-ro"></div>
+<p>By hand: The mean speed is \(\mu = 7.00\) m/s, the spread \(\sigma = 0.10\) m/s, the baseline \(b = 7.5\) and the
+step size \(\alpha = 0.001\). A throw at \(v = 7.10\) m/s comes down 12 cm short.</p>
+<div class="row" id="fc-in"></div>
+<p><button class="btn" id="fc-check" type="button">Check my plan and answers</button> <span class="small" id="fc-fb" aria-live="polite"></span></p></div>
+<p class="backpart"><a href="lecture.html#lab-pf">Back to the lecture: Entropy</a>, where the text continues after the box of this part.</p></section>
 <section class="tabpanel" hidden><p>Answer each question, rate your confidence and check the answer. Results stay in this browser.</p><div id="quiz"></div></section>
 <section class="tabpanel" hidden><p>Write a short answer to each question. The text is saved in this browser and is included when you export the learning log.</p><div id="reflect"></div></section>
-<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
 <script>window.COURSE_PREFIX="vtrl";</script>
 <script>"use strict";
 const $ = (s, r = document) => r.querySelector(s);
@@ -896,6 +924,70 @@ partSteps('pb-calc', {
     }
   }
 });
+
+(function(){ if(!document.getElementById('fc-cv')) return;
+const asp=(el,a,b)=>(el.clientWidth||600)<500?b:a;
+
+// MODEL-START
+// A free throw: The ball leaves the hand 2.1 m above the floor at an angle of 52 degrees, and the centre of the hoop
+// hangs 3.05 m high, 4.2 m away. The speed of the throw decides where the ball comes down through the height of the
+// rim. The mark of a throw is 10 for the centre, one less for every 10 cm short or long, and at least 5, and a ball
+// within 11 cm of the centre goes in. The player draws the speed from a normal distribution with the mean mu and the
+// spread sigma, and REINFORCE moves mu by alpha (mark - b) (v - mu) / sigma^2, with or without a baseline b, the
+// running average of the marks with a step size of 0.1 that starts at zero.
+const FT={g:9.81,h0:2.1,hoop:3.05,dist:4.2,ang:52*Math.PI/180,mu0:6.9,ab:0.1,best:7.1818};
+function ftMiss(v){ const s=v*v*Math.sin(FT.ang)**2-2*FT.g*(FT.hoop-FT.h0); if(s<0) return -FT.dist;
+  const t=(v*Math.sin(FT.ang)+Math.sqrt(s))/FT.g; return v*Math.cos(FT.ang)*t-FT.dist; }
+function ftMark(v){ return Math.max(5,10-Math.abs(ftMiss(v))*10); }
+function ftIn(v){ return Math.abs(ftMiss(v))<0.11; }
+function ftRun(seed,n,o){ const r=RNG(seed); let mu=FT.mu0, b=0, baskets=0; const mus=[mu], vs=[], marks=[], bs=[];
+  for(let t=0;t<n;t++){ const v=mu+o.sig*r.normal(), m=ftMark(v); vs.push(v); marks.push(m); bs.push(b); if(ftIn(v)) baskets++;
+    mu+=o.alpha*(m-(o.base?b:0))*(v-mu)/(o.sig*o.sig); b+=FT.ab*(m-b); mus.push(mu); }
+  return {mus,vs,marks,bs,baskets}; }
+// MODEL-END
+// The court seen from the side, with the arcs of some throws: [{v, color}].
+function ftCourt(ctx,w,hh,throws,C){ ctx.clearRect(0,0,w,hh);
+  const x0=-0.35, x1=5.1, sc=Math.min(w/(x1-x0),(hh-6)/4.8), ox=(w-(x1-x0)*sc)/2, X=x=>ox+(x-x0)*sc, Y=y=>hh-6-y*sc;
+  ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(0,Y(0)); ctx.lineTo(w,Y(0)); ctx.stroke();
+  ctx.strokeStyle=C.steel; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(X(4.575),Y(2.9)); ctx.lineTo(X(4.575),Y(3.95)); ctx.stroke();
+  ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(4.575),Y(3.05)); ctx.lineTo(X(4.43),Y(3.05)); ctx.stroke();
+  ctx.strokeStyle=C.bad; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(X(3.97),Y(3.05)); ctx.lineTo(X(4.43),Y(3.05)); ctx.stroke();
+  ctx.strokeStyle=C.line; ctx.lineWidth=1; ctx.setLineDash([3,3]); ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(0),Y(2.1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=C.steel; ctx.font='11px '+cssv('--sans'); ctx.textAlign='left'; ctx.fillText('release, 2.1 m',X(0)+5,Y(1.05));
+  ctx.textAlign='right'; ctx.fillText('hoop, 3.05 m',X(3.92),Y(3.05)+4);
+  throws.forEach(q=>{ const vx=q.v*Math.cos(FT.ang), vy=q.v*Math.sin(FT.ang), pts=[]; let land=null;
+    for(let i=0;i<=240;i++){ const t=i*0.006, x=vx*t, y=FT.h0+vy*t-FT.g*t*t/2; pts.push([X(x),Y(y)]);
+      if(i>0&&vy-FT.g*t<0&&y<=FT.hoop){ land=[x,y]; break; } if(x>x1||y<0) break; }
+    polyline(ctx,pts,q.color,2);
+    if(land) dot(ctx,X(land[0]),Y(land[1]),Math.max(3,0.12*sc),q.color,C.ink); }); }
+
+const O={sig:0.15,alpha:0.002,base:true}; let res=null, used=null;
+slider($('#fc-sl'),{label:'Spread σ in m/s',min:0.05,max:0.3,step:0.05,value:O.sig,fmt:v=>(+v).toFixed(2)},v=>{ O.sig=+v; });
+slider($('#fc-sl'),{label:'Step size α',min:0.0005,max:0.004,step:0.0005,value:O.alpha,fmt:v=>(+v).toFixed(4)},v=>{ O.alpha=+v; });
+$('#fc-b').addEventListener('change',()=>{ O.base=$('#fc-b').value==='1'; });
+legend($('#fc-leg'),[['mean speed',1],['throw that goes in',COL().ok],['throw that misses',COL().steel],['speed of a throw through the centre',COL().ink]]);
+const ro=readout($('#fc-ro'),['baskets in 200 throws','mean speed after 200 throws','mean mark of the last 50 throws','goal reached']);
+const st=stage($('#fc-cv'),asp($('#fc-cv'),0.36,0.62),(ctx,w,hh)=>{ const C=COL(); ctx.clearRect(0,0,w,hh);
+  const F=frame(ctx,w,hh,{x0:0,x1:200,y0:6,y1:10,ticks:4,xlabel:'throws',ylabel:'speed in m/s'});
+  polyline(ctx,[[F.X(0),F.Y(FT.best)],[F.X(200),F.Y(FT.best)]],C.ink,1.2,[5,4]); if(!res) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(F.p.l,F.p.t,w-F.p.l-F.p.r,hh-F.p.t-F.p.b); ctx.clip();
+  res.vs.forEach((v,i)=>dot(ctx,F.X(i+1),F.Y(v),2.4,ftIn(v)?C.ok:mix(C.steel,cssv('--panel'),0.6)));
+  polyline(ctx,res.mus.map((m,i)=>[F.X(i),F.Y(m)]),C.c[1],2.2); ctx.restore(); });
+$('#fc-run').addEventListener('click',()=>{ res=ftRun(1,200,O); used=Object.assign({},O); st.redraw(); const goal=res.baskets>=100; store.set('d3:partF:goal',goal);
+  let s=0; res.marks.slice(150).forEach(m=>{ s+=m; });
+  ro('baskets in 200 throws',String(res.baskets)); ro('mean speed after 200 throws',res.mus[200].toFixed(2)+' m/s, centre '+FT.best.toFixed(2));
+  ro('mean mark of the last 50 throws',(s/50).toFixed(2)); ro('goal reached',goal?'yes':'no'); });
+const F=[['fc-m','Mark of the throw',8.8,0.005],['fc-s','Slope (v − μ) / σ²',10,0.005],['fc-b1','New μ with the baseline',7.013,0.0005],['fc-b0','New μ without a baseline',7.088,0.0005]];
+F.forEach(([id,lab])=>$('#fc-in').append(h('div',{class:'ctl'},h('label',{for:id},lab),h('input',{type:'number',step:'any',id,style:'width:7rem'}))));
+$('#fc-check').addEventListener('click',()=>{ const goal=!!(res&&res.baskets>=100);
+  const ok=F.map(([id,,v,tol])=>{ const x=parseFloat($('#'+id).value); return isNaN(x)?null:Math.abs(x-v)<=tol; }), right=ok.filter(x=>x).length;
+  $('#fc-fb').textContent='plan: '+(res?(goal?'goal reached':'not yet'):'coach the throws first')+', answers: '+right+' of 4 correct. '+
+    (goal&&right===4?'The throw is 12 cm short, so its mark is 10 − 1.2 = 8.8. The slope is (7.10 − 7.00) / 0.10² = 0.10 / 0.01 = 10. With the baseline the mean moves by 0.001 × (8.8 − 7.5) × 10 = 0.013 to 7.013 m/s, without it by 0.001 × 8.8 × 10 = 0.088 to 7.088 m/s: Without a baseline every mark counts as good news.'
+     :(goal?'':'A smaller spread makes the throws more alike and scores more often, but it also makes the slope (v − μ) / σ² larger, so it needs a smaller step size. Without a baseline, every mark pulls the mean towards its own throw. ')+
+      (right===4?'':'The mark loses one point for every 10 cm, and the slope divides the distance from the mean by the square of the spread.'));
+  store.set('d3:partF:score',(goal?1:0)+right); });
+})();
+
 })();
 </script>
 </body></html>

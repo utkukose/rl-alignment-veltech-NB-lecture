@@ -112,6 +112,12 @@ details.ans{margin:4px 0 14px}
 .colabbox p{margin:0}
 .colabbox .colabbtn img{display:block;height:22px}
 .colabpart{margin:.8rem 0 0;font-size:.95rem}
+.mail{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.7rem .9rem;margin:.6rem 0;line-height:2.1;font-size:.98rem}
+.mailw{font:inherit;border:1.5px solid;border-radius:5px;padding:0 .3rem;margin:0 .05rem;cursor:pointer;color:var(--ink)}
+.mailw.off{text-decoration:line-through;opacity:.55}
+.backpart{margin:.9rem 0 0;font-size:.95rem;border-left:4px solid var(--accent);padding:.35rem .7rem;background:var(--panel);border-radius:6px}
+.backpart a{font-weight:600}
+.labbox{scroll-margin-top:12px}
 /* Step-by-step calculators of the lab */
 .labpart{scroll-margin-top:10px}
 h3[id]{scroll-margin-top:10px}
@@ -235,9 +241,9 @@ blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
 :root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"local"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
 <body><div class="wrap">
 <header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 2 of 5</p><h1>Value-Based Methods</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-02">Day overview</a><a href="lecture.html">Lecture</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb">Colab notebook</a><a href="Day02_Lecture_Notes.pdf">PDF notes</a></nav></header>
-<h2>Value-based lab</h2><p>Part A repeats a calculation of the lecture step by step: Monte Carlo against temporal differences on one sentence. Part B computes one update of Q-learning and one of SARSA (state, action, reward, state, action) by hand. Part C classifies methods as on-policy or off-policy, temporal difference, Monte Carlo or dynamic programming. Part D repeats a second calculation of the lecture step by step: one update of a small Q-network. Part E explores the deadly triad on Baird's counterexample.</p>
+<h2>Value-based lab</h2><p>Part A repeats a calculation of the lecture step by step: Monte Carlo against temporal differences on one sentence. Part B computes one update of Q-learning and one of SARSA (state, action, reward, state, action) by hand. Part C classifies methods as on-policy or off-policy, temporal difference, Monte Carlo or dynamic programming. Part D repeats a second calculation of the lecture step by step: one update of a small Q-network. Part E explores the deadly triad on Baird's counterexample. Part F trains a thermostat that learns when to heat with Q-learning and schedules of your choice, and computes one update of its table by hand.</p>
 <div class="tabs" role="tablist"><button aria-selected="true">Explore</button><button aria-selected="false">Check yourself</button><button aria-selected="false">Reflect and export</button></div>
-<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: Monte Carlo against temporal differences, episode by episode</h3><p>The worked example of the lecture: The agent writes the same sentence of four tokens in every episode, and only the last step is rewarded. Monte Carlo moves the four estimates towards the return after each episode, and temporal difference (TD) learning moves each estimate towards the reward plus the estimate of the next state. The sliders set the step size, the final reward and the number of episodes. Values are rounded to four decimals.</p><div class="stepcalc" id="pa-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 2: both estimators over 3000 episodes and ten seeds.</a></p><h3>Part B: One Q-learning and one SARSA update by hand</h3><p>The current value is Q(s, a) = 2.0. The agent receives the reward -1 and lands in state s'. The best action in s' has the value 4.0, but the agent explores and will take an action whose value is 1.0. The discount factor is 0.9 and the step size 0.5.</p><div id="pb"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 3: SARSA and Q-learning against the exact optimum.</a></p><h3>Part C: Which kind of method?</h3><p>Classify each method.</p><div id="pc"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-4" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 4: the two methods on the cliff.</a></p><section class="labpart" id="pd"><h3>Part D: One update of a small Q-network</h3><p>A network with three inputs, two hidden units and two outputs, the Q-values of two actions, is small enough to follow by hand. It has the same structure as the network of the deep Q-network (DQN) of the lecture: a layer with the rectified linear unit (ReLU), a second layer, the target of Q-learning, the Huber loss, the gradients of both layers by backpropagation and one update with the Adam optimiser. The learning rate is larger than the 0.003 of the experiment, so that the change can be seen. The weights are</p><div class="tablewrap"><table><thead><tr><th></th><th>input 1</th><th>input 2</th><th>input 3</th><th>bias</th></tr></thead><tbody><tr><td>hidden unit 1</td><td>0.5</td><td>−0.3</td><td>0.8</td><td>0.1</td></tr><tr><td>hidden unit 2</td><td>−0.4</td><td>0.9</td><td>0.2</td><td>0.0</td></tr></tbody></table></div><div class="tablewrap"><table><thead><tr><th></th><th>hidden unit 1</th><th>hidden unit 2</th><th>bias</th></tr></thead><tbody><tr><td>Q of action 1</td><td>1.2</td><td>−0.5</td><td>0.0</td></tr><tr><td>Q of action 2</td><td>0.4</td><td>0.7</td><td>0.1</td></tr></tbody></table></div><p>The first table is \(W_1\) with \(b_1\), the second \(W_2\) with \(b_2\). The state is written as a one-hot vector: a 1 at the position of the state and 0 elsewhere.</p><div class="stepcalc" id="pd-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 5: the full deep Q-network with 1604 weights and the Adam optimiser.</a></p><h3 id="pe">Part E: The deadly-triad lab</h3>
+<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: Monte Carlo against temporal differences, episode by episode</h3><p>The worked example of the lecture: The agent writes the same sentence of four tokens in every episode, and only the last step is rewarded. Monte Carlo moves the four estimates towards the return after each episode, and temporal difference (TD) learning moves each estimate towards the reward plus the estimate of the next state. The sliders set the step size, the final reward and the number of episodes. Values are rounded to four decimals.</p><div class="stepcalc" id="pa-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pa">Back to the lecture: Learning without a model</a>. The lecture continues there with Section 2 of the Colab notebook: Open it from the next orange box.</p><h3>Part B: One Q-learning and one SARSA update by hand</h3><p>The current value is Q(s, a) = 2.0. The agent receives the reward -1 and lands in state s'. The best action in s' has the value 4.0, but the agent explores and will take an action whose value is 1.0. The discount factor is 0.9 and the step size 0.5.</p><div id="pb"></div><p class="backpart"><a href="lecture.html#lab-pb">Back to the lecture: SARSA and Q-learning</a>. The lecture continues there with Section 3 of the Colab notebook: Open it from the next orange box.</p><h3>Part C: Which kind of method?</h3><p>Classify each method.</p><div id="pc"></div><p class="backpart"><a href="lecture.html#lab-pc">Back to the lecture: SARSA and Q-learning</a>, where the text continues after the box of this part.</p><section class="labpart" id="pd"><h3>Part D: One update of a small Q-network</h3><p>A network with three inputs, two hidden units and two outputs, the Q-values of two actions, is small enough to follow by hand. It has the same structure as the network of the deep Q-network (DQN) of the lecture: a layer with the rectified linear unit (ReLU), a second layer, the target of Q-learning, the Huber loss, the gradients of both layers by backpropagation and one update with the Adam optimiser. The learning rate is larger than the 0.003 of the experiment, so that the change can be seen. The weights are</p><div class="tablewrap"><table><thead><tr><th></th><th>input 1</th><th>input 2</th><th>input 3</th><th>bias</th></tr></thead><tbody><tr><td>hidden unit 1</td><td>0.5</td><td>−0.3</td><td>0.8</td><td>0.1</td></tr><tr><td>hidden unit 2</td><td>−0.4</td><td>0.9</td><td>0.2</td><td>0.0</td></tr></tbody></table></div><div class="tablewrap"><table><thead><tr><th></th><th>hidden unit 1</th><th>hidden unit 2</th><th>bias</th></tr></thead><tbody><tr><td>Q of action 1</td><td>1.2</td><td>−0.5</td><td>0.0</td></tr><tr><td>Q of action 2</td><td>0.4</td><td>0.7</td><td>0.1</td></tr></tbody></table></div><p>The first table is \(W_1\) with \(b_1\), the second \(W_2\) with \(b_2\). The state is written as a one-hot vector: a 1 at the position of the state and 0 elsewhere.</p><div class="stepcalc" id="pd-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pd">Back to the lecture: Deep Q-networks</a>. The lecture continues there with Section 5 of the Colab notebook: Open it from the next orange box.</p><h3 id="pe">Part E: The deadly-triad lab</h3>
 <div class="bench">
 <p>Baird's counterexample has seven states, a reward of zero everywhere and therefore a true value function of zero. Each
 switch below removes one leg of the deadly triad: function approximation, bootstrapping or off-policy sampling. Run every
@@ -254,10 +260,38 @@ combination and find the only one that diverges.</p>
 <div class="tablewrap"><table><thead><tr><th>Run</th><th>Approximation</th><th>Bootstrapping</th><th>Off-policy</th>
 <th>Step size</th><th>Final norm</th><th>Verdict</th></tr></thead><tbody id="d-tb"></tbody></table></div>
 </div>
-<p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-02/NB02_value_based_methods.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: Baird's counterexample with each leg removed.</a></p></section>
+<p class="backpart"><a href="lecture.html#lab-pe">Back to the lecture: Going further (optional)</a>. The lecture continues there with Section 7 of the Colab notebook: Open it from the next orange box.</p><h3 id="pf">Part F: A thermostat that learns when to heat</h3>
+<p>The thermostat of the lecture decides every half hour from 15:00 to 23:00 whether to heat. In the simulated house,
+it is 17 °C at 15:00, and a half hour with the heating on warms the house by 2 °C. In every half hour, the house cools by
+0.5 °C while it is colder than 18 °C and by 1 °C from 18 °C up. Wind blows in a half hour with the probability 0.3 and
+cools it by another 0.5 °C. Each half hour with the heating on earns the reward −1. From 18:00, when the family is at
+home, each degree below 20 °C at the end of a half hour adds −3 to the reward. Train the thermostat with
+Q-learning: Choose the step size, the exploration rate, their schedules and the number of evenings. The step size can
+stay constant or shrink as \(N(s, a)^{-0.7}\), where \(N(s, a)\) counts the updates of an entry. The exploration
+rate can stay constant or fall in a straight line to 0.01 over the evenings. Every training run uses the same random
+numbers, so two settings can be compared fairly. Find settings with which the learned thermostat costs at most 11
+points per evening after at most 1000 evenings. The controls start with the settings of the lecture. Then answer the
+questions below by hand.</p>
+<div class="bench"><div class="row" id="tf-sl"></div>
+<div class="row"><div class="ctl"><label for="tf-as">Schedule of the step size</label><select id="tf-as">
+<option value="const" selected>constant</option><option value="poly">shrinking</option></select></div>
+<div class="ctl"><label for="tf-es">Schedule of the exploration rate</label><select id="tf-es">
+<option value="const" selected>constant</option><option value="decay">falling to 0.01</option></select></div>
+<div class="ctl"><label for="tf-n">Evenings</label><select id="tf-n">
+<option value="100">100</option><option value="300" selected>300</option><option value="1000">1000</option><option value="3000">3000</option></select></div></div>
+<p><button class="btn" id="tf-run" type="button">Train the thermostat</button></p>
+<canvas class="paper" id="tf-cv" aria-label="The mean temperature of an evening under the learned policy and under the optimum"></canvas>
+<div class="legend" id="tf-leg"></div>
+<div id="tf-ro"></div>
+<p>By hand: At 17:30 the house has 19 °C. The thermostat heats, and the wind blows during this half hour. The table holds
+Q(17:30, 19 °C, heat) = −8.0. For 18:00 and the temperature that follows, it holds −14.0 for off and −6.5 for heat. The
+step size is 0.2 and \(\gamma = 1\).</p>
+<div class="row" id="tf-in"></div>
+<p><button class="btn" id="tf-check" type="button">Check my settings and answers</button> <span class="small" id="tf-fb" aria-live="polite"></span></p></div>
+<p class="backpart"><a href="lecture.html#lab-pf">Back to the lecture: Going further (optional)</a>, where the text continues after the box of this part.</p></section>
 <section class="tabpanel" hidden><p>Answer each question, rate your confidence and check the answer. Results stay in this browser.</p><div id="quiz"></div></section>
 <section class="tabpanel" hidden><p>Write a short answer to each question. The text is saved in this browser and is included when you export the learning log.</p><div id="reflect"></div></section>
-<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
 <script>window.COURSE_PREFIX="vtrl";</script>
 <script>"use strict";
 const $ = (s, r = document) => r.querySelector(s);
@@ -899,6 +933,92 @@ partSteps('pd-calc', {
     }
   }
 });
+
+(function(){ if(!document.getElementById('tf-cv')) return;
+const asp=(el,a,b)=>(el.clientWidth||600)<500?b:a;
+
+// MODEL-START
+// An evening from 15:00 to 23:00 in 16 half hours. The house starts at 17 degrees. The heating adds 2 degrees per half
+// hour, and the house loses 0.5 degrees per half hour below 18 degrees and 1 degree from 18 degrees on, 0.5 degrees
+// more when the wind blows, on 30 percent of the half hours. Temperatures stay between 12 and 24 degrees, on a grid of
+// half degrees. The reward of a half hour is -1 when the heating is on and -3 for each degree below 20 at its end from
+// 18:00 on, when the family is at home. The optimum follows from the model by backward induction, the policies are
+// scored exactly with the model, and Q-learning learns without it.
+const TH={H:16,T0:17,gain:2,warm:18,lossCool:0.5,lossWarm:1,wind:0.5,pWind:0.3,tmin:12,tmax:24,home:6,eCost:1,dCost:3,comfort:20};
+const TH_NT=Math.round((TH.tmax-TH.tmin)/0.5)+1;
+const thI=T=>Math.round((T-TH.tmin)/0.5), thT=i=>TH.tmin+0.5*i;
+function thNext(T,a,windy){ const l=(T>=TH.warm?TH.lossWarm:TH.lossCool)+(windy?TH.wind:0); return Math.min(TH.tmax,Math.max(TH.tmin,T+(a?TH.gain:0)-l)); }
+function thReward(t,a,T2){ return -TH.eCost*a-(t+1>=TH.home?TH.dCost*Math.max(0,TH.comfort-T2):0); }
+function thOptimum(){ let V=new Float64Array(TH_NT); const pi=[];
+  for(let t=TH.H-1;t>=0;t--){ const V2=new Float64Array(TH_NT), row=new Uint8Array(TH_NT);
+    for(let i=0;i<TH_NT;i++){ const T=thT(i), q=[0,1].map(a=>[false,true].reduce((s,w)=>{ const T2=thNext(T,a,w);
+        return s+(w?TH.pWind:1-TH.pWind)*(thReward(t,a,T2)+V[thI(T2)]); },0));
+      row[i]=q[0]>=q[1]-1e-12?0:1; V2[i]=Math.max(q[0],q[1]); }
+    pi[t]=row; V=V2; }
+  return (t,i)=>pi[t][i]; }
+function thTimer(t,i){ return t>=TH.home&&thT(i)<TH.comfort?1:0; }
+function thEval(pol){ let d=new Float64Array(TH_NT); d[thI(TH.T0)]=1; let cost=0, cold=0; const mean=[TH.T0], heat=[];
+  for(let t=0;t<TH.H;t++){ const nd=new Float64Array(TH_NT); let hp=0, m=0;
+    for(let i=0;i<TH_NT;i++){ const p=d[i]; if(!p) continue; const T=thT(i), a=pol(t,i); hp+=p*a;
+      for(const w of [false,true]){ const q=w?TH.pWind:1-TH.pWind, T2=thNext(T,a,w); cost-=p*q*thReward(t,a,T2); nd[thI(T2)]+=p*q;
+        if(t+1>=TH.home&&T2<TH.comfort) cold+=p*q; } }
+    for(let i=0;i<TH_NT;i++) m+=nd[i]*thT(i);
+    d=nd; heat.push(hp); mean.push(m); }
+  let start='never'; for(let t=0;t<TH.H;t++) if(heat[t]>=0.5){ start=(15+Math.floor(t/2))+':'+(t%2?'30':'00'); break; }
+  return {cost,mean,heat,cold,start}; }
+function thTable(){ const Q=[], N=[]; for(let t=0;t<TH.H;t++){ Q.push(new Float64Array(2*TH_NT)); N.push(new Uint32Array(2*TH_NT)); } return {Q,N}; }
+function thGreedy(L){ return (t,i)=>L.Q[t][2*i]>=L.Q[t][2*i+1]?0:1; }
+// One evening of Q-learning. o: alpha, eps, asched ('const' or 'poly', N(s, a) to the power -0.7) and esched
+// ('const' or 'decay' from eps to 0.01 over the n evenings); e is the number of the evening, counted from 0.
+function thEvening(L,r,o,e,n){ const ep=o.esched==='decay'?Math.max(0.01,o.eps*(1-e/n)):o.eps; let T=TH.T0, G=0;
+  for(let t=0;t<TH.H;t++){ const i=thI(T), Qt=L.Q[t]; let a;
+    if(r()<ep) a=r()<0.5?1:0; else a=Qt[2*i]>=Qt[2*i+1]?0:1;
+    const T2=thNext(T,a,r()<TH.pWind), rr=thReward(t,a,T2), k=2*i+a, j=thI(T2); G+=rr;
+    L.N[t][k]++; const al=o.asched==='poly'?Math.pow(L.N[t][k],-0.7):o.alpha;
+    const tgt=rr+(t+1<TH.H?Math.max(L.Q[t+1][2*j],L.Q[t+1][2*j+1]):0);
+    Qt[k]+=al*(tgt-Qt[k]); T=T2; }
+  return -G; }
+function thSchedule(nmax){ const out=[0]; let e=0;
+  while(e<nmax){ let nxt=Math.max(e+1,Math.ceil(e*1.04)); for(const ms of [30,300,3000]) if(e<ms&&ms<nxt) nxt=ms; e=Math.min(nxt,nmax); out.push(e); }
+  return out; }
+function thTrain(seed,n,o){ const L=thTable(), r=RNG(seed); let tot=0; for(let e=0;e<n;e++) tot+=thEvening(L,r,o,e,n);
+  return {L,online:tot/n,ev:thEval(thGreedy(L))}; }
+// MODEL-END
+function thDraw(ctx,w,hh,lines,heat,C){ ctx.clearRect(0,0,w,hh);
+  const F=frame(ctx,w,hh,{x0:15,x1:23,y0:12,y1:24,ticks:4,xlabel:'hour of the day',ylabel:'temperature in °C'});
+  ctx.fillStyle=mix(C.c[2],cssv('--panel'),0.12); ctx.fillRect(F.X(18),F.Y(24),F.X(23)-F.X(18),F.Y(12)-F.Y(24));
+  if(heat) heat.forEach((p,t)=>{ ctx.fillStyle=mix(C.c[0],cssv('--panel'),0.45); const x=F.X(15+t/2);
+    ctx.fillRect(x+1,F.Y(24),F.X(15+(t+1)/2)-x-2,p*(F.Y(23)-F.Y(24))); });
+  polyline(ctx,[[F.X(15),F.Y(20)],[F.X(23),F.Y(20)]],C.steel,1,[3,3]);
+  ctx.fillStyle=C.steel; ctx.font='11px '+cssv('--sans'); ctx.textAlign='left'; ctx.fillText('20 °C',F.X(15)+4,F.Y(20)-4);
+  ctx.textAlign='right'; ctx.fillText('family at home',F.X(23)-4,F.Y(12.4));
+  lines.forEach(l=>polyline(ctx,l.mean.map((v,t)=>[F.X(15+t/2),F.Y(v)]),l.color,l.width,l.dash)); }
+
+const O={alpha:0.2,eps:0.1,asched:'const',esched:'const'}, OPT=thEval(thOptimum()); let n=300, res=null, used=null;
+const sa=slider($('#tf-sl'),{label:'Step size α',min:0.05,max:0.5,step:0.05,value:O.alpha,fmt:v=>(+v).toFixed(2)},v=>{ O.alpha=+v; });
+slider($('#tf-sl'),{label:'Exploration rate ε',min:0.05,max:0.3,step:0.05,value:O.eps,fmt:v=>(+v).toFixed(2)},v=>{ O.eps=+v; });
+$('#tf-as').addEventListener('change',()=>{ O.asched=$('#tf-as').value; sa.disabled=O.asched==='poly'; });
+$('#tf-es').addEventListener('change',()=>{ O.esched=$('#tf-es').value; });
+$('#tf-n').addEventListener('change',()=>{ n=+$('#tf-n').value; });
+legend($('#tf-leg'),[['learned policy',0],['optimum',COL().ink],['heating on, learned policy',mix(COL().c[0],cssv('--panel'),0.45)]]);
+const ro=readout($('#tf-ro'),['cost of an evening, learned policy','heating starts','cost of the evenings of training','goal reached']);
+const st=stage($('#tf-cv'),asp($('#tf-cv'),0.42,0.75),(ctx,w,hh)=>{ const C=COL(), lines=[{mean:OPT.mean,color:C.ink,width:1.4,dash:[5,4]}];
+  if(res) lines.push({mean:res.ev.mean,color:C.c[0],width:2.6}); thDraw(ctx,w,hh,lines,res?res.ev.heat:null,C); });
+$('#tf-run').addEventListener('click',()=>{ res=thTrain(1,n,O); used=n; st.redraw(); const goal=used<=1000&&res.ev.cost<=11; store.set('d2:partF:goal',goal);
+  ro('cost of an evening, learned policy',res.ev.cost.toFixed(2)+' points, optimum '+OPT.cost.toFixed(2)); ro('heating starts',res.ev.start+', optimum '+OPT.start);
+  ro('cost of the evenings of training',res.online.toFixed(1)+' points on average'); ro('goal reached',goal?'yes':'no'); });
+const F=[['tf-t','Temperature at 18:00 in °C',19.5,0.05],['tf-r','Reward of the half hour',-2.5,0.005],['tf-d','TD error',-1,0.005],['tf-q','New Q(17:30, 19 °C, heat)',-8.2,0.005]];
+F.forEach(([id,lab])=>$('#tf-in').append(h('div',{class:'ctl'},h('label',{for:id},lab),h('input',{type:'number',step:'any',id,style:'width:7rem'}))));
+$('#tf-check').addEventListener('click',()=>{ const goal=!!(res&&used<=1000&&res.ev.cost<=11);
+  const ok=F.map(([id,,v,tol])=>{ const x=parseFloat($('#'+id).value); return isNaN(x)?null:Math.abs(x-v)<=tol; });
+  const right=ok.filter(x=>x).length;
+  $('#tf-fb').textContent='settings: '+(res?(goal?'goal reached':'not yet'):'train it first')+', answers: '+right+' of 4 correct. '+
+    (goal&&right===4?'The house loses 1 °C from 18 °C on and 0.5 °C for the wind, so it has 19 + 2 − 1 − 0.5 = 19.5 °C at 18:00. The reward is −1 for the heating and −3 × 0.5 = −1.5 for half a degree below 20 °C, together −2.5. The target takes the larger entry of 18:00, −6.5, so it is −2.5 + (−6.5) = −9.0, the TD error is −9.0 − (−8.0) = −1.0, and the new entry is −8.0 + 0.2 × (−1.0) = −8.2.'
+     :(goal?'':'With a constant step size of 0.2, the values change too slowly for 1000 evenings. A larger step size, a step size that shrinks or an exploration rate that falls can help. ')+
+      (right===4?'':'The house loses 1 °C from 18 °C on, and the wind takes 0.5 °C more. For the target, Q-learning takes the larger of the two entries of 18:00.'));
+  store.set('d2:partF:score',(goal?1:0)+right); });
+})();
+
 })();
 </script>
 </body></html>

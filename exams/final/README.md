@@ -1,5 +1,7 @@
 # Final project: An alignment experiment with a measurable gold reward
 
+**This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026.**
+
 ## Overview
 
 The final project aligns a small language model and measures whether the alignment worked. Students write a gold reward they do not train on, generate preference data with a stated annotator model, align the model with two methods on matched data and compute, push at least one method until the gold reward stops improving and evaluate the result with intervals, a length control and an independent judge. The project is done alone or in pairs.

@@ -112,6 +112,12 @@ details.ans{margin:4px 0 14px}
 .colabbox p{margin:0}
 .colabbox .colabbtn img{display:block;height:22px}
 .colabpart{margin:.8rem 0 0;font-size:.95rem}
+.mail{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.7rem .9rem;margin:.6rem 0;line-height:2.1;font-size:.98rem}
+.mailw{font:inherit;border:1.5px solid;border-radius:5px;padding:0 .3rem;margin:0 .05rem;cursor:pointer;color:var(--ink)}
+.mailw.off{text-decoration:line-through;opacity:.55}
+.backpart{margin:.9rem 0 0;font-size:.95rem;border-left:4px solid var(--accent);padding:.35rem .7rem;background:var(--panel);border-radius:6px}
+.backpart a{font-weight:600}
+.labbox{scroll-margin-top:12px}
 /* Step-by-step calculators of the lab */
 .labpart{scroll-margin-top:10px}
 h3[id]{scroll-margin-top:10px}
@@ -235,9 +241,9 @@ blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
 :root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"local"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
 <body><div class="wrap">
 <header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 4 of 5</p><h1>Reinforcement Learning for Language Models</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-04">Day overview</a><a href="lecture.html">Lecture</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb">Colab notebook</a><a href="Day04_Lecture_Notes.pdf">PDF notes</a></nav></header>
-<h2>RLHF lab</h2><p>Part A names the stages of reinforcement learning from human feedback (RLHF). Parts B and D repeat two calculations of the lecture step by step: the penalised rewards and advantages of one batch, and the optimum of the penalised objective for three outputs. Part C computes a Bradley-Terry preference and a penalised reward by hand. Part E turns the weight of the Kullback-Leibler (KL) penalty on real outputs of the notebook and shows the optimum of the penalised objective. Part F weighs helpfulness against harmlessness on six requests.</p>
+<h2>RLHF lab</h2><p>Part A names the stages of reinforcement learning from human feedback (RLHF). Parts B and D repeat two calculations of the lecture step by step: the penalised rewards and advantages of one batch, and the optimum of the penalised objective for three outputs. Part C computes a Bradley-Terry preference and a penalised reward by hand. Part E turns the weight of the Kullback-Leibler (KL) penalty on real outputs of the notebook and shows the optimum of the penalised objective. Part F weighs helpfulness against harmlessness on six requests. Part G lets you label ten pairs yourself and trains a reward model on your labels.</p>
 <div class="tabs" role="tablist"><button aria-selected="true">Explore</button><button aria-selected="false">Check yourself</button><button aria-selected="false">Reflect and export</button></div>
-<section class="tabpanel"><h3>Part A: Which stage of the pipeline?</h3><p>Name the stage of RLHF that each description refers to.</p><div id="pa"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-5" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 5: a Bradley-Terry reward model from noisy pairs.</a></p><section class="labpart" id="pb"><h3>Part B: Penalised rewards and advantages of one batch</h3><p>The worked example of the lecture: four sentences of one batch of RLHF, each with its score from the reward model and its log-ratio against the fine-tuned model. The sliders set the KL weight \(\beta\), the four scores and the four log-ratios. Values are rounded to three decimals.</p><div class="stepcalc" id="pb-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 6: the same loop over 300 iterations of 64 sentences.</a></p><h3>Part C: A preference and a penalised reward by hand</h3><p>The reward model scores answer A with 1.2 and answer B with 0.4. During RLHF, an answer receives the reward 2.0 from the reward model, the log-ratio of its probability under the new and the fine-tuned model is 3.0, and the KL weight is 0.2.</p><div id="pc"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-6" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 6: RLHF with a KL penalty.</a></p><section class="labpart" id="pd"><h3>Part D: The optimum of the KL-regularised objective for three outputs</h3><p>The worked example of the lecture: A reference policy writes three outputs, the reward model scores them, and the optimum of RLHF multiplies each reference probability by \(e^{r/\beta}\) and normalises. The sliders set the reference probabilities of the first two outputs, the three scores and \(\beta\). Lower \(\beta\) and watch the rare output with the highest score take over.</p><div class="stepcalc" id="pd-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: seven KL weights and reward hacking.</a></p><h3 id="pe">Part E: The KL leash on real outputs</h3>
+<section class="tabpanel"><h3>Part A: Which stage of the pipeline?</h3><p>Name the stage of RLHF that each description refers to.</p><div id="pa"></div><p class="backpart"><a href="lecture.html#lab-pa">Back to the lecture: RLHF with a KL penalty</a>, where the text continues after the box of this part.</p><section class="labpart" id="pb"><h3>Part B: Penalised rewards and advantages of one batch</h3><p>The worked example of the lecture: four sentences of one batch of RLHF, each with its score from the reward model and its log-ratio against the fine-tuned model. The sliders set the KL weight \(\beta\), the four scores and the four log-ratios. Values are rounded to three decimals.</p><div class="stepcalc" id="pb-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pb">Back to the lecture: RLHF with a KL penalty</a>, where the text continues after the box of this part.</p><h3>Part C: A preference and a penalised reward by hand</h3><p>The reward model scores answer A with 1.2 and answer B with 0.4. During RLHF, an answer receives the reward 2.0 from the reward model, the log-ratio of its probability under the new and the fine-tuned model is 3.0, and the KL weight is 0.2.</p><div id="pc"></div><p class="backpart"><a href="lecture.html#lab-pc">Back to the lecture: RLHF with a KL penalty</a>. The lecture continues there with Section 6 of the Colab notebook: Open it from the next orange box.</p><section class="labpart" id="pd"><h3>Part D: The optimum of the KL-regularised objective for three outputs</h3><p>The worked example of the lecture: A reference policy writes three outputs, the reward model scores them, and the optimum of RLHF multiplies each reference probability by \(e^{r/\beta}\) and normalises. The sliders set the reference probabilities of the first two outputs, the three scores and \(\beta\). Lower \(\beta\) and watch the rare output with the highest score take over.</p><div class="stepcalc" id="pd-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pd">Back to the lecture: Without the leash: reward hacking</a>, where the text continues after the box of this part.</p><h3 id="pe">Part E: The KL leash on real outputs</h3>
 <div class="bench">
 <p>The candidates below are real outputs of the notebook: The most likely sentences of the fine-tuned model and every
 sentence that the reinforcement-learning runs produced outside the grammar. For each one the lab knows its probability
@@ -256,10 +262,32 @@ dashed line, the share of probability on sentences of the grammar, is drawn at f
 <div class="tablewrap"><table><thead><tr><th>Probability</th><th>Output</th><th>Reward model</th><th>Gold</th><th>In the grammar</th></tr></thead>
 <tbody id="l-tb"></tbody></table></div>
 </div>
-<p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-7" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 7: the KL weight as a dial, and reward hacking.</a></p><section class="labpart" id="pf"><h3>Part F: Helpful and harmless, one weight between them</h3><p>The illustration of the lecture: six requests to an assistant, three harmless and three harmful, each with three possible answers, to comply, to give a careful partial answer or to refuse. Each answer has a helpfulness score and a harmlessness score between 0 and 1. The scores are invented for the illustration. The reward of an answer is \(r = (1 - w)\, r_{\mathrm{help}} + w\, r_{\mathrm{harm}}\), and the assistant gives the answer with the highest reward. The slider sets the weight \(w\) of harmlessness, and the figure counts the two kinds of failure for every weight.</p><div class="stepcalc" id="pf-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-04/NB04_rl_for_language_models.ipynb#scrollTo=sec-8" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 8: a pretrained language model and three rewards that disagree.</a></p></section>
+<p class="backpart"><a href="lecture.html#lab-pe">Back to the lecture: Without the leash: reward hacking</a>. The lecture continues there with Section 7 of the Colab notebook: Open it from the next orange box.</p><section class="labpart" id="pf"><h3>Part F: Helpful and harmless, one weight between them</h3><p>The illustration of the lecture: six requests to an assistant, three harmless and three harmful, each with three possible answers, to comply, to give a careful partial answer or to refuse. Each answer has a helpfulness score and a harmlessness score between 0 and 1. The scores are invented for the illustration. The reward of an answer is \(r = (1 - w)\, r_{\mathrm{help}} + w\, r_{\mathrm{harm}}\), and the assistant gives the answer with the highest reward. The slider sets the weight \(w\) of harmlessness, and the figure counts the two kinds of failure for every weight.</p><div class="stepcalc" id="pf-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pf">Back to the lecture: Safe and ethical alignment</a>. The lecture continues there with Section 8 of the Colab notebook: Open it from the next orange box.</p><h3 id="pg">Part G: Be the labeller</h3>
+<p>In this part, you label the pairs, so the reward model learns your taste. Each of the ten pairs below
+holds two sentences of the grammar of the lecture: Choose the one you prefer.</p>
+<p>The lab then trains a small reward model on your labels. It describes a sentence by three numbers: its different calm words, its different loud words and its words
+beyond the sixth, the features of the gold reward. Its score is a weighted sum of them,
+\(r(y)\)​\({} = w_{\mathrm{calm}}\, n_{\mathrm{calm}}\)​\({} + w_{\mathrm{loud}}\, n_{\mathrm{loud}}\)​\({} + w_{\mathrm{long}}\, n_{\mathrm{long}}\),
+and it is trained with the Bradley-Terry loss of the lecture, \(P(A \succ B) = \sigma(r(A) - r(B))\), with a small
+penalty that keeps the weights small. The lab compares the weights with those of the gold reward, 0.45, −0.45 and −0.10,
+and computes the correlation of the scores with the gold reward over all 1512 sentences of the grammar.</p>
+<p>Label the pairs twice: once so that the reward model agrees with the gold reward, with a correlation of at least 0.9, and once with a
+lively taste that prefers loud words, so that the correlation is −0.5 or lower. Then answer the questions below by
+hand.</p>
+<div class="bench"><div id="lg-pairs"></div>
+<p><button class="btn" id="lg-run" type="button">Train a reward model on my labels</button></p>
+<div id="lg-ro"></div>
+<p>By hand: A linear reward model has the weights 0.2 for calm words, 0.1 for loud words and 0 for long sentences. In a
+labelled pair, the winner has the features (2, 0, 1) and the loser (0, 1, 0). A step of gradient descent on the
+Bradley-Terry loss of this pair, with the step size 0.5, changes every weight by \(0.5\, (1 - \sigma(\Delta))\) times
+the difference of its feature between winner and loser, where \(\Delta\) is the score of the winner minus the score of
+the loser.</p>
+<div class="row" id="lg-in"></div>
+<p><button class="btn" id="lg-check" type="button">Check my labels and answers</button> <span class="small" id="lg-fb" aria-live="polite"></span></p></div>
+<p class="backpart"><a href="lecture.html#lab-pg">Back to the lecture: Your field</a>. The lecture continues there with Section 9 of the Colab notebook: Open it from the next orange box.</p></section>
 <section class="tabpanel" hidden><p>Answer each question, rate your confidence and check the answer. Results stay in this browser.</p><div id="quiz"></div></section>
 <section class="tabpanel" hidden><p>Write a short answer to each question. The text is saved in this browser and is included when you export the learning log.</p><div id="reflect"></div></section>
-<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
 <script>window.COURSE_PREFIX="vtrl";</script>
 <script>"use strict";
 const $ = (s, r = document) => r.querySelector(s);
@@ -902,6 +930,64 @@ partSteps('pf-calc', {
     }
   }
 });
+
+(function(){ if(!document.getElementById('lg-pairs')) return;
+
+// MODEL-START
+// The 1512 sentences of the grammar of Day 4, three features of a sentence (its different calm words, its different
+// loud words and its words beyond the sixth) and a linear reward model r(y) = w . F(y), trained on labelled pairs with
+// the Bradley-Terry loss and a penalty 0.05 |w|^2 by 400 steps of gradient descent with the step size 0.5.
+const LB={subj:['the cat','the dog','a bird','my friend','the child','a robot'],verb:['sat','ran','slept','sang','waited','smiled'],
+  place:['on the mat','in the garden','by the window','near the door','under the tree','beside the lamp'],extra:['','quietly','happily','again','for a while','today','at dawn'],
+  calm:['quietly','slept','waited','beside','under','garden','window','dawn'],loud:['sang','ran','happily','again','robot'],gold:[0.45,-0.45,-0.10]};
+const LB_SENT=[]; LB.subj.forEach(a=>LB.verb.forEach(b=>LB.place.forEach(c=>LB.extra.forEach(d=>LB_SENT.push([a,b,c,d].filter(x=>x).join(' '))))));
+function lbFeat(s){ const w=s.split(' '), u=new Set(w); return [LB.calm.filter(x=>u.has(x)).length,LB.loud.filter(x=>u.has(x)).length,Math.max(0,w.length-6)]; }
+function lbGold(s){ const f=lbFeat(s); return 1+0.45*f[0]-0.45*f[1]-0.10*f[2]; }
+function lbFit(pairs,labels){ const D=pairs.map(([a,b],i)=>{ const fa=lbFeat(a), fb=lbFeat(b); return labels[i]===0?fa.map((x,k)=>x-fb[k]):fb.map((x,k)=>x-fa[k]); });
+  let w=[0,0,0];
+  for(let it=0;it<400;it++){ const g=w.map(x=>0.1*x);
+    D.forEach(d=>{ const delta=w[0]*d[0]+w[1]*d[1]+w[2]*d[2], q=1/(1+Math.exp(delta)); for(let k=0;k<3;k++) g[k]-=q*d[k]/D.length; });
+    w=w.map((x,k)=>x-0.5*g[k]); }
+  return w; }
+function lbCorr(w){ const u=LB_SENT.map(s=>{ const f=lbFeat(s); return w[0]*f[0]+w[1]*f[1]+w[2]*f[2]; }), v=LB_SENT.map(lbGold);
+  let mu=0, mv=0; u.forEach((x,i)=>{ mu+=x; mv+=v[i]; }); mu/=u.length; mv/=v.length;
+  let num=0, du=0, dv=0; u.forEach((x,i)=>{ num+=(x-mu)*(v[i]-mv); du+=(x-mu)*(x-mu); dv+=(v[i]-mv)*(v[i]-mv); });
+  return du>0&&dv>0?num/Math.sqrt(du*dv):0; }
+// MODEL-END
+
+const PAIRS=[['the cat slept under the tree','the cat ran under the tree'],['my friend smiled in the garden','my friend smiled in the garden for a while'],
+  ['the dog sat by the window quietly','the dog sat by the window happily'],['a robot waited beside the lamp','the child sat near the door'],
+  ['the cat ran on the mat again','the cat sat on the mat'],['my friend slept in the garden at dawn','my friend sang in the garden at dawn'],
+  ['a bird sat near the door today','a bird sat near the door'],['the child ran under the tree happily','the child waited under the tree'],
+  ['a robot sang beside the lamp','the dog slept beside the lamp'],['the dog smiled by the window for a while','the dog ran by the window again']];
+const box=$('#lg-pairs');
+PAIRS.forEach(([a,b],i)=>{ const nm='lg'+i;
+  box.append(h('div',{style:'margin:8px 0;line-height:1.7'},h('b',{},(i+1)+'. '),
+    h('label',{style:'display:inline-block;margin-right:18px'},h('input',{type:'radio',name:nm,value:'0'}),' '+a),
+    h('label',{style:'display:inline-block'},h('input',{type:'radio',name:nm,value:'1'}),' '+b))); });
+const ro=readout($('#lg-ro'),['labels that agree with the gold reward','learned weights: calm, loud, long','correlation with the gold reward',
+  'best sentence for your reward model','highest and lowest correlation so far']);
+let hi=store.get('d4:partG:hi',null), lo=store.get('d4:partG:lo',null);
+function fmtw(w){ return w.map(x=>(x<0?'−':'')+Math.abs(x).toFixed(2)).join(', '); }
+$('#lg-run').addEventListener('click',()=>{ const labels=PAIRS.map((_,i)=>{ const c=document.querySelector('input[name=lg'+i+']:checked'); return c?+c.value:null; });
+  if(labels.some(x=>x==null)){ ro('labels that agree with the gold reward','label all ten pairs first'); return; }
+  const w=lbFit(PAIRS,labels), c=lbCorr(w); let agree=0; PAIRS.forEach(([a,b],i)=>{ if((lbGold(a)>lbGold(b)?0:1)===labels[i]) agree++; });
+  let best=LB_SENT[0], bs=-1e9; LB_SENT.forEach(s=>{ const f=lbFeat(s), v=w[0]*f[0]+w[1]*f[1]+w[2]*f[2]; if(v>bs+1e-12){ bs=v; best=s; } });
+  hi=hi==null?c:Math.max(hi,c); lo=lo==null?c:Math.min(lo,c); store.set('d4:partG:hi',hi); store.set('d4:partG:lo',lo);
+  ro('labels that agree with the gold reward',agree+' of 10'); ro('learned weights: calm, loud, long',fmtw(w)+', gold 0.45, −0.45, −0.10');
+  ro('correlation with the gold reward',c.toFixed(3)); ro('best sentence for your reward model',best);
+  ro('highest and lowest correlation so far',hi.toFixed(3)+' and '+lo.toFixed(3)); });
+const F=[['lg-d','Δ, score of the winner minus score of the loser',0.3,0.005],['lg-s','σ(Δ)',0.574,0.002],['lg-w','New weight of the calm words',0.626,0.002]];
+F.forEach(([id,lab])=>$('#lg-in').append(h('div',{class:'ctl'},h('label',{for:id},lab),h('input',{type:'number',step:'any',id,style:'width:7rem'}))));
+$('#lg-check').addEventListener('click',()=>{ const goal=hi!=null&&hi>=0.9&&lo<=-0.5;
+  const ok=F.map(([id,,v,tol])=>{ const x=parseFloat($('#'+id).value); return isNaN(x)?null:Math.abs(x-v)<=tol; }), right=ok.filter(x=>x).length;
+  $('#lg-fb').textContent='labels: '+(goal?'both tastes reached':'not yet')+', answers: '+right+' of 3 correct. '+
+    (goal&&right===3?'The scores are 0.2 × 2 + 0.1 × 0 + 0 × 1 = 0.4 for the winner and 0.1 for the loser, so Δ = 0.3 and σ(0.3) = 1 / (1 + e^−0.3) = 1 / 1.741 = 0.574. The calm words differ by 2, so their weight rises by 0.5 × (1 − 0.574) × 2 = 0.426 to 0.626. A reward model learns whatever taste its labels carry, also one that the gold reward does not share.'
+     :(goal?'':'Calm words and short sentences raise the gold reward, loud words lower it. Label once as the gold reward would and once preferring loud words. ')+
+      (right===3?'':'Δ uses the weights times the features; the step multiplies 1 − σ(Δ) by the difference of the feature, 2 for the calm words.'));
+  store.set('d4:partG:score',(goal?1:0)+right); });
+})();
+
 })();
 </script>
 </body></html>

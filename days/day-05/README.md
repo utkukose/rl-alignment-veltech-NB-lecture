@@ -9,7 +9,7 @@ Prof. Dr. Utku Kose, Süleyman Demirel University
 
 </div>
 
-Preference optimisation without a reward model or sampling, compared with reinforcement learning from human feedback (RLHF) on matched data, and the evaluation of aligned models with judges, intervals and seeds. **Estimated study time:** 6 to 8 hours.
+Preference optimisation without a reward model or sampling, compared with reinforcement learning from human feedback (RLHF) on matched data, the evaluation of aligned models with judges, intervals and seeds, and a live dashboard of the whole project. **Estimated study time:** 6 to 8 hours.
 
 ## Materials of the day
 
@@ -19,7 +19,7 @@ Each material has its own role. Start with the lecture page; the study path belo
 |---|---|---|
 | Lecture page | The concepts of the day, with animations, an interactive scene, knowledge checks, review cards and the references | [Lecture page](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lecture.html) |
 | Colab notebook | Python step 5: Objects, copies and the DPO loss, then the hands-on sections with exercises, an application switch and the application challenges | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-05/NB05_dpo_and_evaluation.ipynb) |
-| Interactive lab | Evaluation lab: Six practice parts, a self-assessment and an exportable learning log | [Interactive lab](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html) |
+| Interactive lab | Evaluation lab: Seven practice parts, a self-assessment and an exportable learning log | [Interactive lab](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html) |
 | PDF lecture notes | The Python step and the lecture in one printable file | [PDF notes](Day05_Lecture_Notes.pdf) |
 
 <table><tr><td width="50%"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-05/NB05_dpo_and_evaluation.ipynb"><img src="screenshots/nb_1.png" alt="A figure from the notebook of day 5"></a><br><sub>From the Colab notebook</sub></td><td width="50%"><a href="https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html"><img src="screenshots/lab.png" alt="Interactive lab of day 5"></a><br><sub>The interactive lab</sub></td></tr></table>
@@ -34,7 +34,7 @@ By the end of the day, students are expected to derive the loss of direct prefer
 |---|---|---|
 | 1 | Read the [lecture page](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lecture.html) and answer its knowledge checks | 1 hour 30 minutes |
 | 2 | Run Python step 5: Objects, copies and the DPO loss in the [Colab notebook](https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-05/NB05_dpo_and_evaluation.ipynb#scrollTo=python-step), right after the setup section | 1 hour |
-| 3 | Work through parts A to F of the [interactive lab](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html) | 1 hour |
+| 3 | Work through parts A to G of the [interactive lab](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html) | 1 hour |
 | 4 | Work through the numbered sections of the notebook and their exercises | 2 hours 30 minutes |
 | 5 | Use the application switch of the notebook and solve the application challenge of your field | 45 minutes |
 | 6 | Take the self-assessment in the [interactive lab](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lab.html) (tab: Check yourself) | 20 minutes |
@@ -50,9 +50,9 @@ The day runs as one synchronous session in class or online, and each material ha
 | 0:10 to 0:45 | Lecture page, part 1: From the optimum to DPO with the gradient-weight animation and lab Part A, DPO against RLHF on matched data |
 | 0:45 to 1:10 | Colab, together: Python step 5, ending with the DPO loss of two pairs |
 | 1:10 to 1:20 | Break |
-| 1:20 to 1:55 | Lecture page, part 2: Judges and their biases, intervals, sample size and seeds with the sample-size animation, and evaluating safety; then lab Part C, the evaluation desk, Part D with the whole class and Part E by hand |
+| 1:20 to 1:55 | Lecture page, part 2: Judges and their biases with the jury animation, intervals, sample size and seeds with the sample-size and the taste-test animations, and evaluating safety; then lab Part C, the evaluation desk, Part D with the whole class and Part E by hand |
 | 1:55 to 2:30 | Colab, in pairs: Sections 1 to 6, then section 7 with a different judge for each pair |
-| 2:30 to 3:00 | Lab and closing: Part F by hand, then the project at the end of the week, open problems, section 8 with the final project, questions and the course evaluation |
+| 2:30 to 3:00 | Lab and closing: Part F by hand and Part G, the students as judges, then the project at the end of the week with the live dashboard of section 8, open problems, section 9 with the final project, questions and the course evaluation |
 
 ## Daily task and submission
 

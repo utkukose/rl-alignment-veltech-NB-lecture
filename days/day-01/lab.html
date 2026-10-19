@@ -112,6 +112,12 @@ details.ans{margin:4px 0 14px}
 .colabbox p{margin:0}
 .colabbox .colabbtn img{display:block;height:22px}
 .colabpart{margin:.8rem 0 0;font-size:.95rem}
+.mail{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.7rem .9rem;margin:.6rem 0;line-height:2.1;font-size:.98rem}
+.mailw{font:inherit;border:1.5px solid;border-radius:5px;padding:0 .3rem;margin:0 .05rem;cursor:pointer;color:var(--ink)}
+.mailw.off{text-decoration:line-through;opacity:.55}
+.backpart{margin:.9rem 0 0;font-size:.95rem;border-left:4px solid var(--accent);padding:.35rem .7rem;background:var(--panel);border-radius:6px}
+.backpart a{font-weight:600}
+.labbox{scroll-margin-top:12px}
 /* Step-by-step calculators of the lab */
 .labpart{scroll-margin-top:10px}
 h3[id]{scroll-margin-top:10px}
@@ -235,9 +241,9 @@ blockquote{border-left-color:var(--accent);border-radius:0 10px 10px 0}
 :root{--accent:#7C3AED;--band:rgba(124,58,237,.08)}@media (prefers-color-scheme:dark){:root{--accent:#C4B5FD;--band:rgba(196,181,253,.13)}}</style><script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]]},svg:{fontCache:"local"}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
 <body><div class="wrap">
 <header class="top"><p class="course">Reinforcement Learning and Language Model Alignment (VTR UGE 21), day 1 of 5</p><h1>Foundations of Reinforcement Learning</h1><p class="who">Prof. Dr. Utku Kose, Süleyman Demirel University</p><nav><a href="../../index.html">Course home</a><a href="https://github.com/utkukose/rl-alignment-veltech-NB-lecture/tree/main/days/day-01">Day overview</a><a href="lecture.html">Lecture</a><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb">Colab notebook</a><a href="Day01_Lecture_Notes.pdf">PDF notes</a></nav></header>
-<h2>Foundations lab</h2><p>Part A repeats the choices of greedy, epsilon-greedy and the upper confidence bound of the lecture step by step, with sliders for its numbers. Part B is a bandit game in which you play against the strategies of the day. Part C names the ingredients of a decision problem. Part D computes a discounted return and a Bellman backup by hand. Part E repeats value iteration on a corridor step by step, also with sliders. In Parts A and E every intermediate value is rounded, and the next step continues with the rounded value, as in a calculation by hand.</p>
+<h2>Foundations lab</h2><p>Part A repeats the choices of greedy, epsilon-greedy and the upper confidence bound of the lecture step by step, with sliders for its numbers. Part B is a bandit game in which you play against the strategies of the day. Part C names the ingredients of a decision problem. Part D computes a discounted return and a Bellman backup by hand. Part E repeats value iteration on a corridor step by step, also with sliders. In Parts A and E every intermediate value is rounded, and the next step continues with the rounded value, as in a calculation by hand. Part F lets you design the reward of a robot vacuum and shows the behaviour that the best policy for this reward produces.</p>
 <div class="tabs" role="tablist"><button aria-selected="true">Explore</button><button aria-selected="false">Check yourself</button><button aria-selected="false">Reflect and export</button></div>
-<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: The upper confidence bound, step by step</h3><p>The worked example of the lecture: three arms, their pulls and their rewards, and the decision of greedy, of epsilon-greedy and of the upper confidence bound (UCB) for the next pull. The sliders set the pulls and the rewards of each arm, \(\varepsilon\) and the constant \(c\). The figure stacks the bonus of each arm on its estimate.</p><div class="stepcalc" id="pa-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-1" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 1: the same rule over 1500 pulls and thirty seeds.</a></p><h3 id="pb">Part B: The bandit game</h3>
+<section class="tabpanel"><section class="labpart" id="pa"><h3>Part A: The upper confidence bound, step by step</h3><p>The worked example of the lecture: three arms, their pulls and their rewards, and the decision of greedy, of epsilon-greedy and of the upper confidence bound (UCB) for the next pull. The sliders set the pulls and the rewards of each arm, \(\varepsilon\) and the constant \(c\). The figure stacks the bonus of each arm on its estimate.</p><div class="stepcalc" id="pa-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pa">Back to the lecture: Bandits: exploration against exploitation</a>, where the text continues after the box of this part.</p><h3 id="pb">Part B: The bandit game</h3>
 <div class="bench">
 <p>Five slot machines pay a reward with hidden probabilities. You have fifty pulls: Click a machine to pull it. An algorithm
 plays the same machines with the same number of pulls. At the end the true probabilities are revealed and the game is added
@@ -256,10 +262,27 @@ for every machine from what it has seen and plays the best guess.</p>
 <div class="tablewrap"><table><thead><tr><th>Game</th><th>Opponent</th><th>Your reward</th><th>Its reward</th><th>Your regret</th>
 <th>Its regret</th></tr></thead><tbody id="g-tb"></tbody></table></div>
 </div>
-<p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-1" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 1: four strategies over thirty seeds.</a></p><h3>Part C: The vocabulary of reinforcement learning</h3><p>Name the ingredient that each description refers to.</p><div id="pc"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-2" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 2: TokenWorld as a decision process.</a></p><h3>Part D: A return and a Bellman backup by hand</h3><p>An episode gives the rewards 0, 0 and 1, in this order, and the discount factor is 0.9. In another state, an action leads with probability 0.8 to a state of value 10 and with probability 0.2 to a state of value 0, and every step costs 1.</p><div id="pd"></div><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 3: value iteration on the Windy Cliff.</a></p><section class="labpart" id="pe"><h3>Part E: Value iteration on a corridor, sweep by sweep</h3><p>The corridor of the lecture: two cells, A and B, and a goal behind B, with the actions <em>forward</em> and <em>wait</em>. Each sweep computes the values of B and A from the values of the previous sweep, rounded to three decimals. The sweeps stop when no value changes by more than 0.001. The sliders set the probability that <em>forward</em> moves the agent, the discount factor and the reward of a step that does not reach the goal.</p><div class="stepcalc" id="pe-calc"></div></section><p class="colabpart"><a href="https://colab.research.google.com/github/utkukose/rl-alignment-veltech-NB-lecture/blob/main/days/day-01/NB01_foundations_of_rl.ipynb#scrollTo=sec-3" target="_blank" rel="noopener"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab">Continue in Colab, section 3: value iteration on the 32 cells of the Windy Cliff.</a></p></section>
+<p class="backpart"><a href="lecture.html#lab-pb">Back to the lecture: Bandits: exploration against exploitation</a>. The lecture continues there with Section 1 of the Colab notebook: Open it from the next orange box.</p><h3>Part C: The vocabulary of reinforcement learning</h3><p>Name the ingredient that each description refers to.</p><div id="pc"></div><p class="backpart"><a href="lecture.html#lab-pc">Back to the lecture: Values and the Bellman equation</a>, where the text continues after the box of this part.</p><h3>Part D: A return and a Bellman backup by hand</h3><p>An episode gives the rewards 0, 0 and 1, in this order, and the discount factor is 0.9. In another state, an action leads with probability 0.8 to a state of value 10 and with probability 0.2 to a state of value 0, and every step costs 1.</p><div id="pd"></div><p class="backpart"><a href="lecture.html#lab-pd">Back to the lecture: Values and the Bellman equation</a>, where the text continues after the box of this part.</p><section class="labpart" id="pe"><h3>Part E: Value iteration on a corridor, sweep by sweep</h3><p>The corridor of the lecture: two cells, A and B, and a goal behind B, with the actions <em>forward</em> and <em>wait</em>. Each sweep computes the values of B and A from the values of the previous sweep, rounded to three decimals. The sweeps stop when no value changes by more than 0.001. The sliders set the probability that <em>forward</em> moves the agent, the discount factor and the reward of a step that does not reach the goal.</p><div class="stepcalc" id="pe-calc"></div></section><p class="backpart"><a href="lecture.html#lab-pe">Back to the lecture: Values and the Bellman equation</a>, where the text continues after the box of this part.</p><h3 id="pf">Part F: A reward for the robot vacuum</h3>
+<p>The robot vacuum of the lecture starts next to its dock, and its battery lasts 40 steps. It should clean the three
+dirty spots and then return to the dock. Design its reward: a reward for a cleaned spot, paid once or at every visit, a
+reward at the dock and a cost for every step. The lab computes the best policy for your reward by value iteration, with
+\(\gamma = 0.99\), and the robot follows it. Find a reward with which the robot cleans all three spots and docks
+within the 40 steps. The controls start with the reward of the lecture that pays at every visit. Then answer
+the question below by hand.</p>
+<div class="bench"><div class="row" id="vf-sl"></div>
+<div class="row"><div class="ctl"><label for="vf-once">The reward for a spot is paid</label><select id="vf-once">
+<option value="1">once, when the spot is cleaned</option><option value="0" selected>at every visit of the spot</option></select></div></div>
+<p><button class="btn" id="vf-run" type="button">Find the best policy and run it</button></p>
+<canvas class="paper" id="vf-cv" aria-label="The flat with the dock, three dirty spots and the path of the robot"></canvas>
+<div id="vf-ro"></div>
+<p>The policy of the lecture with a reward of 1 per spot, paid once, 5 at the dock and a cost of 0.04 per step needs 23
+steps: It cleans the spots at steps 3, 10 and 14 and docks at step 23.</p>
+<div class="row" id="vf-in"></div>
+<p><button class="btn" id="vf-check" type="button">Check my reward and value</button> <span class="small" id="vf-fb" aria-live="polite"></span></p></div>
+<p class="backpart"><a href="lecture.html#lab-pf">Back to the lecture: Values and the Bellman equation</a>. The lecture continues there with Section 3 of the Colab notebook: Open it from the next orange box.</p></section>
 <section class="tabpanel" hidden><p>Answer each question, rate your confidence and check the answer. Results stay in this browser.</p><div id="quiz"></div></section>
 <section class="tabpanel" hidden><p>Write a short answer to each question. The text is saved in this browser and is included when you export the learning log.</p><div id="reflect"></div></section>
-<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
+<footer class="sig"><p><strong>Prof. Dr. Utku Kose</strong><br>Full Professor, Department of Computer Engineering, Süleyman Demirel University, Isparta, Türkiye<br>Founding Director, AI Application and Research Center (YAZEM), Süleyman Demirel University<br>Head of the Computer Science Division, Department of Computer Engineering, Süleyman Demirel University<br>Additional affiliations: University of North Dakota (USA), Universidad Panamericana (Mexico City, Mexico), Vel Tech University (Chennai, India)<br>IEEE Senior Member, ACM Professional Member<br><a href="https://orcid.org/0000-0002-9652-6415">ORCID 0000-0002-9652-6415</a> | <a href="https://www.utkukose.com">utkukose.com</a> | <a href="https://github.com/utkukose">github.com/utkukose</a><br><a href="mailto:utkukose@sdu.edu.tr">utkukose@sdu.edu.tr</a> | <a href="mailto:utku.kose@und.edu">utku.kose@und.edu</a> | <a href="mailto:ukose@up.edu.mx">ukose@up.edu.mx</a> | <a href="mailto:utkukose@gmail.com">utkukose@gmail.com</a></p><p>This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026. Course materials licensed under CC BY 4.0. Code licensed under MIT.</p></footer></div>
 <script>window.COURSE_PREFIX="vtrl";</script>
 <script>"use strict";
 const $ = (s, r = document) => r.querySelector(s);
@@ -866,6 +889,72 @@ partSteps('pe-calc', {
     }
   }
 });
+
+(function(){ if(!document.getElementById('vf-cv')) return;
+const asp=(el,a,b)=>(el.clientWidth||600)<500?b:a;
+
+// MODEL-START
+// A flat of 7 x 5 cells. A wall separates the rooms at column 3, rows 0 to 2. The dock is at (0, 4), the robot starts
+// at (1, 4), and three dirty spots lie at (1, 1), (5, 0) and (6, 3). The state is the cell and the set of spots already
+// cleaned (a mask of three bits). A move into a wall or the edge leaves the robot in place, and entering the dock ends
+// the episode. Value iteration with gamma = 0.99, then the greedy path for at most 40 steps.
+const VC={W:7,H:5,walls:['3,0','3,1','3,2'],dock:[0,4],start:[1,4],spots:[[1,1],[5,0],[6,3]],moves:[[0,-1],[1,0],[0,1],[-1,0]],gamma:0.99};
+const VC_CELLS=[]; for(let y=0;y<VC.H;y++) for(let x=0;x<VC.W;x++) if(!VC.walls.includes(x+','+y)) VC_CELLS.push([x,y]);
+const VC_IDX={}; VC_CELLS.forEach((c,i)=>{ VC_IDX[c[0]+','+c[1]]=i; });
+function vcStep(c,a){ const x=c[0]+VC.moves[a][0], y=c[1]+VC.moves[a][1];
+  if(x<0||x>=VC.W||y<0||y>=VC.H||VC.walls.includes(x+','+y)) return c; return [x,y]; }
+function vcReward(m,n,R){ let r=-R.step, m2=m; const k=VC.spots.findIndex(s=>s[0]===n[0]&&s[1]===n[1]);
+  if(k>=0){ if(!R.once||!((m>>k)&1)) r+=R.clean; m2=m|(1<<k); }
+  if(n[0]===VC.dock[0]&&n[1]===VC.dock[1]) r+=R.dock; return [r,m2]; }
+const vcIsDock=c=>c[0]===VC.dock[0]&&c[1]===VC.dock[1];
+function vcSolve(R){ const V=new Float64Array(VC_CELLS.length*8); let it=0;
+  for(;it<5000;it++){ let delta=0;
+    VC_CELLS.forEach((c,ci)=>{ if(vcIsDock(c)) return;
+      for(let m=0;m<8;m++){ let best=-1e18;
+        for(let a=0;a<4;a++){ const n=vcStep(c,a), [r,m2]=vcReward(m,n,R), v=r+(vcIsDock(n)?0:VC.gamma*V[VC_IDX[n[0]+','+n[1]]*8+m2]); if(v>best) best=v; }
+        delta=Math.max(delta,Math.abs(best-V[ci*8+m])); V[ci*8+m]=best; } });
+    if(delta<1e-9) break; }
+  return {V,it}; }
+function vcGreedy(V,R,steps){ let c=VC.start, m=0, G=0, disc=1; const path=[c], masks=[0];
+  for(let t=0;t<(steps||40);t++){ let best=-1e18, ba=0;
+    for(let a=0;a<4;a++){ const n=vcStep(c,a), [r,m2]=vcReward(m,n,R), v=r+(vcIsDock(n)?0:VC.gamma*V[VC_IDX[n[0]+','+n[1]]*8+m2]); if(v>best+1e-12){ best=v; ba=a; } }
+    const n=vcStep(c,ba), rr=vcReward(m,n,R); G+=disc*rr[0]; disc*=VC.gamma; m=rr[1]; c=n; path.push(c); masks.push(m);
+    if(vcIsDock(c)) break; }
+  return {path,masks,G,docked:vcIsDock(c),cleaned:[0,1,2].filter(k=>(m>>k)&1).length}; }
+// MODEL-END
+function vcDraw(ctx,w,hh,V,path,masks,k,C){ const cs=Math.min((w-8)/VC.W,(hh-8)/VC.H), ox=(w-cs*VC.W)/2, oy=(hh-cs*VC.H)/2, m=masks[Math.min(k,masks.length-1)];
+  let vmin=1e18, vmax=-1e18; VC_CELLS.forEach((c,ci)=>{ if(vcIsDock(c)) return; const v=V[ci*8+m]; vmin=Math.min(vmin,v); vmax=Math.max(vmax,v); });
+  for(let y=0;y<VC.H;y++) for(let x=0;x<VC.W;x++){ const X=ox+x*cs, Y=oy+y*cs;
+    if(VC.walls.includes(x+','+y)){ ctx.fillStyle=C.steel; ctx.fillRect(X,Y,cs,cs); continue; }
+    const ci=VC_IDX[x+','+y], v=V[ci*8+m], f=vmax>vmin?(v-vmin)/(vmax-vmin):0.5;
+    ctx.fillStyle=vcIsDock([x,y])?mix(C.ok,cssv('--panel'),0.55):mix(C.c[0],cssv('--panel'),0.08+0.5*f); ctx.fillRect(X,Y,cs,cs);
+    ctx.strokeStyle=C.line; ctx.strokeRect(X,Y,cs,cs); }
+  ctx.fillStyle=C.ink; ctx.font='600 '+Math.max(10,Math.round(cs*0.22))+'px '+cssv('--sans'); ctx.textAlign='center';
+  ctx.fillText('dock',ox+(VC.dock[0]+0.5)*cs,oy+(VC.dock[1]+0.58)*cs);
+  VC.spots.forEach((s,i)=>{ const cl=(m>>i)&1; dot(ctx,ox+(s[0]+0.5)*cs,oy+(s[1]+0.5)*cs,cs*0.18,cl?mix(C.steel,cssv('--panel'),0.5):C.c[1],C.ink); });
+  const pts=path.slice(0,k+1).map(c=>[ox+(c[0]+0.5)*cs,oy+(c[1]+0.5)*cs]); polyline(ctx,pts,C.c[3],2,[4,3]);
+  const c=path[Math.min(k,path.length-1)]; dot(ctx,ox+(c[0]+0.5)*cs,oy+(c[1]+0.5)*cs,cs*0.26,C.ink,C.ink);
+  dot(ctx,ox+(c[0]+0.5)*cs,oy+(c[1]+0.5)*cs,cs*0.14,cssv('--panel')); }
+
+const R={clean:1,dock:5,step:0.04,once:false}; let res=null, S=null;
+slider($('#vf-sl'),{label:'Reward for a spot',min:0,max:3,step:0.25,value:R.clean,fmt:v=>(+v).toFixed(2)},v=>{ R.clean=+v; });
+slider($('#vf-sl'),{label:'Reward at the dock',min:0,max:10,step:0.5,value:R.dock,fmt:v=>(+v).toFixed(1)},v=>{ R.dock=+v; });
+slider($('#vf-sl'),{label:'Cost of a step',min:0,max:0.2,step:0.02,value:R.step,fmt:v=>(+v).toFixed(2)},v=>{ R.step=+v; });
+$('#vf-once').addEventListener('change',()=>{ R.once=$('#vf-once').value==='1'; });
+const ro=readout($('#vf-ro'),['steps','spots cleaned','docked','goal reached']);
+const st=stage($('#vf-cv'),asp($('#vf-cv'),0.5,0.75),(ctx,w,hh)=>{ ctx.clearRect(0,0,w,hh); if(!S) return; vcDraw(ctx,w,hh,S.V,res.path,res.masks,res.path.length-1,COL()); });
+$('#vf-run').addEventListener('click',()=>{ S=vcSolve(R); res=vcGreedy(S.V,R); st.redraw();
+  const goal=res.docked&&res.cleaned===3; store.set('d1:partF:goal',goal);
+  ro('steps',String(res.path.length-1)); ro('spots cleaned',res.cleaned+' of 3'); ro('docked',res.docked?'yes':'no, the battery ran out'); ro('goal reached',goal?'yes':'no'); });
+$('#vf-in').append(h('div',{class:'ctl',style:'min-width:260px'},h('label',{for:'vf-g'},'Total reward of these 23 steps without discounting'),
+  h('input',{type:'number',step:'any',id:'vf-g',style:'width:7rem'})));
+$('#vf-check').addEventListener('click',()=>{ const v=parseFloat($('#vf-g').value), right=Math.abs(v-7.08)<=0.005, goal=!!(res&&res.docked&&res.cleaned===3);
+  $('#vf-fb').textContent='reward: '+(res?(goal?'correct':'the robot does not yet clean all three spots and dock'):'run it first')+', total: '+(isNaN(v)?'missing':(right?'correct':'not yet'))+'. '+
+    (goal&&right?'The three spots bring 3 × 1 = 3, the dock 5 and the 23 steps cost 23 × 0.04 = 0.92, so the total is 3 + 5 − 0.92 = 7.08. A reward paid at every visit lets the robot stay on one spot and clean it again and again, because each step there pays more than the trip to the dock.'
+     :'Rewards that are paid at every visit can be collected again and again, and a dock that is worth more than the spots ends the trip early.');
+  store.set('d1:partF:score',(goal?1:0)+(right?1:0)); });
+})();
+
 })();
 </script>
 </body></html>

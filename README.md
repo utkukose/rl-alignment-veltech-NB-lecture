@@ -6,9 +6,9 @@
 
 *A five-day course from Bellman equations to direct preference optimisation on one environment, with lecture pages, animations, interactive labs, Colab notebooks and a Python track for beginners*
 
-![last update](https://img.shields.io/badge/last%20update-October%202026-B97813) ![course code](https://img.shields.io/badge/course%20code-VTR%20UGE%2021-1F5F8B) ![format](https://img.shields.io/badge/format-5%20days-1F5F8B) ![delivery](https://img.shields.io/badge/delivery-synchronous%20and%20asynchronous-0E7A78) ![notebooks](https://img.shields.io/badge/notebooks-Google%20Colab-F9AB00) ![content](https://img.shields.io/badge/content-CC%20BY%204.0-555555) ![code](https://img.shields.io/badge/code-MIT-555555)
+![first version](https://img.shields.io/badge/first%20version-October%202026-566A73) ![last update](https://img.shields.io/badge/last%20update-October%202026-B97813) ![course code](https://img.shields.io/badge/course%20code-VTR%20UGE%2021-1F5F8B) ![format](https://img.shields.io/badge/format-5%20days-1F5F8B) ![delivery](https://img.shields.io/badge/delivery-synchronous%20and%20asynchronous-0E7A78) ![notebooks](https://img.shields.io/badge/notebooks-Google%20Colab-F9AB00) ![content](https://img.shields.io/badge/content-CC%20BY%204.0-555555) ![code](https://img.shields.io/badge/code-MIT-555555)
 
-**This course is updated in line with current developments in the field. Last update: October 2026.**
+**This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026.**
 
 **Prof. Dr. Utku Kose**
 
@@ -68,7 +68,7 @@ One project runs through the whole week. In TokenWorld an agent writes a short s
 | [Day 2](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-02/lecture.html#tokenworld-stage-2-values-learned-from-experience) | The rules are hidden, and values are learned from experience. | Monte Carlo, temporal differences, SARSA, Q-learning, a deep Q-network | Greedy returns 2.55 for SARSA and 2.25 for Q-learning; the deep Q-network reaches 2.75 |
 | [Day 3](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-03/lecture.html#tokenworld-stage-3-a-policy-that-writes-the-best-sentence) | The probabilities of the tokens are learned directly, as a language model does. | REINFORCE, baselines, actor-critic, proximal policy optimisation (PPO) | 98 to 99 percent of the optimum |
 | [Day 4](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-04/lecture.html#tokenworld-stage-4-what-the-four-stages-achieved) | A grammar of 1512 sentences and a neural language model, aligned with preferences. | Fine-tuning, a Bradley-Terry reward model, reinforcement learning from human feedback (RLHF) with a Kullback-Leibler (KL) penalty, safe and ethical alignment | Gold reward from 1.12 to 2.05; reward hacking without the penalty |
-| [Day 5](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lecture.html#tokenworld-stage-5-the-project-at-the-end-of-the-week) | The same model and pairs, aligned without a reward model and evaluated. | Direct preference optimisation (DPO), judges, intervals, safety rates | Gold reward 2.23 with drift from the grammar; every result stated with its judge and interval |
+| [Day 5](https://utkukose.github.io/rl-alignment-veltech-NB-lecture/days/day-05/lecture.html#tokenworld-stage-5-the-project-at-the-end-of-the-week) | The same model and pairs, aligned without a reward model and evaluated. | Direct preference optimisation (DPO), judges, intervals, safety rates, a live dashboard of the week | Gold reward 2.23 with drift from the grammar; every result stated with its judge and interval |
 
 The final project asks each student to take a world of their own along the same path, with a gold reward that the methods never see, two alignment methods on matched data and an evaluation with intervals.
 
@@ -123,7 +123,7 @@ The course text, figures, lecture notes and interactive labs are licensed under 
 
 [2] Christiano, P. F., Leike, J., Brown, T. B., Martic, M., Legg, S., & Amodei, D. (2017). Deep reinforcement learning from human preferences. In Advances in Neural Information Processing Systems 30 (NeurIPS 2017) (pp. 4299-4307).
 
-[3] Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C. L., Mishkin, P., Zhang, C., Agarwal, S., Slama, K., Ray, A., et al. (2022). Training language models to follow instructions with human feedback. In Advances in Neural Information Processing Systems 35 (NeurIPS 2022) (pp. 27730-27744).
+[3] Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C. L., Mishkin, P., Zhang, C., Agarwal, S., Slama, K., Ray, A., Schulman, J., Hilton, J., Kelton, F., Miller, L., Simens, M., Askell, A., Welinder, P., Christiano, P. F., Leike, J., & Lowe, R. (2022). Training language models to follow instructions with human feedback. In Advances in Neural Information Processing Systems 35 (NeurIPS 2022) (pp. 27730-27744).
 
 [4] Rafailov, R., Sharma, A., Mitchell, E., Manning, C. D., Ermon, S., & Finn, C. (2023). Direct preference optimization: Your language model is secretly a reward model. In Advances in Neural Information Processing Systems 36 (NeurIPS 2023) (pp. 53728-53741).
 
@@ -131,9 +131,13 @@ The course text, figures, lecture notes and interactive labs are licensed under 
 
 [6] Van Rossum, G., & Drake, F. L. (2009). Python 3 Reference Manual. CreateSpace.
 
-[7] Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <https://doi.org/10.1038/s41586-020-2649-2>
+[7] Harris, C. R., Millman, K. J., van der Walt, S. J., Gommers, R., Virtanen, P., Cournapeau, D., Wieser, E., Taylor, J., Berg, S., Smith, N. J., Kern, R., Picus, M., Hoyer, S., van Kerkwijk, M. H., Brett, M., Haldane, A., Fernández del Río, J., Wiebe, M., Peterson, P., Gérard-Marchant, P., Sheppard, K., Reddy, T., Weckesser, W., Abbasi, H., Gohlke, C., & Oliphant, T. E. (2020). Array programming with NumPy. Nature, 585(7825), 357-362. <https://doi.org/10.1038/s41586-020-2649-2>
 
 [8] Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. Computing in Science & Engineering, 9(3), 90-95.
+
+## Human-AI collaboration
+
+This course was developed through human-AI collaboration. Human intellectual knowledge and expertise are the fundamental starting point of the course. The course author guides and supervises every stage of its development. The final version is presented only after the course author's review and approval.
 
 ---
 

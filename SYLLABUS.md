@@ -1,5 +1,7 @@
 # Syllabus: Reinforcement Learning and Language Model Alignment
 
+**This course is updated in line with current developments in the field. First version: October 2026. Last update: October 2026.**
+
 ## Course information
 
 | Item | Detail |
